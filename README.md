@@ -1,50 +1,77 @@
-# Welcome to your Expo app 👋
+﻿# Job Hunting Calendar
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+就職活動でのスケジュール管理を支援する Expo (React Native) アプリです。応募企業ごとに進捗やタスク、メモを保存し、端末ローカルに永続化された一覧をすばやく参照できます。
 
-## Get started
+## 主な機能
 
-1. Install dependencies
+- 企業ごとの進捗ステータスとタスクの管理
+- タスクの期限・完了状態の保存
+- メモの記録と編集
+- AsyncStorage を利用した端末ローカルでの永続化（オフライン対応）
+
+## 技術スタック
+
+- Expo SDK 54 / React Native 0.81
+- React 19 / Expo Router によるファイルベースルーティング
+- Zustand + AsyncStorage による状態・永続化管理
+- Zod による入力バリデーション
+- TypeScript 5.9 / ESLint (eslint-config-expo)
+
+## 開発環境の準備
+
+1. 必要ツール
+   - Node.js 18 以上（LTS 推奨）
+   - npm（または互換パッケージマネージャー）
+2. 依存関係のインストール
 
    ```bash
    npm install
    ```
 
-2. Start the app
+3. 開発サーバーの起動
 
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+   ブラウザに表示される開発者ツールから、デバイス・エミュレーター・Expo Go アプリで実行できます。
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## よく使うスクリプト
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+| コマンド | 説明 |
+| --- | --- |
+| `npm run start` | Expo 開発サーバーを起動します。 |
+| `npm run android` / `npm run ios` / `npm run web` | 各プラットフォーム向けに Expo を起動します。 |
+| `npm run lint` | ESLint によるコードチェックを実行します。 |
+| `npm run reset-project` | テンプレートのサンプルコードを `app-example/` に移動し、空の `app/` ディレクトリを再生成します。 |
 
-## Get a fresh project
+## データ構造と保存先
 
-When you're ready, run:
+- `schema/` : 企業・タスク入力を検証する Zod スキーマを定義しています。
+- `store/useAppStore.ts` : Zustand ストア。`AsyncStorage` に `job-hunting-calendar` キーで永続化しています。
+- 企業 (`Company`) ごとに ID・名称・進捗ステータス・タスク配列・備考を保持します。タスクには ULID で採番された ID、タイトル、期日、完了状態が含まれます。
 
-```bash
-npm run reset-project
-```
+## プロジェクト構成のヒント
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+- `app/(tabs)/` : Expo Router のタブレイアウトと各画面。
+- `components/` : 再利用コンポーネント群（Themed コンポーネント、ParallaxScrollView など）。
+- `hooks/` : `useColorScheme` などのカスタムフック。
+- `types/` : 型定義の共有。
 
-## Learn more
+## 品質チェック
 
-To learn more about developing your project with Expo, look at the following resources:
+- 依存関係の整合性確認: `npx expo-doctor`
+- Expo 管理パッケージの更新確認: `npx expo install --check`
+- ネイティブビルド前は `npx expo run:android` / `npx expo run:ios` で動作確認することを推奨します。
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## 改行コードの方針
 
-## Join the community
+- `.gitattributes` でテキストファイルは LF に統一されます。
+- Windows 固有のスクリプト（`*.bat`、`*.cmd`、`*.ps1`）のみ CRLF に保持されます。
+- バイナリアセット（画像・フォントなど）は変換対象外として扱われます。
 
-Join our community of developers creating universal apps.
+## 参考リンク
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- [Expo ドキュメント](https://docs.expo.dev/)
+- [Expo Router ガイド](https://docs.expo.dev/router/introduction/)
+- [Zustand ドキュメント](https://docs.pmnd.rs/zustand/introduction)

@@ -2,9 +2,15 @@
 
 # dependencies
 node_modules/
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+pnpm-debug.log*
 
 # Expo
 .expo/
+.expo-shared/
+.expo/web-debug/
 dist/
 web-build/
 expo-env.d.ts
@@ -13,24 +19,26 @@ expo-env.d.ts
 .kotlin/
 *.orig.*
 *.jks
+*.keystore
 *.p8
 *.p12
 *.key
 *.mobileprovision
+android/
+ios/
 
 # Metro
 .metro-health-check*
 
-# debug
-npm-debug.*
-yarn-debug.*
-yarn-error.*
+# logs
+*.log
 
 # macOS
 .DS_Store
 *.pem
 
 # local env files
+.env
 .env*.local
 
 # typescript

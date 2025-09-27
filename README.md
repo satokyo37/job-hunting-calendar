@@ -1,4 +1,4 @@
-﻿# Job Hunting Calendar
+# Job Hunting Calendar
 
 就職活動でのスケジュール管理を支援する Expo (React Native) アプリです。応募企業ごとに進捗やタスク、メモを保存し、端末ローカルに永続化された一覧をすばやく参照できます。
 
@@ -12,7 +12,7 @@
 ## 技術スタック
 
 - Expo SDK 54 / React Native 0.81
-- React 19 / Expo Router によるファイルベースルーティング
+- React 19 / Expo Router 6.0.8 によるファイルベースルーティング
 - Zustand + AsyncStorage による状態・永続化管理
 - Zod による入力バリデーション
 - TypeScript 5.9 / ESLint (eslint-config-expo)

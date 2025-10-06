@@ -1,16 +1,36 @@
 # Normalize text files to LF line endings across platforms
-* text eol=lf
+* text=auto eol=lf
 
 # Preserve Windows-specific script endings when needed
 *.bat text eol=crlf
 *.cmd text eol=crlf
 *.ps1 text eol=crlf
 
+# Treat common text-ish formats explicitly (optional, clarity)
+*.sh   text eol=lf
+*.ts   text eol=lf
+*.tsx  text eol=lf
+*.js   text eol=lf
+*.jsx  text eol=lf
+*.json text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.md   text eol=lf
+*.svg  text eol=lf
+
 # Binary assets should never be converted
-*.png binary
-*.jpg binary
+*.png  binary
+*.jpg  binary
 *.jpeg binary
-*.gif binary
-*.ico binary
-*.ttf binary
-*.otf binary
+*.gif  binary
+*.ico  binary
+*.ttf  binary
+*.otf  binary
+*.pdf  binary
+*.zip  binary
+*.jar  binary
+*.mp4  binary
+
+# Lock files: avoid EOL conversion churn
+pnpm-lock.yaml   -text
+package-lock.json -text

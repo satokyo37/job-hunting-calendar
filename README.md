@@ -11,8 +11,8 @@
 
 ## 技術スタック
 
-- Expo SDK 54 / React Native 0.81
-- React 19 / Expo Router 6.0.8 によるファイルベースルーティング
+- Expo SDK 54 (54.0.12) / React Native 0.81
+- React 19 / Expo Router 6.0.10 によるファイルベースルーティング
 - Zustand + AsyncStorage による状態・永続化管理
 - Zod による入力バリデーション
 - TypeScript 5.9 / ESLint (eslint-config-expo)

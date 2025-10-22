@@ -1,7 +1,8 @@
+﻿import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Link } from 'expo-router';
 import { format, parse, parseISO } from 'date-fns';
 import { ja } from 'date-fns/locale';
+import { Link } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
 import {
   Alert,
@@ -19,6 +20,17 @@ import { ThemedView } from '@/components/ThemedView';
 import { useAppStore } from '@/store/useAppStore';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+const BACKGROUND = '#F2F6FF';
+const SURFACE = '#FFFFFF';
+const SURFACE_SUBTLE = '#F8FAFF';
+const BORDER = '#D8E3FF';
+const TEXT_PRIMARY = '#1E293B';
+const TEXT_MUTED = '#64748B';
+const PRIMARY = '#2563EB';
+const SUCCESS = '#16A34A';
+const WARNING = '#F97316';
+const DANGER = '#EF4444';
 
 const formatDisplayDate = (iso: string) =>
   format(parseISO(iso), 'yyyy年M月d日 (EEE) HH:mm', { locale: ja });
@@ -39,12 +51,6 @@ type ProgressEditorState = {
   value: string;
 };
 
-const initialCandidatePickerState: CandidatePickerState = {
-  companyId: null,
-  visible: false,
-  date: new Date(),
-};
-
 const initialProgressEditorState: ProgressEditorState = {
   companyId: null,
   visible: false,
@@ -63,7 +69,11 @@ export default function HomeScreen() {
   const [formName, setFormName] = useState('');
   const [formProgress, setFormProgress] = useState('');
   const [formRemarks, setFormRemarks] = useState('');
-  const [pickerState, setPickerState] = useState(initialCandidatePickerState);
+  const [pickerState, setPickerState] = useState<CandidatePickerState>({
+    companyId: null,
+    visible: false,
+    date: new Date(),
+  });
   const [progressEditor, setProgressEditor] = useState(initialProgressEditorState);
   const [webCandidateInput, setWebCandidateInput] = useState(formatManualInput(new Date()));
 
@@ -105,7 +115,15 @@ export default function HomeScreen() {
   }, []);
 
   const closeCandidatePicker = useCallback(() => {
-    setPickerState(initialCandidatePickerState);
+    setPickerState((prev) => ({
+      ...prev,
+      companyId: null,
+      visible: false,
+    }));
+    if (Platform.OS === 'web') {
+      const nextDefault = formatManualInput(new Date());
+      setWebCandidateInput(nextDefault);
+    }
   }, []);
 
   const handleCandidateConfirm = useCallback(() => {
@@ -160,15 +178,20 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ThemedView style={styles.container}>
-        <View style={styles.header}>
-        <View>
-          <ThemedText type="title">企業一覧</ThemedText>
-          <ThemedText type="subtitle">進捗と面談日程をひと目で確認</ThemedText>
+        <View style={styles.heroCard}>
+          <View style={styles.heroText}>
+            <ThemedText type="title" style={styles.heroTitle}>
+              企業一覧
+            </ThemedText>
+            <ThemedText type="subtitle" style={styles.heroSubtitle}>
+              進捗と面談日程をひと目で確認
+            </ThemedText>
+          </View>
+          <Pressable style={styles.primaryButton} onPress={toggleForm}>
+            <MaterialIcons name="add-circle" size={20} color="#FFFFFF" />
+            <ThemedText style={styles.primaryButtonLabel}>企業を追加</ThemedText>
+          </Pressable>
         </View>
-        <Pressable style={styles.addButton} onPress={toggleForm}>
-          <ThemedText style={styles.addButtonLabel}>＋企業を追加</ThemedText>
-        </Pressable>
-      </View>
 
       {sortedCompanies.length === 0 ? (
         <ThemedView style={styles.emptyState}>
@@ -200,20 +223,38 @@ export default function HomeScreen() {
 
               {item.confirmedDate ? (
                 <View style={styles.confirmedBlock}>
-                  <ThemedText type="defaultSemiBold">確定日程</ThemedText>
-                  <ThemedText>{formatDisplayDate(item.confirmedDate)}</ThemedText>
+                  <View style={styles.confirmedHeader}>
+                    <MaterialIcons name="event-available" size={18} color={SUCCESS} />
+                    <ThemedText type="defaultSemiBold" style={styles.confirmedLabel}>
+                      確定日程
+                    </ThemedText>
+                  </View>
+                  <ThemedText style={styles.confirmedValue}>
+                    {formatDisplayDate(item.confirmedDate)}
+                  </ThemedText>
                 </View>
               ) : (
-                <View style={styles.noConfirmedBlock}>
-                  <ThemedText type="defaultSemiBold">確定日程</ThemedText>
-                  <ThemedText>未確定</ThemedText>
+                <View style={[styles.confirmedBlock, styles.pendingBlock]}>
+                  <View style={styles.confirmedHeader}>
+                    <MaterialIcons name="event-busy" size={18} color={WARNING} />
+                    <ThemedText type="defaultSemiBold" style={styles.pendingLabel}>
+                      確定日程
+                    </ThemedText>
+                  </View>
+                  <ThemedText style={styles.pendingValue}>未確定</ThemedText>
                 </View>
               )}
 
-              <View style={styles.candidateHeader}>
-                <ThemedText type="defaultSemiBold">候補日</ThemedText>
-                <Pressable style={styles.inlineButton} onPress={() => openCandidatePicker(item.id)}>
-                  <ThemedText style={styles.inlineButtonLabel}>候補日を追加</ThemedText>
+              <View style={styles.sectionHeader}>
+                <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
+                  候補日
+                </ThemedText>
+                <Pressable
+                  style={styles.secondaryButton}
+                  onPress={() => openCandidatePicker(item.id)}
+                >
+                  <MaterialIcons name="add" size={16} color={PRIMARY} />
+                  <ThemedText style={styles.secondaryButtonLabel}>候補日を追加</ThemedText>
                 </Pressable>
               </View>
 
@@ -222,19 +263,32 @@ export default function HomeScreen() {
               ) : (
                 item.candidateDates.map((candidate) => (
                   <View style={styles.candidateRow} key={candidate}>
-                    <ThemedText style={styles.candidateText}>{formatDisplayDate(candidate)}</ThemedText>
+                    <View style={styles.candidateInfo}>
+                      <View style={styles.candidateIcon}>
+                        <MaterialIcons name="event" size={16} color={PRIMARY} />
+                      </View>
+                      <ThemedText style={styles.candidateDate}>
+                        {formatDisplayDate(candidate)}
+                      </ThemedText>
+                    </View>
                     <View style={styles.candidateActions}>
                       <Pressable
                         onPress={() => confirmCandidateDate(item.id, candidate)}
-                        style={[styles.inlineButton, styles.confirmButton]}
+                        style={[styles.actionChip, styles.confirmAction]}
                       >
-                        <ThemedText style={styles.confirmButtonLabel}>確定</ThemedText>
+                        <MaterialIcons name="check-circle" size={16} color={SUCCESS} />
+                        <ThemedText style={[styles.actionChipLabel, styles.confirmActionLabel]}>
+                          確定
+                        </ThemedText>
                       </Pressable>
                       <Pressable
                         onPress={() => removeCandidateDate(item.id, candidate)}
-                        style={[styles.inlineButton, styles.removeButton]}
+                        style={[styles.actionChip, styles.deleteAction]}
                       >
-                        <ThemedText style={styles.removeButtonLabel}>削除</ThemedText>
+                        <MaterialIcons name="delete" size={16} color={DANGER} />
+                        <ThemedText style={[styles.actionChipLabel, styles.deleteActionLabel]}>
+                          削除
+                        </ThemedText>
                       </Pressable>
                     </View>
                   </View>
@@ -247,13 +301,14 @@ export default function HomeScreen() {
 
       <Link href="/(tabs)/calendar" asChild>
         <Pressable style={styles.calendarShortcut}>
+          <MaterialIcons name="calendar-today" size={18} color="#FFFFFF" />
           <ThemedText style={styles.calendarShortcutLabel}>カレンダーで確認</ThemedText>
         </Pressable>
       </Link>
 
       <Modal visible={isFormOpen} transparent animationType="slide">
         <View style={styles.modalOverlay}>
-          <ThemedView style={styles.modalContent}>
+          <ThemedView style={[styles.modalCard, styles.formModal]}>
             <ThemedText type="title" style={styles.modalTitle}>
               企業を登録
             </ThemedText>
@@ -299,7 +354,7 @@ export default function HomeScreen() {
 
       <Modal visible={progressEditor.visible} transparent animationType="fade">
         <View style={styles.modalOverlay}>
-          <ThemedView style={styles.modalContent}>
+          <ThemedView style={[styles.modalCard, styles.formModal]}>
             <ThemedText type="title" style={styles.modalTitle}>
               進捗ステータスを更新
             </ThemedText>
@@ -326,7 +381,7 @@ export default function HomeScreen() {
 
       <Modal visible={pickerState.visible} transparent animationType="fade">
         <View style={styles.modalOverlay}>
-          <ThemedView style={styles.pickerContent}>
+          <ThemedView style={[styles.modalCard, styles.pickerModal]}>
             <ThemedText type="title" style={styles.modalTitle}>
               候補日を選択
             </ThemedText>
@@ -352,7 +407,11 @@ export default function HomeScreen() {
                 mode="datetime"
                 display={Platform.OS === 'ios' ? 'inline' : 'default'}
                 value={pickerState.date}
-                onChange={(_, selectedDate) => {
+                onChange={(event, selectedDate) => {
+                  if (event?.type === 'dismissed') {
+                    closeCandidatePicker();
+                    return;
+                  }
                   if (selectedDate) {
                     setPickerState((prev) => ({ ...prev, date: selectedDate }));
                   }
@@ -381,164 +440,276 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+    backgroundColor: BACKGROUND,
   },
   container: {
     flex: 1,
-    padding: 16,
-    gap: 16,
+    backgroundColor: BACKGROUND,
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+    gap: 20,
   },
-  header: {
+  heroCard: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    backgroundColor: SURFACE,
+    borderRadius: 24,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: BORDER,
+    padding: 24,
+    gap: 20,
+    shadowColor: '#CBD5F5',
+    shadowOpacity: 0.18,
+    shadowOffset: { width: 0, height: 12 },
+    shadowRadius: 24,
+    elevation: 3,
   },
-  addButton: {
-    backgroundColor: '#2563eb',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 999,
+  heroText: {
+    flex: 1,
+    gap: 6,
   },
-  addButtonLabel: {
-    color: '#ffffff',
-    fontWeight: '600',
+  heroTitle: {
+    color: TEXT_PRIMARY,
+    fontSize: 22,
+    fontWeight: '700',
+  },
+  heroSubtitle: {
+    color: TEXT_MUTED,
+  },
+  primaryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: PRIMARY,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 18,
+    elevation: 2,
+  },
+  primaryButtonLabel: {
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
   emptyState: {
-    padding: 24,
+    backgroundColor: SURFACE,
+    borderRadius: 20,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#d1d5db',
-    borderRadius: 12,
+    borderColor: BORDER,
+    padding: 24,
     gap: 8,
   },
   listContent: {
     gap: 16,
-    paddingBottom: 120,
+    paddingBottom: 160,
   },
   card: {
-    borderRadius: 16,
-    padding: 16,
+    backgroundColor: SURFACE,
+    borderRadius: 20,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#e5e7eb',
-    gap: 12,
+    borderColor: BORDER,
+    padding: 20,
+    gap: 16,
+    shadowColor: '#E0E9FF',
+    shadowOpacity: 0.35,
+    shadowOffset: { width: 0, height: 10 },
+    shadowRadius: 20,
+    elevation: 2,
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    gap: 12,
   },
   companyName: {
     flexShrink: 1,
+    color: TEXT_PRIMARY,
   },
   statusBadge: {
-    backgroundColor: '#f3f4f6',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 999,
+    backgroundColor: 'rgba(37, 99, 235, 0.12)',
   },
   statusBadgeLabel: {
+    color: PRIMARY,
     fontWeight: '600',
   },
   remarks: {
-    color: '#6b7280',
+    color: TEXT_MUTED,
+    lineHeight: 20,
   },
   confirmedBlock: {
-    padding: 12,
-    borderRadius: 12,
-    backgroundColor: '#ecfdf5',
-    gap: 4,
+    backgroundColor: SURFACE_SUBTLE,
+    borderRadius: 16,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: BORDER,
+    padding: 16,
+    gap: 8,
   },
-  noConfirmedBlock: {
-    padding: 12,
-    borderRadius: 12,
-    backgroundColor: '#f9fafb',
-    gap: 4,
+  confirmedHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
-  candidateHeader: {
+  confirmedLabel: {
+    color: TEXT_PRIMARY,
+  },
+  confirmedValue: {
+    color: TEXT_PRIMARY,
+    fontWeight: '600',
+  },
+  pendingBlock: {
+    backgroundColor: 'rgba(249, 115, 22, 0.12)',
+  },
+  pendingLabel: {
+    color: WARNING,
+  },
+  pendingValue: {
+    color: WARNING,
+    fontWeight: '600',
+  },
+  sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  inlineButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 999,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#d1d5db',
+  sectionTitle: {
+    color: TEXT_PRIMARY,
   },
-  inlineButtonLabel: {
-    color: '#2563eb',
+  secondaryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: SURFACE_SUBTLE,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: BORDER,
+  },
+  secondaryButtonLabel: {
+    color: PRIMARY,
     fontWeight: '600',
   },
   placeholder: {
-    color: '#9ca3af',
+    color: TEXT_MUTED,
   },
   candidateRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 12,
-    paddingVertical: 4,
+    gap: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 16,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: BORDER,
+    backgroundColor: SURFACE_SUBTLE,
   },
-  candidateText: {
+  candidateInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
     flex: 1,
+  },
+  candidateIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#E0E7FF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  candidateDate: {
+    color: TEXT_PRIMARY,
+    fontWeight: '600',
+    flexShrink: 1,
   },
   candidateActions: {
     flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
   },
-  confirmButton: {
-    backgroundColor: '#2563eb',
-    borderColor: '#2563eb',
+  actionChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
-  confirmButtonLabel: {
-    color: '#ffffff',
+  actionChipLabel: {
     fontWeight: '600',
   },
-  removeButton: {
-    borderColor: '#ef4444',
+  confirmAction: {
+    backgroundColor: 'rgba(22, 163, 74, 0.16)',
   },
-  removeButtonLabel: {
-    color: '#ef4444',
-    fontWeight: '600',
+  confirmActionLabel: {
+    color: SUCCESS,
+  },
+  deleteAction: {
+    backgroundColor: 'rgba(239, 68, 68, 0.16)',
+  },
+  deleteActionLabel: {
+    color: DANGER,
   },
   calendarShortcut: {
-    backgroundColor: '#111827',
-    paddingVertical: 14,
-    borderRadius: 12,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: PRIMARY,
+    paddingVertical: 16,
+    borderRadius: 16,
+    marginTop: 8,
   },
   calendarShortcutLabel: {
-    color: '#ffffff',
-    fontWeight: '600',
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(15, 23, 42, 0.25)',
     justifyContent: 'center',
     padding: 24,
   },
-  modalContent: {
-    borderRadius: 16,
-    padding: 20,
-    gap: 12,
+  modalCard: {
+    width: '100%',
+    backgroundColor: SURFACE,
+    borderRadius: 24,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: BORDER,
+    padding: 24,
+    gap: 18,
   },
-  pickerContent: {
-    borderRadius: 16,
-    padding: 20,
-    gap: 16,
+  formModal: {
+    gap: 18,
+  },
+  pickerModal: {
+    gap: 20,
   },
   modalTitle: {
     textAlign: 'center',
+    color: TEXT_PRIMARY,
+    fontWeight: '700',
   },
   input: {
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#d1d5db',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    borderColor: BORDER,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
     fontSize: 16,
+    backgroundColor: SURFACE,
+    color: TEXT_PRIMARY,
   },
   multilineInput: {
-    minHeight: 80,
+    minHeight: 96,
     textAlignVertical: 'top',
   },
   modalActions: {
@@ -547,38 +718,36 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   modalButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: '#d1d5db',
+    borderColor: BORDER,
+    backgroundColor: SURFACE_SUBTLE,
   },
   modalButtonLabel: {
+    color: TEXT_PRIMARY,
     fontWeight: '600',
   },
   modalPrimaryButton: {
-    backgroundColor: '#2563eb',
-    borderColor: '#2563eb',
+    backgroundColor: PRIMARY,
+    borderColor: PRIMARY,
   },
   modalPrimaryLabel: {
-    color: '#ffffff',
-    fontWeight: '600',
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
   webPicker: {
-    gap: 8,
+    gap: 12,
   },
   webPickerHint: {
-    color: '#6b7280',
+    color: TEXT_MUTED,
     fontSize: 12,
   },
   webInput: {
     fontSize: 16,
   },
 });
-
-
-
-
-
-
-

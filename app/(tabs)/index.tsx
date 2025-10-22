@@ -1,25 +1,16 @@
-﻿import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { format, parse, parseISO } from 'date-fns';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { format, parseISO } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { Link } from 'expo-router';
-import { useCallback, useMemo, useState } from 'react';
-import {
-  Alert,
-  FlatList,
-  Modal,
-  Platform,
-  Pressable,
-  StyleSheet,
-  TextInput,
-  View,
-} from 'react-native';
+import { useCallback, useMemo, useState, type ReactNode } from 'react';
+import { Alert, FlatList, Modal, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { ScheduleChip } from '@/components/ScheduleChip';
+import { SchedulePickerModal } from '@/components/SchedulePickerModal';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useAppStore } from '@/store/useAppStore';
-
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 const BACKGROUND = '#F2F6FF';
 const SURFACE = '#FFFFFF';
@@ -33,132 +24,111 @@ const WARNING = '#F97316';
 const DANGER = '#EF4444';
 
 const formatDisplayDate = (iso: string) =>
-  format(parseISO(iso), 'yyyy年M月d日 (EEE) HH:mm', { locale: ja });
+  format(parseISO(iso), 'yyyy年M月d日（EEE）HH:mm', { locale: ja });
 
-const formatManualInput = (date: Date) => format(date, 'yyyy-MM-dd HH:mm');
+type PickerMode = 'candidate' | 'confirmed';
 
-const parseManualInput = (value: string) => parse(value, 'yyyy-MM-dd HH:mm', new Date());
-
-type CandidatePickerState = {
-  companyId: string | null;
-  visible: boolean;
-  date: Date;
-};
-
-type ProgressEditorState = {
-  companyId: string | null;
-  visible: boolean;
-  value: string;
-};
-
-const initialProgressEditorState: ProgressEditorState = {
-  companyId: null,
-  visible: false,
-  value: '',
-};
+const uniqueSortDates = (dates: string[]) =>
+  Array.from(new Set(dates)).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
 
 export default function HomeScreen() {
   const companies = useAppStore((state) => state.companies);
   const createCompany = useAppStore((state) => state.createCompany);
-  const addCandidateDate = useAppStore((state) => state.addCandidateDate);
-  const removeCandidateDate = useAppStore((state) => state.removeCandidateDate);
-  const confirmCandidateDate = useAppStore((state) => state.confirmCandidateDate);
-  const updateCompany = useAppStore((state) => state.updateCompany);
 
   const [isFormOpen, setFormOpen] = useState(false);
   const [formName, setFormName] = useState('');
   const [formProgress, setFormProgress] = useState('');
-  const [formRemarks, setFormRemarks] = useState('');
-  const [pickerState, setPickerState] = useState<CandidatePickerState>({
-    companyId: null,
-    visible: false,
-    date: new Date(),
-  });
-  const [progressEditor, setProgressEditor] = useState(initialProgressEditorState);
-  const [webCandidateInput, setWebCandidateInput] = useState(formatManualInput(new Date()));
+  const [formNotes, setFormNotes] = useState('');
+  const [formCandidates, setFormCandidates] = useState<string[]>([]);
+  const [formConfirmedDate, setFormConfirmedDate] = useState<string | undefined>();
+
+  const [pickerVisible, setPickerVisible] = useState(false);
+  const [pickerMode, setPickerMode] = useState<PickerMode | null>(null);
 
   const resetForm = useCallback(() => {
     setFormName('');
     setFormProgress('');
-    setFormRemarks('');
+    setFormNotes('');
+    setFormCandidates([]);
+    setFormConfirmedDate(undefined);
   }, []);
 
   const toggleForm = useCallback(() => {
     setFormOpen((prev) => !prev);
   }, []);
 
+  const handlePickerOpen = useCallback((mode: PickerMode) => {
+    setPickerMode(mode);
+    setPickerVisible(true);
+  }, []);
+
+  const handlePickerClose = useCallback(() => {
+    setPickerVisible(false);
+    setPickerMode(null);
+  }, []);
+
+  const handlePickerConfirm = useCallback(
+    (iso: string) => {
+      if (!pickerMode) {
+        return;
+      }
+      if (pickerMode === 'candidate') {
+        setFormCandidates((prev) => uniqueSortDates([...prev, iso]));
+      } else {
+        setFormConfirmedDate(iso);
+      }
+      handlePickerClose();
+    },
+    [handlePickerClose, pickerMode]
+  );
+
+  const pickerInitialValue = useMemo(() => {
+    if (pickerMode === 'confirmed' && formConfirmedDate) {
+      return formConfirmedDate;
+    }
+    return undefined;
+  }, [pickerMode, formConfirmedDate]);
+
+  const handleRemoveCandidate = useCallback((iso: string) => {
+    setFormCandidates((prev) => prev.filter((date) => date !== iso));
+  }, []);
+
+  const handlePromoteCandidate = useCallback((iso: string) => {
+    setFormConfirmedDate(iso);
+    setFormCandidates((prev) => prev.filter((date) => date !== iso));
+  }, []);
+
+  const handleClearConfirmed = useCallback(() => {
+    setFormConfirmedDate(undefined);
+  }, []);
+
   const handleCreateCompany = useCallback(() => {
     const name = formName.trim();
     const progress = formProgress.trim();
-
     if (!name || !progress) {
-      Alert.alert('入力エラー', '企業名と進捗ステータスを入力してください。');
+      Alert.alert('入力エラー', '会社名と進捗ステータスを入力してください。');
       return;
     }
 
     createCompany({
       name,
       progressStatus: progress,
-      remarks: formRemarks.trim() || undefined,
+      candidateDates: formCandidates,
+      confirmedDate: formConfirmedDate,
+      remarks: formNotes.trim() || undefined,
     });
 
     resetForm();
     setFormOpen(false);
-  }, [createCompany, formName, formProgress, formRemarks, resetForm]);
-
-  const openCandidatePicker = useCallback((companyId: string) => {
-    const now = new Date();
-    setPickerState({ companyId, visible: true, date: now });
-    if (Platform.OS === 'web') {
-      setWebCandidateInput(formatManualInput(now));
-    }
-  }, []);
-
-  const closeCandidatePicker = useCallback(() => {
-    setPickerState((prev) => ({
-      ...prev,
-      companyId: null,
-      visible: false,
-    }));
-    if (Platform.OS === 'web') {
-      const nextDefault = formatManualInput(new Date());
-      setWebCandidateInput(nextDefault);
-    }
-  }, []);
-
-  const handleCandidateConfirm = useCallback(() => {
-    if (!pickerState.companyId) {
-      return;
-    }
-    if (Number.isNaN(pickerState.date.getTime())) {
-      Alert.alert('無効な日付', 'YYYY-MM-DD HH:mm 形式で入力してください。');
-      return;
-    }
-    addCandidateDate(pickerState.companyId, pickerState.date.toISOString());
-    closeCandidatePicker();
-  }, [addCandidateDate, closeCandidatePicker, pickerState]);
-
-  const openProgressEditor = useCallback((companyId: string, currentStatus: string) => {
-    setProgressEditor({ companyId, visible: true, value: currentStatus });
-  }, []);
-
-  const closeProgressEditor = useCallback(() => {
-    setProgressEditor(initialProgressEditorState);
-  }, []);
-
-  const handleProgressSave = useCallback(() => {
-    const targetId = progressEditor.companyId;
-    if (!targetId) {
-      return;
-    }
-    const nextStatus = progressEditor.value.trim();
-    if (!nextStatus) {
-      Alert.alert('入力エラー', '進捗ステータスを入力してください。');
-      return;
-    }
-    updateCompany(targetId, { progressStatus: nextStatus });
-    closeProgressEditor();
-  }, [closeProgressEditor, progressEditor, updateCompany]);
+  }, [
+    createCompany,
+    formCandidates,
+    formConfirmedDate,
+    formName,
+    formNotes,
+    formProgress,
+    resetForm,
+  ]);
 
   const sortedCompanies = useMemo(
     () =>
@@ -184,7 +154,7 @@ export default function HomeScreen() {
               企業一覧
             </ThemedText>
             <ThemedText type="subtitle" style={styles.heroSubtitle}>
-              進捗と面談日程をひと目で確認
+              進捗と予定をひと目でチェックしましょう
             </ThemedText>
           </View>
           <Pressable style={styles.primaryButton} onPress={toggleForm}>
@@ -193,247 +163,249 @@ export default function HomeScreen() {
           </Pressable>
         </View>
 
-      {sortedCompanies.length === 0 ? (
-        <ThemedView style={styles.emptyState}>
-          <ThemedText type="subtitle">まだ企業が登録されていません。</ThemedText>
-          <ThemedText>右上の「＋企業を追加」から登録を始めましょう。</ThemedText>
-        </ThemedView>
-      ) : (
-        <FlatList
-          data={sortedCompanies}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
-          renderItem={({ item }) => (
-            <ThemedView style={styles.card}>
-              <View style={styles.cardHeader}>
-                <ThemedText type="title" style={styles.companyName}>
-                  {item.name}
-                </ThemedText>
-                <Pressable
-                  onPress={() => openProgressEditor(item.id, item.progressStatus)}
-                  style={styles.statusBadge}
-                >
-                  <ThemedText style={styles.statusBadgeLabel}>{item.progressStatus}</ThemedText>
-                </Pressable>
-              </View>
-
-              {item.remarks ? (
-                <ThemedText style={styles.remarks}>{item.remarks}</ThemedText>
-              ) : null}
-
-              {item.confirmedDate ? (
-                <View style={styles.confirmedBlock}>
-                  <View style={styles.confirmedHeader}>
-                    <MaterialIcons name="event-available" size={18} color={SUCCESS} />
-                    <ThemedText type="defaultSemiBold" style={styles.confirmedLabel}>
-                      確定日程
-                    </ThemedText>
-                  </View>
-                  <ThemedText style={styles.confirmedValue}>
-                    {formatDisplayDate(item.confirmedDate)}
-                  </ThemedText>
-                </View>
-              ) : (
-                <View style={[styles.confirmedBlock, styles.pendingBlock]}>
-                  <View style={styles.confirmedHeader}>
-                    <MaterialIcons name="event-busy" size={18} color={WARNING} />
-                    <ThemedText type="defaultSemiBold" style={styles.pendingLabel}>
-                      確定日程
-                    </ThemedText>
-                  </View>
-                  <ThemedText style={styles.pendingValue}>未確定</ThemedText>
-                </View>
-              )}
-
-              <View style={styles.sectionHeader}>
-                <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
-                  候補日
-                </ThemedText>
-                <Pressable
-                  style={styles.secondaryButton}
-                  onPress={() => openCandidatePicker(item.id)}
-                >
-                  <MaterialIcons name="add" size={16} color={PRIMARY} />
-                  <ThemedText style={styles.secondaryButtonLabel}>候補日を追加</ThemedText>
-                </Pressable>
-              </View>
-
-              {item.candidateDates.length === 0 ? (
-                <ThemedText style={styles.placeholder}>候補日は登録されていません。</ThemedText>
-              ) : (
-                item.candidateDates.map((candidate) => (
-                  <View style={styles.candidateRow} key={candidate}>
-                    <View style={styles.candidateInfo}>
-                      <View style={styles.candidateIcon}>
-                        <MaterialIcons name="event" size={16} color={PRIMARY} />
+        {sortedCompanies.length === 0 ? (
+          <ThemedView style={styles.emptyState}>
+            <ThemedText type="subtitle">まだ企業が登録されていません。</ThemedText>
+            <ThemedText>右上の「企業を追加」から登録してみましょう。</ThemedText>
+          </ThemedView>
+        ) : (
+          <FlatList
+            data={sortedCompanies}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.listContent}
+            renderItem={({ item }) => {
+              const nextSchedule = item.confirmedDate ?? item.candidateDates[0] ?? null;
+              const scheduleIcon = item.confirmedDate ? 'event-available' : 'event';
+              return (
+                <Link href={`/company/${item.id}`} asChild>
+                  <Pressable style={styles.card}>
+                    <View style={styles.cardHeader}>
+                      <ThemedText type="title" style={styles.companyName}>
+                        {item.name}
+                      </ThemedText>
+                      <View style={styles.statusBadge}>
+                        <ThemedText style={styles.statusBadgeLabel}>
+                          {item.progressStatus}
+                        </ThemedText>
                       </View>
-                      <ThemedText style={styles.candidateDate}>
-                        {formatDisplayDate(candidate)}
+                    </View>
+
+                    <View style={styles.scheduleRow}>
+                      <MaterialIcons
+                        name={nextSchedule ? scheduleIcon : 'event-busy'}
+                        size={18}
+                        color={
+                          nextSchedule
+                            ? item.confirmedDate
+                              ? SUCCESS
+                              : PRIMARY
+                            : WARNING
+                        }
+                      />
+                      <ThemedText style={styles.scheduleText}>
+                        {nextSchedule ? formatDisplayDate(nextSchedule) : '予定未設定'}
                       </ThemedText>
                     </View>
-                    <View style={styles.candidateActions}>
-                      <Pressable
-                        onPress={() => confirmCandidateDate(item.id, candidate)}
-                        style={[styles.actionChip, styles.confirmAction]}
-                      >
-                        <MaterialIcons name="check-circle" size={16} color={SUCCESS} />
-                        <ThemedText style={[styles.actionChipLabel, styles.confirmActionLabel]}>
-                          確定
-                        </ThemedText>
-                      </Pressable>
-                      <Pressable
-                        onPress={() => removeCandidateDate(item.id, candidate)}
-                        style={[styles.actionChip, styles.deleteAction]}
-                      >
-                        <MaterialIcons name="delete" size={16} color={DANGER} />
-                        <ThemedText style={[styles.actionChipLabel, styles.deleteActionLabel]}>
-                          削除
-                        </ThemedText>
-                      </Pressable>
+
+                    {item.remarks ? (
+                      <ThemedText style={styles.remarks} numberOfLines={2}>
+                        {item.remarks}
+                      </ThemedText>
+                    ) : null}
+
+                    <View style={styles.cardFooter}>
+                      <View style={styles.detailLinkIcon}>
+                        <MaterialIcons name="info" size={16} color={PRIMARY} />
+                      </View>
+                      <ThemedText style={styles.detailLink}>詳細を見る</ThemedText>
+                      <MaterialIcons name="chevron-right" size={20} color={PRIMARY} />
                     </View>
-                  </View>
-                ))
-              )}
-            </ThemedView>
+                  </Pressable>
+                </Link>
+              );
+            }}
+          />
+        )}
+
+        <Link href="/(tabs)/calendar" asChild>
+          <Pressable style={styles.calendarShortcut}>
+            <MaterialIcons name="calendar-today" size={18} color="#FFFFFF" />
+            <ThemedText style={styles.calendarShortcutLabel}>カレンダーで確認</ThemedText>
+          </Pressable>
+        </Link>
+
+        <ModalForm
+          visible={isFormOpen}
+          onRequestClose={() => {
+            resetForm();
+            setFormOpen(false);
+          }}
+          onSubmit={handleCreateCompany}
+        >
+          <TextInput
+            placeholder="会社名"
+            value={formName}
+            onChangeText={setFormName}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="進捗ステータス（例：書類選考中）"
+            value={formProgress}
+            onChangeText={setFormProgress}
+            style={styles.input}
+          />
+          <TextInput
+            placeholder="メモ"
+            value={formNotes}
+            onChangeText={setFormNotes}
+            multiline
+            style={[styles.input, styles.multilineInput]}
+          />
+
+          <View style={styles.sectionHeader}>
+            <ThemedText style={styles.sectionTitle}>確定済み日程</ThemedText>
+            <Pressable style={styles.secondaryButton} onPress={() => handlePickerOpen('confirmed')}>
+              <MaterialIcons name="event-available" size={16} color={PRIMARY} />
+              <ThemedText style={styles.secondaryButtonLabel}>日程を設定</ThemedText>
+            </Pressable>
+          </View>
+          {formConfirmedDate ? (
+            <ScheduleChip
+              iso={formConfirmedDate}
+              status="confirmed"
+              actions={[
+                {
+                  key: 'clear',
+                  label: 'クリア',
+                  icon: 'close',
+                  color: DANGER,
+                  backgroundColor: 'rgba(239, 68, 68, 0.12)',
+                  onPress: handleClearConfirmed,
+                },
+              ]}
+            />
+          ) : (
+            <ThemedText style={styles.placeholder}>未設定</ThemedText>
           )}
-        />
-      )}
 
-      <Link href="/(tabs)/calendar" asChild>
-        <Pressable style={styles.calendarShortcut}>
-          <MaterialIcons name="calendar-today" size={18} color="#FFFFFF" />
-          <ThemedText style={styles.calendarShortcutLabel}>カレンダーで確認</ThemedText>
-        </Pressable>
-      </Link>
+          <View style={styles.sectionHeader}>
+            <ThemedText style={styles.sectionTitle}>候補日</ThemedText>
+            <Pressable style={styles.secondaryButton} onPress={() => handlePickerOpen('candidate')}>
+              <MaterialIcons name="event-note" size={16} color={PRIMARY} />
+              <ThemedText style={styles.secondaryButtonLabel}>追加</ThemedText>
+            </Pressable>
+          </View>
 
-      <Modal visible={isFormOpen} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <ThemedView style={[styles.modalCard, styles.formModal]}>
-            <ThemedText type="title" style={styles.modalTitle}>
-              企業を登録
+          {formCandidates.length === 0 ? (
+            <ThemedText style={styles.placeholder}>
+              候補日がまだ登録されていません。
             </ThemedText>
-            <TextInput
-              placeholder="ä¼æ¥­å"
-              value={formName}
-              onChangeText={setFormName}
-              style={styles.input}
-            />
-            <TextInput
-              placeholder="é²æã¹ãã¼ã¿ã¹ï¼ä¾ï¼ESæåºæ¸ã¿ï¼"
-              value={formProgress}
-              onChangeText={setFormProgress}
-              style={styles.input}
-            />
-            <TextInput
-              placeholder="ã¡ã¢ï¼ä»»æï¼"
-              value={formRemarks}
-              onChangeText={setFormRemarks}
-              multiline
-              style={[styles.input, styles.multilineInput]}
-            />
-            <View style={styles.modalActions}>
-              <Pressable
-                style={styles.modalButton}
-                onPress={() => {
-                  resetForm();
-                  setFormOpen(false);
-                }}
-              >
-                <ThemedText style={styles.modalButtonLabel}>キャンセル</ThemedText>
-              </Pressable>
-              <Pressable
-                style={[styles.modalButton, styles.modalPrimaryButton]}
-                onPress={handleCreateCompany}
-              >
-                <ThemedText style={styles.modalPrimaryLabel}>追加</ThemedText>
-              </Pressable>
-            </View>
-          </ThemedView>
-        </View>
-      </Modal>
-
-      <Modal visible={progressEditor.visible} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <ThemedView style={[styles.modalCard, styles.formModal]}>
-            <ThemedText type="title" style={styles.modalTitle}>
-              進捗ステータスを更新
-            </ThemedText>
-            <TextInput
-              placeholder="é²æã¹ãã¼ã¿ã¹"
-              value={progressEditor.value}
-              onChangeText={(text) => setProgressEditor((prev) => ({ ...prev, value: text }))}
-              style={styles.input}
-            />
-            <View style={styles.modalActions}>
-              <Pressable style={styles.modalButton} onPress={closeProgressEditor}>
-                <ThemedText style={styles.modalButtonLabel}>キャンセル</ThemedText>
-              </Pressable>
-              <Pressable
-                style={[styles.modalButton, styles.modalPrimaryButton]}
-                onPress={handleProgressSave}
-              >
-                <ThemedText style={styles.modalPrimaryLabel}>保存</ThemedText>
-              </Pressable>
-            </View>
-          </ThemedView>
-        </View>
-      </Modal>
-
-      <Modal visible={pickerState.visible} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <ThemedView style={[styles.modalCard, styles.pickerModal]}>
-            <ThemedText type="title" style={styles.modalTitle}>
-              候補日を選択
-            </ThemedText>
-            {Platform.OS === 'web' ? (
-              <View style={styles.webPicker}>
-                <TextInput
-                  style={[styles.input, styles.webInput]}
-                  placeholder="YYYY-MM-DD HH:mm"
-                  value={webCandidateInput}
-                  onChangeText={(value) => {
-                    setWebCandidateInput(value);
-                    const parsed = parseManualInput(value);
-                    if (!Number.isNaN(parsed.getTime())) {
-                      setPickerState((prev) => ({ ...prev, date: parsed }));
-                    }
-                  }}
+          ) : (
+            <View style={styles.chipStack}>
+              {formCandidates.map((candidate) => (
+                <ScheduleChip
+                  key={candidate}
+                  iso={candidate}
+                  status="candidate"
+                  actions={[
+                    {
+                      key: 'confirm',
+                      label: '確定',
+                      icon: 'check-circle',
+                      color: SUCCESS,
+                      backgroundColor: 'rgba(22, 163, 74, 0.16)',
+                      onPress: () => handlePromoteCandidate(candidate),
+                    },
+                    {
+                      key: 'delete',
+                      label: '削除',
+                      icon: 'delete',
+                      color: DANGER,
+                      backgroundColor: 'rgba(239, 68, 68, 0.16)',
+                      onPress: () => handleRemoveCandidate(candidate),
+                    },
+                  ]}
                 />
-                <ThemedText style={styles.webPickerHint}>YYYY-MM-DD HH:mm 形式ï¼24時間ï¼で入力してくださいã</ThemedText>
-                <ThemedText style={styles.webPickerHint}>例: 2025-04-15 13:30 (24時間表記)</ThemedText>
-              </View>
-            ) : (
-              <DateTimePicker
-                mode="datetime"
-                display={Platform.OS === 'ios' ? 'inline' : 'default'}
-                value={pickerState.date}
-                onChange={(event, selectedDate) => {
-                  if (event?.type === 'dismissed') {
-                    closeCandidatePicker();
-                    return;
-                  }
-                  if (selectedDate) {
-                    setPickerState((prev) => ({ ...prev, date: selectedDate }));
-                  }
-                }}
-              />
-            )}
-            <View style={styles.modalActions}>
-              <Pressable style={styles.modalButton} onPress={closeCandidatePicker}>
-                <ThemedText style={styles.modalButtonLabel}>キャンセル</ThemedText>
-              </Pressable>
-              <Pressable
-                style={[styles.modalButton, styles.modalPrimaryButton]}
-                onPress={handleCandidateConfirm}
-              >
-                <ThemedText style={styles.modalPrimaryLabel}>追加</ThemedText>
-              </Pressable>
+              ))}
             </View>
-          </ThemedView>
-        </View>
-      </Modal>
+          )}
+        </ModalForm>
+
+        <SchedulePickerModal
+          visible={pickerVisible && Boolean(pickerMode)}
+          status={pickerMode ?? 'candidate'}
+          initialValue={pickerInitialValue}
+          onCancel={handlePickerClose}
+          onConfirm={handlePickerConfirm}
+        />
       </ThemedView>
     </SafeAreaView>
+  );
+}
+
+type ModalFormProps = {
+  visible: boolean;
+  onRequestClose: () => void;
+  onSubmit: () => void;
+  children: ReactNode;
+};
+
+function ModalForm({ visible, onRequestClose, onSubmit, children }: ModalFormProps) {
+  return (
+    <ScheduleFormModal
+      visible={visible}
+      title="企業を登録"
+      cancelLabel="キャンセル"
+      submitLabel="登録"
+      onCancel={onRequestClose}
+      onSubmit={onSubmit}
+    >
+      {children}
+    </ScheduleFormModal>
+  );
+}
+
+type ScheduleFormModalProps = {
+  visible: boolean;
+  title: string;
+  cancelLabel: string;
+  submitLabel: string;
+  onCancel: () => void;
+  onSubmit: () => void;
+  children: ReactNode;
+};
+
+function ScheduleFormModal({
+  visible,
+  title,
+  cancelLabel,
+  submitLabel,
+  onCancel,
+  onSubmit,
+  children,
+}: ScheduleFormModalProps) {
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onCancel}>
+      <View style={styles.modalOverlay}>
+        <ThemedView style={[styles.modalCard, styles.formModal]}>
+          <ThemedText type="title" style={styles.modalTitle}>
+            {title}
+          </ThemedText>
+          {children}
+          <View style={styles.modalActions}>
+            <Pressable style={styles.modalButton} onPress={onCancel}>
+              <ThemedText style={styles.modalButtonLabel}>{cancelLabel}</ThemedText>
+            </Pressable>
+            <Pressable
+              style={[styles.modalButton, styles.modalPrimaryButton]}
+              onPress={onSubmit}
+            >
+              <ThemedText style={styles.modalPrimaryLabel}>{submitLabel}</ThemedText>
+            </Pressable>
+          </View>
+        </ThemedView>
+      </View>
+    </Modal>
   );
 }
 
@@ -539,124 +511,35 @@ const styles = StyleSheet.create({
     color: PRIMARY,
     fontWeight: '600',
   },
+  scheduleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  scheduleText: {
+    color: TEXT_PRIMARY,
+    flexShrink: 1,
+  },
   remarks: {
     color: TEXT_MUTED,
     lineHeight: 20,
   },
-  confirmedBlock: {
-    backgroundColor: SURFACE_SUBTLE,
-    borderRadius: 16,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: BORDER,
-    padding: 16,
-    gap: 8,
-  },
-  confirmedHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  confirmedLabel: {
-    color: TEXT_PRIMARY,
-  },
-  confirmedValue: {
-    color: TEXT_PRIMARY,
-    fontWeight: '600',
-  },
-  pendingBlock: {
-    backgroundColor: 'rgba(249, 115, 22, 0.12)',
-  },
-  pendingLabel: {
-    color: WARNING,
-  },
-  pendingValue: {
-    color: WARNING,
-    fontWeight: '600',
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  sectionTitle: {
-    color: TEXT_PRIMARY,
-  },
-  secondaryButton: {
+  cardFooter: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 999,
-    backgroundColor: SURFACE_SUBTLE,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: BORDER,
   },
-  secondaryButtonLabel: {
-    color: PRIMARY,
-    fontWeight: '600',
-  },
-  placeholder: {
-    color: TEXT_MUTED,
-  },
-  candidateRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 16,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    borderRadius: 16,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: BORDER,
-    backgroundColor: SURFACE_SUBTLE,
-  },
-  candidateInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    flex: 1,
-  },
-  candidateIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#E0E7FF',
+  detailLinkIcon: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(37, 99, 235, 0.12)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  candidateDate: {
-    color: TEXT_PRIMARY,
+  detailLink: {
+    color: PRIMARY,
     fontWeight: '600',
-    flexShrink: 1,
-  },
-  candidateActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  actionChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  actionChipLabel: {
-    fontWeight: '600',
-  },
-  confirmAction: {
-    backgroundColor: 'rgba(22, 163, 74, 0.16)',
-  },
-  confirmActionLabel: {
-    color: SUCCESS,
-  },
-  deleteAction: {
-    backgroundColor: 'rgba(239, 68, 68, 0.16)',
-  },
-  deleteActionLabel: {
-    color: DANGER,
   },
   calendarShortcut: {
     flexDirection: 'row',
@@ -675,8 +558,8 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(15, 23, 42, 0.25)',
-    justifyContent: 'center',
     padding: 24,
+    justifyContent: 'center',
   },
   modalCard: {
     width: '100%',
@@ -689,9 +572,6 @@ const styles = StyleSheet.create({
   },
   formModal: {
     gap: 18,
-  },
-  pickerModal: {
-    gap: 20,
   },
   modalTitle: {
     textAlign: 'center',
@@ -711,6 +591,36 @@ const styles = StyleSheet.create({
   multilineInput: {
     minHeight: 96,
     textAlignVertical: 'top',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  sectionTitle: {
+    color: TEXT_PRIMARY,
+    fontWeight: '600',
+  },
+  secondaryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: SURFACE_SUBTLE,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: BORDER,
+  },
+  secondaryButtonLabel: {
+    color: PRIMARY,
+    fontWeight: '600',
+  },
+  placeholder: {
+    color: TEXT_MUTED,
+  },
+  chipStack: {
+    gap: 12,
   },
   modalActions: {
     flexDirection: 'row',
@@ -739,15 +649,5 @@ const styles = StyleSheet.create({
   modalPrimaryLabel: {
     color: '#FFFFFF',
     fontWeight: '700',
-  },
-  webPicker: {
-    gap: 12,
-  },
-  webPickerHint: {
-    color: TEXT_MUTED,
-    fontSize: 12,
-  },
-  webInput: {
-    fontSize: 16,
   },
 });

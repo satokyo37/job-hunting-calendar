@@ -34,9 +34,9 @@ const WARNING = '#F97316';
 const formatDateKey = (iso: string) => format(parseISO(iso), 'yyyy-MM-dd');
 const toDateKey = (date: Date) => format(date, 'yyyy-MM-dd');
 const formatDisplayDate = (iso: string) =>
-  format(parseISO(iso), 'yyyy年M月d日 (EEE) HH:mm', { locale: ja });
+  format(parseISO(iso), 'yyyy年M月d日（EEE）HH:mm', { locale: ja });
 const formatDisplayDay = (iso: string) =>
-  format(parseISO(iso), 'M月d日 (EEE)', { locale: ja });
+  format(parseISO(iso), 'M月d日（EEE）', { locale: ja });
 const formatTimeLabel = (iso: string) => format(parseISO(iso), 'HH:mm', { locale: ja });
 
 interface CalendarEvent {
@@ -138,10 +138,10 @@ export default function CalendarScreen() {
   );
 
   const activeDayEvents = activeDayKey ? eventsByDay[activeDayKey] ?? [] : [];
-  const heroMonthLabel = format(focusedMonth, 'yyyy年 M月', { locale: ja });
+  const heroMonthLabel = format(focusedMonth, 'yyyy年M月', { locale: ja });
   const nextUpcoming = useMemo(() => {
     const upcoming = dayKeys
-      .flatMap((key) => (eventsByDay[key] ?? []))
+      .flatMap((key) => eventsByDay[key] ?? [])
       .filter((event) => isAfter(new Date(event.dateTime), new Date()))
       .sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime());
     return upcoming[0];
@@ -158,8 +158,8 @@ export default function CalendarScreen() {
               </ThemedText>
               <ThemedText style={styles.heroSubtitle}>
                 {nextUpcoming
-                  ? `${nextUpcoming.companyName}の予定まであと少しです。`
-                  : '今月の予定を登録して、計画を可視化しましょう。'}
+                  ? `次の予定: ${nextUpcoming.companyName}（${formatDisplayDate(nextUpcoming.dateTime)}）`
+                  : '候補日や確定日を登録すると、次の予定がここに表示されます。'}
               </ThemedText>
             </View>
             <View style={styles.heroActions}>
@@ -256,7 +256,7 @@ export default function CalendarScreen() {
           <Pressable style={styles.modalShell} onPress={(event) => event.stopPropagation()}>
             <ThemedView style={styles.modalCard}>
               <ThemedText type="title" style={styles.modalTitle}>
-                候補日・確定日
+                この日の予定
               </ThemedText>
               <ThemedText style={styles.modalCaption}>
                 {activeDayKey ? formatDisplayDay(`${activeDayKey}T00:00:00`) : ''}
@@ -313,7 +313,7 @@ export default function CalendarScreen() {
                 </ThemedText>
               </View>
               <View style={styles.modalSection}>
-                <ThemedText style={styles.modalLabel}>種別</ThemedText>
+                <ThemedText style={styles.modalLabel}>区分</ThemedText>
                 <StatusTag type={activeEvent?.type ?? 'candidate'} />
               </View>
               {activeEvent?.progressStatus ? (
@@ -398,11 +398,11 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: SURFACE_SUBTLE,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: BORDER,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: SURFACE_SUBTLE,
   },
   weekHeader: {
     flexDirection: 'row',
@@ -413,37 +413,33 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: TEXT_MUTED,
     fontWeight: '600',
-    fontSize: 12,
   },
   calendarGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    borderRadius: 20,
+    overflow: 'hidden',
   },
   dayCell: {
     width: COLUMN_WIDTH,
-    minHeight: 110,
-    borderRadius: 16,
     padding: 10,
-    backgroundColor: SURFACE,
+    gap: 8,
+    minHeight: 92,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: BORDER,
-    gap: 6,
-  },
-  selectedCell: {
-    backgroundColor: '#E8F1FF',
-    borderColor: PRIMARY,
-    shadowColor: '#93C5FD',
-    shadowOpacity: 0.25,
-    shadowOffset: { width: 0, height: 6 },
-    shadowRadius: 12,
-  },
-  todayOutline: {
-    borderColor: '#38BDF8',
-    backgroundColor: '#F0F9FF',
+    borderColor: 'rgba(100, 116, 139, 0.08)',
+    backgroundColor: SURFACE,
   },
   outsideCell: {
-    opacity: 0.35,
+    backgroundColor: SURFACE_SUBTLE,
+  },
+  selectedCell: {
+    borderColor: PRIMARY,
+    borderWidth: 2,
+  },
+  todayOutline: {
+    shadowColor: '#2563EB33',
+    shadowOpacity: 0.8,
+    shadowRadius: 12,
   },
   dayHeader: {
     flexDirection: 'row',
@@ -453,7 +449,6 @@ const styles = StyleSheet.create({
   dayNumber: {
     color: TEXT_PRIMARY,
     fontWeight: '700',
-    fontSize: 16,
   },
   todayDot: {
     width: 6,
@@ -470,46 +465,43 @@ const styles = StyleSheet.create({
     gap: 6,
     borderRadius: 999,
     paddingHorizontal: 8,
-    paddingVertical: 6,
-  },
-  confirmedChip: {
-    backgroundColor: 'rgba(22, 163, 74, 0.18)',
-  },
-  candidateChip: {
-    backgroundColor: 'rgba(249, 115, 22, 0.18)',
+    paddingVertical: 4,
   },
   eventChipText: {
-    fontWeight: '600',
     fontSize: 12,
+    fontWeight: '600',
+  },
+  confirmedChip: {
+    backgroundColor: 'rgba(22, 163, 74, 0.12)',
   },
   confirmedChipText: {
     color: SUCCESS,
+  },
+  candidateChip: {
+    backgroundColor: 'rgba(249, 115, 22, 0.12)',
   },
   candidateChipText: {
     color: WARNING,
   },
   moreChip: {
-    alignSelf: 'flex-start',
-    backgroundColor: SURFACE_SUBTLE,
     borderRadius: 999,
+    backgroundColor: SURFACE_SUBTLE,
     paddingHorizontal: 8,
     paddingVertical: 4,
+    alignSelf: 'flex-start',
   },
   moreChipText: {
     color: TEXT_MUTED,
-    fontWeight: '600',
     fontSize: 12,
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.25)',
+    backgroundColor: 'rgba(15, 23, 42, 0.4)',
     justifyContent: 'center',
     padding: 24,
   },
   modalShell: {
     width: '100%',
-    maxWidth: 460,
-    alignSelf: 'center',
   },
   modalCard: {
     backgroundColor: SURFACE,
@@ -517,36 +509,44 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: BORDER,
     padding: 24,
-    gap: 16,
-    maxHeight: '85%',
+    gap: 18,
   },
   modalTitle: {
+    textAlign: 'center',
     color: TEXT_PRIMARY,
+    fontWeight: '700',
   },
   modalCaption: {
+    textAlign: 'center',
     color: TEXT_MUTED,
-    fontSize: 13,
   },
   dayModalList: {
     gap: 12,
   },
+  emptyDayMessage: {
+    color: TEXT_MUTED,
+    textAlign: 'center',
+  },
   dayModalItem: {
-    backgroundColor: SURFACE_SUBTLE,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderRadius: 16,
+    backgroundColor: SURFACE_SUBTLE,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: BORDER,
-    padding: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
   },
   dayModalMeta: {
-    gap: 6,
+    flex: 1,
+    gap: 8,
   },
   dayModalTime: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
   },
   dayModalTimeText: {
     color: TEXT_PRIMARY,
@@ -554,13 +554,20 @@ const styles = StyleSheet.create({
   },
   dayModalTitle: {
     color: TEXT_PRIMARY,
-    fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '600',
   },
-  emptyDayMessage: {
-    color: TEXT_MUTED,
-    textAlign: 'center',
-    paddingVertical: 32,
+  primaryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: PRIMARY,
+    paddingVertical: 14,
+    borderRadius: 16,
+  },
+  primaryButtonLabel: {
+    color: '#FFFFFF',
+    fontWeight: '700',
   },
   modalSection: {
     gap: 6,
@@ -573,24 +580,13 @@ const styles = StyleSheet.create({
     color: TEXT_PRIMARY,
     fontWeight: '600',
   },
-  primaryButton: {
-    alignSelf: 'flex-end',
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: 14,
-    backgroundColor: PRIMARY,
-  },
-  primaryButtonLabel: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-  },
   statusTag: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     borderRadius: 999,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
   },
   statusTagLabel: {
     fontWeight: '600',

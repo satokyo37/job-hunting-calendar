@@ -19,9 +19,7 @@ export default function TabLayout() {
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
-          ios: {
-            position: 'absolute',
-          },
+          ios: { position: 'absolute' },
           default: {},
         }),
       }}
@@ -31,6 +29,13 @@ export default function TabLayout() {
         options={{
           title: 'ホーム',
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="companies"
+        options={{
+          title: '企業',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="building.2" color={color} />,
         }}
       />
       <Tabs.Screen

@@ -37,6 +37,7 @@ export const CompanyCreateSchema = z.object({
   candidateDates: CandidateDatesSchema.optional().default([]),
   confirmedDate: dateInputSchema.optional(),
   remarks: optionalStr,
+  nextAction: optionalStr,
 });
 
 export const CompanyPatchSchema = z.object({
@@ -46,6 +47,7 @@ export const CompanyPatchSchema = z.object({
   candidateDates: CandidateDatesSchema.optional(),
   confirmedDate: dateInputSchema.optional(),
   remarks: optionalStr,
+  nextAction: optionalStr,
 });
 
 export type CompanyCreateInput = z.input<typeof CompanyCreateSchema>;

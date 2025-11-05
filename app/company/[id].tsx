@@ -13,21 +13,39 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { PageHeader } from '@/components/PageHeader';
 import { ScheduleChip } from '@/components/ScheduleChip';
 import { SchedulePickerModal } from '@/components/SchedulePickerModal';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useAppStore } from '@/store/useAppStore';
 
-const BACKGROUND = '#F2F6FF';
+const BACKGROUND = '#EFF6FF';
 const SURFACE = '#FFFFFF';
 const SURFACE_SUBTLE = '#F8FAFF';
-const BORDER = '#D8E3FF';
+const BORDER = '#D9E6FF';
 const TEXT_PRIMARY = '#1E293B';
 const TEXT_MUTED = '#64748B';
 const PRIMARY = '#2563EB';
-const SUCCESS = '#16A34A';
-const DANGER = '#EF4444';
+const SUCCESS = '#22C55E';
+const DANGER = '#F87171';
+
+function getStatusColors(label: string) {
+  const l = label.trim();
+  if (/(内定)/.test(l)) {
+    return { bg: 'rgba(34, 197, 94, 0.12)', fg: '#22C55E' };
+  }
+  if (/(選考中|面接|書類選考)/.test(l)) {
+    return { bg: 'rgba(37, 99, 235, 0.12)', fg: '#2563EB' };
+  }
+  if (/(結果待ち|合否待ち|保留)/.test(l)) {
+    return { bg: 'rgba(245, 158, 11, 0.16)', fg: '#D97706' };
+  }
+  if (/(不採用|落選|見送り)/.test(l)) {
+    return { bg: 'rgba(248, 113, 113, 0.18)', fg: '#F87171' };
+  }
+  return { bg: 'rgba(37, 99, 235, 0.12)', fg: '#2563EB' };
+}
 
 type PickerMode = 'candidate' | 'confirmed';
 
@@ -36,6 +54,7 @@ type EditState = {
   name: string;
   progress: string;
   remarks: string;
+  nextAction: string;
 };
 
 const initialEditState: EditState = {
@@ -43,6 +62,7 @@ const initialEditState: EditState = {
   name: '',
   progress: '',
   remarks: '',
+  nextAction: '',
 };
 
 export default function CompanyDetailScreen() {
@@ -73,6 +93,7 @@ export default function CompanyDetailScreen() {
       name: company.name,
       progress: company.progressStatus,
       remarks: company.remarks ?? '',
+      nextAction: company.nextAction ?? '',
     });
   }, [company]);
 
@@ -94,9 +115,18 @@ export default function CompanyDetailScreen() {
       name,
       progressStatus: progress,
       remarks: editState.remarks.trim() || undefined,
+      nextAction: editState.nextAction.trim() || undefined,
     });
     closeEdit();
-  }, [closeEdit, companyId, editState.name, editState.progress, editState.remarks, updateCompany]);
+  }, [
+    closeEdit,
+    companyId,
+    editState.name,
+    editState.progress,
+    editState.remarks,
+    editState.nextAction,
+    updateCompany,
+  ]);
 
   const handlePickerOpen = useCallback(
     (mode: PickerMode) => {
@@ -159,14 +189,31 @@ export default function CompanyDetailScreen() {
     <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <Stack.Screen options={{ title: company.name }} />
       <ScrollView contentContainerStyle={styles.scrollContent}>
+        <PageHeader
+          icon="building.2"
+          title="企業"
+          subtitle={`${company.name} の詳細`}
+          iconColor={PRIMARY}
+          iconBackgroundColor="rgba(37, 99, 235, 0.18)"
+          style={styles.pageHeader}
+          titleStyle={styles.pageHeaderTitle}
+          subtitleStyle={styles.pageHeaderSubtitle}
+        />
         <ThemedView style={styles.headerCard}>
           <View style={styles.headerRow}>
             <ThemedText type="title" style={styles.companyName}>
               {company.name}
             </ThemedText>
-            <View style={styles.statusBadge}>
-              <ThemedText style={styles.statusBadgeLabel}>{company.progressStatus}</ThemedText>
-            </View>
+            {(() => {
+              const { bg, fg } = getStatusColors(company.progressStatus);
+              return (
+                <View style={[styles.statusBadge, { backgroundColor: bg }]}> 
+                  <ThemedText style={[styles.statusBadgeLabel, { color: fg }]}>
+                    {company.progressStatus}
+                  </ThemedText>
+                </View>
+              );
+            })()}
           </View>
           <Pressable style={styles.editButton} onPress={openEdit}>
             <MaterialIcons name="edit" size={18} color={PRIMARY} />
@@ -177,20 +224,7 @@ export default function CompanyDetailScreen() {
         <ThemedView style={styles.section}>
           <View style={styles.sectionHeader}>
             <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
-              メモ
-            </ThemedText>
-          </View>
-          {company.remarks ? (
-            <ThemedText style={styles.bodyText}>{company.remarks}</ThemedText>
-          ) : (
-            <ThemedText style={styles.placeholder}>メモはまだ登録されていません。</ThemedText>
-          )}
-        </ThemedView>
-
-        <ThemedView style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
-              確定した日程
+              次のアクション
             </ThemedText>
             <View style={styles.sectionActions}>
               <Pressable
@@ -218,9 +252,27 @@ export default function CompanyDetailScreen() {
             </View>
           </View>
           {company.confirmedDate && confirmedLabel ? (
-            <ScheduleChip iso={company.confirmedDate} status="confirmed" />
+            <View style={styles.nextActionCard}>
+              <ScheduleChip iso={company.confirmedDate} status="confirmed" />
+              {company.nextAction ? (
+                <ThemedText style={styles.nextActionText}>{company.nextAction}</ThemedText>
+              ) : (
+                <ThemedText style={styles.placeholder}>次にやることは未登録です。</ThemedText>
+              )}
+            </View>
           ) : (
-            <ThemedText style={styles.placeholder}>未設定</ThemedText>
+            <View style={styles.nextActionEmpty}>
+              <ThemedText style={styles.placeholder}>確定済みの予定はありません。</ThemedText>
+              {company.nextAction ? (
+                <ThemedText style={styles.nextActionPending}>
+                  次にやること: {company.nextAction}
+                </ThemedText>
+              ) : (
+                <ThemedText style={styles.helperText}>
+                  候補日を確定すると次の予定が表示されます。
+                </ThemedText>
+              )}
+            </View>
           )}
         </ThemedView>
 
@@ -267,6 +319,19 @@ export default function CompanyDetailScreen() {
             </View>
           )}
         </ThemedView>
+
+        <ThemedView style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
+              メモ
+            </ThemedText>
+          </View>
+          {company.remarks ? (
+            <ThemedText style={styles.bodyText}>{company.remarks}</ThemedText>
+          ) : (
+            <ThemedText style={styles.placeholder}>メモはまだ登録されていません。</ThemedText>
+          )}
+        </ThemedView>
       </ScrollView>
 
       <Modal transparent visible={editState.visible} animationType="slide">
@@ -275,24 +340,32 @@ export default function CompanyDetailScreen() {
             <ThemedText type="title" style={styles.modalTitle}>
               情報を編集
             </ThemedText>
+            <ThemedText style={styles.fieldLabel}>企業名</ThemedText>
             <TextInput
-              placeholder="会社名"
               value={editState.name}
               onChangeText={(text) => setEditState((prev) => ({ ...prev, name: text }))}
               style={styles.input}
             />
+            <ThemedText style={styles.fieldLabel}>進捗</ThemedText>
             <TextInput
-              placeholder="進捗ステータス"
+              placeholder="例：選考中／結果待ち／内定 など"
               value={editState.progress}
               onChangeText={(text) => setEditState((prev) => ({ ...prev, progress: text }))}
               style={styles.input}
             />
+            <ThemedText style={styles.fieldLabel}>メモ（任意）</ThemedText>
             <TextInput
-              placeholder="メモ"
               value={editState.remarks}
               onChangeText={(text) => setEditState((prev) => ({ ...prev, remarks: text }))}
               multiline
               style={[styles.input, styles.multilineInput]}
+            />
+            <ThemedText style={styles.fieldLabel}>次にやること</ThemedText>
+            <TextInput
+              value={editState.nextAction}
+              onChangeText={(text) => setEditState((prev) => ({ ...prev, nextAction: text }))}
+              placeholder="例：一次面接の準備資料を仕上げる"
+              style={styles.input}
             />
             <View style={styles.modalActions}>
               <Pressable style={styles.modalButton} onPress={closeEdit}>
@@ -329,6 +402,17 @@ const styles = StyleSheet.create({
     padding: 20,
     gap: 20,
     paddingBottom: 120,
+  },
+  pageHeader: {
+    backgroundColor: SURFACE,
+    borderColor: BORDER,
+  },
+  pageHeaderTitle: {
+    color: TEXT_PRIMARY,
+    fontWeight: '700',
+  },
+  pageHeaderSubtitle: {
+    color: TEXT_MUTED,
   },
   container: {
     flex: 1,
@@ -377,7 +461,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(37, 99, 235, 0.12)',
   },
   statusBadgeLabel: {
-    color: PRIMARY,
     fontWeight: '600',
   },
   editButton: {
@@ -448,8 +531,31 @@ const styles = StyleSheet.create({
   placeholder: {
     color: TEXT_MUTED,
   },
+  fieldLabel: {
+    color: TEXT_PRIMARY,
+    fontWeight: '600',
+  },
   chipStack: {
     gap: 12,
+  },
+  nextActionCard: {
+    gap: 12,
+  },
+  nextActionText: {
+    color: TEXT_PRIMARY,
+    fontWeight: '600',
+  },
+  nextActionEmpty: {
+    gap: 6,
+  },
+  nextActionPending: {
+    color: TEXT_PRIMARY,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  helperText: {
+    color: TEXT_MUTED,
+    fontSize: 12,
   },
   modalOverlay: {
     flex: 1,
@@ -475,13 +581,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   input: {
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: BORDER,
+    borderWidth: 1.5,
+    borderColor: 'rgba(37, 99, 235, 0.35)',
     borderRadius: 14,
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
-    backgroundColor: SURFACE,
+    backgroundColor: '#F1F5FF',
     color: TEXT_PRIMARY,
   },
   multilineInput: {

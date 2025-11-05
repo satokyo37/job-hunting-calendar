@@ -17,6 +17,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { PageHeader } from '@/components/PageHeader';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useAppStore } from '@/store/useAppStore';
@@ -151,6 +152,16 @@ export default function CalendarScreen() {
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ThemedView style={styles.screen}>
         <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+          <PageHeader
+            icon="calendar"
+            title="カレンダー"
+            subtitle="予定と候補日を一目で把握"
+            iconColor={PRIMARY}
+            iconBackgroundColor="rgba(37, 99, 235, 0.16)"
+            style={styles.pageHeader}
+            titleStyle={styles.pageHeaderTitle}
+            subtitleStyle={styles.pageHeaderSubtitle}
+          />
           <View style={styles.heroCard}>
             <View>
               <ThemedText type="title" style={styles.heroTitle}>
@@ -368,6 +379,17 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingBottom: 120,
     gap: 20,
+  },
+  pageHeader: {
+    backgroundColor: SURFACE,
+    borderColor: BORDER,
+  },
+  pageHeaderTitle: {
+    color: TEXT_PRIMARY,
+    fontWeight: '700',
+  },
+  pageHeaderSubtitle: {
+    color: TEXT_MUTED,
   },
   heroCard: {
     backgroundColor: SURFACE,

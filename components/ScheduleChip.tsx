@@ -6,9 +6,9 @@ import { StyleSheet, View, Pressable } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 
 const CANDIDATE_BG = 'rgba(37, 99, 235, 0.12)';
-const CONFIRMED_BG = 'rgba(22, 163, 74, 0.12)';
+const CONFIRMED_BG = 'rgba(34, 197, 94, 0.12)';
 const CANDIDATE_ICON = '#2563EB';
-const CONFIRMED_ICON = '#16A34A';
+const CONFIRMED_ICON = '#22C55E';
 const BORDER = 'rgba(148, 163, 184, 0.24)';
 
 export type ScheduleChipAction = {

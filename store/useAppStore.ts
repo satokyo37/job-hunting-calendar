@@ -1,5 +1,5 @@
 ﻿import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ulid } from 'ulid';
+import { monotonicFactory } from 'ulid';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import {
@@ -27,6 +27,7 @@ export interface Company {
   candidateDates: string[];
   confirmedDate?: string;
   remarks?: string;
+  nextAction?: string;
 }
 
 type State = {
@@ -39,9 +40,14 @@ type Actions = {
   addCandidateDate: (id: string, dateISO: string) => void;
   removeCandidateDate: (id: string, dateISO: string) => void;
   confirmCandidateDate: (id: string, dateISO: string) => void;
+  addTaskToCompany: (companyId: string, input: TaskCreateInput) => string;
+  toggleTaskDone: (companyId: string, taskId: string) => void;
+  removeTaskFromCompany: (companyId: string, taskId: string) => void;
 };
 
 type Store = State & Actions;
+
+const createId = monotonicFactory(Math.random);
 
 const normalizeCandidateDates = (dates: string[]): string[] => {
   const unique = Array.from(new Set(dates));
@@ -50,7 +56,7 @@ const normalizeCandidateDates = (dates: string[]): string[] => {
 
 const mapTasksFromCreate = (tasks: TaskCreateInput[] = []): Task[] =>
   tasks.map((task) => ({
-    id: ulid(),
+    id: createId(),
     title: task.title.trim(),
     dueDate: task.dueDate ? task.dueDate : undefined,
     isDone: task.isDone ?? false,
@@ -71,7 +77,7 @@ export const useAppStore = create<Store>()(
 
       createCompany: (raw: CompanyCreateInput) => {
         const data = CompanyCreateSchema.parse(raw);
-        const id = ulid();
+        const id = createId();
         const newCompany: Company = {
           id,
           name: data.name.trim(),
@@ -80,6 +86,7 @@ export const useAppStore = create<Store>()(
           candidateDates: normalizeCandidateDates(data.candidateDates ?? []),
           confirmedDate: data.confirmedDate ?? undefined,
           remarks: data.remarks?.trim() || undefined,
+          nextAction: data.nextAction ?? undefined,
         };
 
         set((state) => ({ companies: [newCompany, ...state.companies] }));
@@ -96,6 +103,7 @@ export const useAppStore = create<Store>()(
           'confirmedDate'
         );
         const includesRemarks = Object.prototype.hasOwnProperty.call(patch, 'remarks');
+        const includesNextAction = Object.prototype.hasOwnProperty.call(patch, 'nextAction');
 
         const data = CompanyPatchSchema.parse(patch);
 
@@ -117,6 +125,7 @@ export const useAppStore = create<Store>()(
               ? data.confirmedDate ?? undefined
               : current.confirmedDate,
             remarks: includesRemarks ? data.remarks ?? undefined : current.remarks,
+            nextAction: includesNextAction ? data.nextAction ?? undefined : current.nextAction,
           };
 
           const companies = state.companies.slice();
@@ -175,6 +184,52 @@ export const useAppStore = create<Store>()(
             candidateDates: [],
             confirmedDate: date,
           };
+          return { companies };
+        });
+      },
+
+      addTaskToCompany: (companyId, input) => {
+        const task = {
+          id: createId(),
+          title: input.title.trim(),
+          dueDate: input.dueDate ? input.dueDate : undefined,
+          isDone: input.isDone ?? false,
+        } as Task;
+
+        let createdId = task.id;
+        set((state) => {
+          const index = state.companies.findIndex((c) => c.id === companyId);
+          if (index === -1) throw new Error('Company not found: ' + companyId);
+          const company = state.companies[index];
+          const companies = state.companies.slice();
+          companies[index] = { ...company, tasks: [task, ...company.tasks] };
+          return { companies };
+        });
+        return createdId;
+      },
+
+      toggleTaskDone: (companyId, taskId) => {
+        set((state) => {
+          const index = state.companies.findIndex((c) => c.id === companyId);
+          if (index === -1) throw new Error('Company not found: ' + companyId);
+          const company = state.companies[index];
+          const tasks = company.tasks.map((t) =>
+            t.id === taskId ? { ...t, isDone: !t.isDone } : t
+          );
+          const companies = state.companies.slice();
+          companies[index] = { ...company, tasks };
+          return { companies };
+        });
+      },
+
+      removeTaskFromCompany: (companyId, taskId) => {
+        set((state) => {
+          const index = state.companies.findIndex((c) => c.id === companyId);
+          if (index === -1) throw new Error('Company not found: ' + companyId);
+          const company = state.companies[index];
+          const tasks = company.tasks.filter((t) => t.id !== taskId);
+          const companies = state.companies.slice();
+          companies[index] = { ...company, tasks };
           return { companies };
         });
       },

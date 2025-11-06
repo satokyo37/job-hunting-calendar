@@ -399,17 +399,22 @@ const styles = StyleSheet.create({
     backgroundColor: BACKGROUND,
   },
   scrollContent: {
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 24,
     gap: 20,
     paddingBottom: 120,
   },
   pageHeader: {
-    backgroundColor: SURFACE,
-    borderColor: BORDER,
+    marginHorizontal: -20,
+    paddingHorizontal: 20,
+    paddingBottom: 12,
+    marginBottom: 16,
   },
   pageHeaderTitle: {
     color: TEXT_PRIMARY,
-    fontWeight: '700',
+    fontSize: 24,
+    lineHeight: 30,
+    fontWeight: '400',
   },
   pageHeaderSubtitle: {
     color: TEXT_MUTED,

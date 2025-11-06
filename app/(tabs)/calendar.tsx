@@ -157,7 +157,7 @@ export default function CalendarScreen() {
             title="カレンダー"
             subtitle="予定と候補日を一目で把握"
             iconColor={PRIMARY}
-            iconBackgroundColor="rgba(37, 99, 235, 0.16)"
+            iconBackgroundColor="rgba(37, 99, 235, 0.18)"
             style={styles.pageHeader}
             titleStyle={styles.pageHeaderTitle}
             subtitleStyle={styles.pageHeaderSubtitle}
@@ -376,17 +376,22 @@ const styles = StyleSheet.create({
     backgroundColor: BACKGROUND,
   },
   container: {
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 24,
     paddingBottom: 120,
     gap: 20,
   },
   pageHeader: {
-    backgroundColor: SURFACE,
-    borderColor: BORDER,
+    marginHorizontal: -20,
+    paddingHorizontal: 20,
+    paddingBottom: 12,
+    marginBottom: 16,
   },
   pageHeaderTitle: {
     color: TEXT_PRIMARY,
-    fontWeight: '700',
+    fontSize: 24,
+    lineHeight: 30,
+    fontWeight: '400',
   },
   pageHeaderSubtitle: {
     color: TEXT_MUTED,

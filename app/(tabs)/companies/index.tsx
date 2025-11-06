@@ -130,49 +130,39 @@ export default function CompaniesScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <FlatList
-        contentContainerStyle={styles.listContent}
-        data={companies}
-        keyExtractor={(item) => item.id}
-        ListEmptyComponent={
-          <ThemedView style={styles.emptyList}>
-            <MaterialIcons name="business" size={36} color={PRIMARY} />
-            <ThemedText style={styles.emptyTitle}>まだ企業が登録されていません</ThemedText>
-            <ThemedText style={styles.emptyCopy}>
-              「企業を追加」から候補日や進捗を記録しましょう
-            </ThemedText>
-          </ThemedView>
-        }
-        ListHeaderComponent={
-          <View style={styles.container}>
-            <PageHeader
-              icon="building.2"
-              title="企業"
-              subtitle="応募情報と予定をスマートに管理"
-              iconColor={PRIMARY}
-              iconBackgroundColor="rgba(37, 99, 235, 0.18)"
-              style={styles.pageHeader}
-              titleStyle={styles.pageHeaderTitle}
-              subtitleStyle={styles.pageHeaderSubtitle}
-              rightSlot={
-                <Pressable style={styles.primaryButton} onPress={toggleForm}>
-                  <MaterialIcons name="add" size={18} color="#FFFFFF" />
-                  <ThemedText style={styles.primaryButtonLabel}>企業を追加</ThemedText>
-                </Pressable>
-              }
-            />
-            <View style={styles.heroCard}>
-              <View style={styles.heroHeader}>
-                <View style={styles.heroText}>
-                  <ThemedText style={styles.heroTitle}>企業の管理</ThemedText>
-                  <ThemedText style={styles.heroSubtitle}>
-                    応募先の追加や候補日・確定日の整理をまとめて行い、次のアクションを見逃さないようにしましょう
-                  </ThemedText>
-                </View>
-              </View>
-            </View>
-
-            {isFormOpen ? (
+      <View style={styles.container}>
+        <PageHeader
+          icon="building.2"
+          title="企業管理"
+          subtitle={`${companies.length}社を管理中`}
+          iconColor={PRIMARY}
+          iconBackgroundColor="rgba(37, 99, 235, 0.18)"
+          style={styles.pageHeader}
+          titleStyle={styles.pageHeaderTitle}
+          subtitleStyle={styles.pageHeaderSubtitle}
+          rightSlot={
+            <Pressable style={styles.primaryButton} onPress={toggleForm}>
+              <MaterialIcons name="add" size={18} color="#FFFFFF" />
+              <ThemedText style={styles.primaryButtonLabel}>企業を追加</ThemedText>
+            </Pressable>
+          }
+        />
+        <FlatList
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
+          data={companies}
+          keyExtractor={(item) => item.id}
+          ListEmptyComponent={
+            <ThemedView style={styles.emptyList}>
+              <MaterialIcons name="business" size={36} color={PRIMARY} />
+              <ThemedText style={styles.emptyTitle}>まだ企業が登録されていません</ThemedText>
+              <ThemedText style={styles.emptyCopy}>
+                「企業を追加」から候補日や進捗を記録しましょう
+              </ThemedText>
+            </ThemedView>
+          }
+          ListHeaderComponent={
+            isFormOpen ? (
               <ThemedView style={styles.formCard}>
                 <View style={styles.formHeader}>
                   <ThemedText style={styles.formTitle}>新規企業</ThemedText>
@@ -238,7 +228,7 @@ export default function CompaniesScreen() {
 
                   {formConfirmedDate ? (
                     <View style={styles.confirmedBlock}>
-                      <ThemedText style={styles.formCaption}>確定済み</ThemedText>
+                      <ThemedText style={styles.formCaption}>確定した予定</ThemedText>
                       <ScheduleChip
                         iso={formConfirmedDate}
                         status="confirmed"
@@ -294,7 +284,7 @@ export default function CompaniesScreen() {
 
                   {!formConfirmedDate && formCandidates.length === 0 ? (
                     <ThemedText style={styles.formHint}>
-                      候補日や確定日を登録するとこちらに表示されます。
+                      ������m�����o�^����Ƃ�����ɕ\������܂��B
                     </ThemedText>
                   ) : null}
                 </View>
@@ -308,77 +298,77 @@ export default function CompaniesScreen() {
                   </Pressable>
                 </View>
               </ThemedView>
-            ) : null}
-          </View>
-        }
-        renderItem={({ item }) => {
-          const hasConfirmed = Boolean(item.confirmedDate);
-          const candidateCount = item.candidateDates.length;
-          return (
-            <Link href={`/(tabs)/companies/${item.id}`} asChild>
-              <Pressable style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}>
-                <View style={styles.cardSurface}>
-                  <View style={styles.cardHeader}>
-                    <ThemedText type="defaultSemiBold" style={styles.companyName}>
-                      {item.name}
-                    </ThemedText>
-                    <View style={styles.statusBadge}>
-                      <ThemedText style={styles.statusBadgeLabel}>
-                        {item.progressStatus}
+            ) : null
+          }
+          renderItem={({ item }) => {
+            const hasConfirmed = Boolean(item.confirmedDate);
+            const candidateCount = item.candidateDates.length;
+            return (
+              <Link href={`/(tabs)/companies/${item.id}`} asChild>
+                <Pressable style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}>
+                  <View style={styles.cardSurface}>
+                    <View style={styles.cardHeader}>
+                      <ThemedText type="defaultSemiBold" style={styles.companyName}>
+                        {item.name}
                       </ThemedText>
-                    </View>
-                  </View>
-
-                  {hasConfirmed ? (
-                    <View style={styles.cardMetaRow}>
-                      <View style={styles.metaColumn}>
-                        <ThemedText style={styles.metaLabel}>次の予定</ThemedText>
-                        <ThemedText style={styles.metaValue} numberOfLines={2}>
-                          {formatDisplayDate(item.confirmedDate!)}
+                      <View style={styles.statusBadge}>
+                        <ThemedText style={styles.statusBadgeLabel}>
+                          {item.progressStatus}
                         </ThemedText>
-                        {item.nextAction ? (
-                          <ThemedText style={styles.metaAction} numberOfLines={2}>
-                            {item.nextAction}
-                          </ThemedText>
-                        ) : null}
                       </View>
-                      <View style={styles.metaPills}>
-                        <View style={[styles.metaPill, styles.metaPillConfirmed]}>
-                          <MaterialIcons name="event-available" size={14} color={SUCCESS} />
-                          <ThemedText style={[styles.metaPillLabel, styles.metaConfirmedLabel]}>
-                            確定あり
+                    </View>
+
+                    {hasConfirmed ? (
+                      <View style={styles.cardMetaRow}>
+                        <View style={styles.metaColumn}>
+                          <ThemedText style={styles.metaLabel}>確定日時</ThemedText>
+                          <ThemedText style={styles.metaValue} numberOfLines={2}>
+                            {formatDisplayDate(item.confirmedDate!)}
                           </ThemedText>
+                          {item.nextAction ? (
+                            <ThemedText style={styles.metaAction} numberOfLines={2}>
+                              {item.nextAction}
+                            </ThemedText>
+                          ) : null}
                         </View>
-                        {candidateCount > 0 ? (
-                          <View style={styles.metaPill}>
-                            <MaterialIcons name="event" size={14} color={PRIMARY} />
-                            <ThemedText style={[styles.metaPillLabel, styles.metaCandidateLabel]}>
-                              候補 {candidateCount}
+                        <View style={styles.metaPills}>
+                          <View style={[styles.metaPill, styles.metaPillConfirmed]}>
+                            <MaterialIcons name="event-available" size={14} color={SUCCESS} />
+                            <ThemedText style={[styles.metaPillLabel, styles.metaConfirmedLabel]}>
+                              確定あり
                             </ThemedText>
                           </View>
-                        ) : null}
+                          {candidateCount > 0 ? (
+                            <View style={styles.metaPill}>
+                              <MaterialIcons name="event" size={14} color={PRIMARY} />
+                              <ThemedText style={[styles.metaPillLabel, styles.metaCandidateLabel]}>
+                                候補 {candidateCount}
+                              </ThemedText>
+                            </View>
+                          ) : null}
+                        </View>
                       </View>
-                    </View>
-                  ) : candidateCount > 0 ? (
-                    <View style={styles.cardCandidateRow}>
-                      <MaterialIcons name="event" size={16} color={PRIMARY} />
-                      <ThemedText style={styles.cardCandidateLabel}>
-                        候補日 {candidateCount} 件登録済み
-                      </ThemedText>
-                    </View>
-                  ) : null}
+                    ) : candidateCount > 0 ? (
+                      <View style={styles.cardCandidateRow}>
+                        <MaterialIcons name="event" size={16} color={PRIMARY} />
+                        <ThemedText style={styles.cardCandidateLabel}>
+                          ���� {candidateCount} ���o�^�ς�
+                        </ThemedText>
+                      </View>
+                    ) : null}
 
-                  {item.remarks ? (
-                    <ThemedText style={styles.noteSnippet} numberOfLines={2}>
-                      {item.remarks}
-                    </ThemedText>
-                  ) : null}
-                </View>
-              </Pressable>
-            </Link>
-          );
-        }}
-      />
+                    {item.remarks ? (
+                      <ThemedText style={styles.noteSnippet} numberOfLines={2}>
+                        {item.remarks}
+                      </ThemedText>
+                    ) : null}
+                  </View>
+                </Pressable>
+              </Link>
+            );
+          }}
+        />
+      </View>
 
       <SchedulePickerModal
         visible={pickerVisible}
@@ -397,43 +387,27 @@ const styles = StyleSheet.create({
     backgroundColor: BACKGROUND,
   },
   container: {
+    flex: 1,
     paddingHorizontal: 20,
-    paddingVertical: 24,
-    gap: 20,
+    paddingTop: 24,
   },
   pageHeader: {
-    backgroundColor: SURFACE,
-    borderColor: BORDER,
+    marginHorizontal: -20,
+    paddingHorizontal: 20,
+    paddingBottom: 12,
+    marginBottom: 16,
   },
+  list: { flex: 1 },
+  listContent: { gap: 16, paddingBottom: 160 },
   pageHeaderTitle: {
     color: TEXT_PRIMARY,
-    fontWeight: '700',
+    fontSize: 24,
+    lineHeight: 30,
+    fontWeight: '400',
   },
   pageHeaderSubtitle: {
     color: TEXT_MUTED,
   },
-  heroCard: {
-    width: '100%',
-    alignSelf: 'stretch',
-    borderRadius: 24,
-    backgroundColor: SURFACE,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: BORDER,
-    padding: 24,
-    gap: 20,
-    shadowColor: '#CBD5F5',
-    shadowOpacity: 0.18,
-    shadowOffset: { width: 0, height: 12 },
-    shadowRadius: 24,
-  },
-  heroHeader: {
-    width: '100%',
-    flexDirection: 'column',
-    gap: 18,
-  },
-  heroText: { gap: 6, flex: 1 },
-  heroTitle: { color: TEXT_PRIMARY, fontSize: 22, fontWeight: '700' },
-  heroSubtitle: { color: TEXT_MUTED },
   primaryButton: {
     marginTop: 0,
     flexDirection: 'row',
@@ -443,11 +417,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 12,
     borderRadius: 18,
-    alignSelf: 'flex-start',
+    alignSelf: 'flex-end',
     flexShrink: 0,
   },
   primaryButtonLabel: { color: '#FFFFFF', fontWeight: '700' },
-  listContent: { gap: 16, paddingHorizontal: 20, paddingBottom: 160 },
   emptyList: {
     marginHorizontal: 0,
     padding: 24,
@@ -704,3 +677,4 @@ const styles = StyleSheet.create({
   modalPrimaryLabel: { color: '#FFFFFF', fontWeight: '700' },
   chipColumn: { gap: 12 },
 });
+

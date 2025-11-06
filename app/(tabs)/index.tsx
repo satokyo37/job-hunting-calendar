@@ -42,81 +42,88 @@ export default function TasksHomeScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <PageHeader
-        icon="calendar"
-        title="就活カレンダー"
-        subtitle="タスク管理"
-        iconColor={PRIMARY}
-        iconBackgroundColor="rgba(37, 99, 235, 0.12)"
-        style={styles.header}
-        titleStyle={styles.headerTitle}
-        subtitleStyle={styles.headerSubtitle}
-      />
+      <View style={styles.container}>
+        <PageHeader
+          icon="calendar"
+          title="就活カレンダー"
+          subtitle="タスク管理"
+          iconColor={PRIMARY}
+          iconBackgroundColor="rgba(37, 99, 235, 0.18)"
+          style={styles.pageHeader}
+          titleStyle={styles.pageHeaderTitle}
+          subtitleStyle={styles.pageHeaderSubtitle}
+        />
 
-      <FlatList
-        contentContainerStyle={styles.listContent}
-        data={tasks}
-        keyExtractor={(item) => item.id}
-        ListEmptyComponent={
-          <ThemedView style={styles.empty}>
-            <ThemedText style={styles.emptyText}>タスクはまだありません</ThemedText>
-            <ThemedText style={styles.emptyHint}>「企業」タブからタスクを追加してください</ThemedText>
-          </ThemedView>
-        }
-        renderItem={({ item }) => (
-          <View style={styles.taskRow}>
-            <Pressable
-              onPress={() => toggleTaskDone(item.companyId, item.id)}
-              style={[styles.check, item.isDone && styles.checkDone]}
-            >
-              <MaterialIcons
-                name={item.isDone ? 'check-circle' : 'radio-button-unchecked'}
-                size={20}
-                color={item.isDone ? SUCCESS : PRIMARY}
-              />
-            </Pressable>
+        <FlatList
+          style={styles.list}
+          contentContainerStyle={styles.listContent}
+          data={tasks}
+          keyExtractor={(item) => item.id}
+          ListEmptyComponent={
+            <ThemedView style={styles.empty}>
+              <ThemedText style={styles.emptyText}>タスクはまだありません</ThemedText>
+              <ThemedText style={styles.emptyHint}>「企業」タブからタスクを追加してください</ThemedText>
+            </ThemedView>
+          }
+          renderItem={({ item }) => (
+            <View style={styles.taskRow}>
+              <Pressable
+                onPress={() => toggleTaskDone(item.companyId, item.id)}
+                style={[styles.check, item.isDone && styles.checkDone]}
+              >
+                <MaterialIcons
+                  name={item.isDone ? 'check-circle' : 'radio-button-unchecked'}
+                  size={20}
+                  color={item.isDone ? SUCCESS : PRIMARY}
+                />
+              </Pressable>
 
-            <View style={styles.taskBody}>
-              <ThemedText style={[styles.taskTitle, item.isDone && styles.done]}>
-                {item.title}
-              </ThemedText>
-              <View style={styles.metaRow}>
-                <Link href={`/(tabs)/companies/${item.companyId}`} asChild>
-                  <Pressable>
-                    <ThemedText style={styles.companyLink}>{item.companyName}</ThemedText>
-                  </Pressable>
-                </Link>
-                {item.dueDate ? (
-                  <ThemedText style={styles.due}>
-                    {format(parseISO(item.dueDate), "yyyy'年'MM'月'dd'日'(EEE) HH:mm", { locale: ja })}
-                  </ThemedText>
-                ) : null}
+              <View style={styles.taskBody}>
+                <ThemedText style={[styles.taskTitle, item.isDone && styles.done]}>
+                  {item.title}
+                </ThemedText>
+                <View style={styles.metaRow}>
+                  <Link href={`/(tabs)/companies/${item.companyId}`} asChild>
+                    <Pressable>
+                      <ThemedText style={styles.companyLink}>{item.companyName}</ThemedText>
+                    </Pressable>
+                  </Link>
+                  {item.dueDate ? (
+                    <ThemedText style={styles.due}>
+                      {format(parseISO(item.dueDate), "yyyy'年'MM'月'dd'日'(EEE) HH:mm", { locale: ja })}
+                    </ThemedText>
+                  ) : null}
+                </View>
               </View>
-            </View>
 
-            <Pressable onPress={() => removeTask(item.companyId, item.id)} style={styles.deleteBtn}>
-              <MaterialIcons name="delete-outline" size={20} color={TEXT_MUTED} />
-            </Pressable>
-          </View>
-        )}
-      />
+              <Pressable onPress={() => removeTask(item.companyId, item.id)} style={styles.deleteBtn}>
+                <MaterialIcons name="delete-outline" size={20} color={TEXT_MUTED} />
+              </Pressable>
+            </View>
+          )}
+        />
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: BACKGROUND },
-  header: {
-    backgroundColor: SURFACE,
-    margin: 20,
-    marginBottom: 0,
-    borderRadius: 20,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: BORDER,
+  container: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingTop: 24,
   },
-  headerTitle: { color: TEXT_PRIMARY, fontSize: 24, lineHeight: 30, fontWeight: '400' },
-  headerSubtitle: { color: TEXT_MUTED },
-  listContent: { padding: 20, gap: 12, paddingBottom: 120 },
+  pageHeader: {
+    marginHorizontal: -20,
+    paddingHorizontal: 20,
+    paddingBottom: 12,
+    marginBottom: 16,
+  },
+  pageHeaderTitle: { color: TEXT_PRIMARY, fontSize: 24, lineHeight: 30, fontWeight: '400' },
+  pageHeaderSubtitle: { color: TEXT_MUTED },
+  list: { flex: 1 },
+  listContent: { gap: 12, paddingBottom: 120 },
   empty: {
     backgroundColor: SURFACE,
     borderRadius: 16,

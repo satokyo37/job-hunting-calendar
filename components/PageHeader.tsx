@@ -46,43 +46,53 @@ export function PageHeader({
 
   return (
     <ThemedView style={[styles.container, style]} lightColor={lightColor} darkColor={darkColor}>
-      <View style={styles.content}>
+      <View style={styles.leading}>
         {iconNode ? (
           <View style={[styles.iconWrapper, { backgroundColor: iconBackgroundColor }]}>
             {iconNode}
           </View>
         ) : null}
         <View style={styles.textArea}>
-          <ThemedText type="title" style={[styles.title, titleStyle]}>
+          <ThemedText
+            type="title"
+            style={[styles.title, titleStyle]}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
             {title}
           </ThemedText>
           {subtitle ? (
-            <ThemedText style={[styles.subtitle, subtitleStyle]}>{subtitle}</ThemedText>
+            <ThemedText
+              style={[styles.subtitle, subtitleStyle]}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+            >
+              {subtitle}
+            </ThemedText>
           ) : null}
         </View>
       </View>
-      {rightSlot ? <View style={styles.right}>{rightSlot}</View> : null}
+      {rightSlot ? <View style={styles.rightSlot}>{rightSlot}</View> : null}
     </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderRadius: 20,
-    padding: 20,
+    paddingVertical: 12,
     gap: 16,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(37, 99, 235, 0.12)',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'transparent',
   },
-  content: {
+  leading: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
     flex: 1,
+    gap: 16,
+    minWidth: 0,
   },
   iconWrapper: {
     width: 52,
@@ -93,6 +103,8 @@ const styles = StyleSheet.create({
   },
   textArea: {
     flex: 1,
+    minWidth: 0,
+    flexShrink: 1,
     gap: 4,
   },
   title: {
@@ -102,7 +114,8 @@ const styles = StyleSheet.create({
   subtitle: {
     color: '#64748B',
   },
-  right: {
+  rightSlot: {
     marginLeft: 16,
+    flexShrink: 0,
   },
 });

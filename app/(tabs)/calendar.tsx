@@ -1,10 +1,10 @@
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import {
   addMonths,
   eachDayOfInterval,
   endOfMonth,
   endOfWeek,
   format,
-  isAfter,
   isSameMonth,
   isToday,
   parseISO,
@@ -12,12 +12,10 @@ import {
   startOfWeek,
 } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { PageHeader } from '@/components/PageHeader';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useAppStore } from '@/store/useAppStore';
@@ -104,19 +102,19 @@ export default function CalendarScreen() {
   const [activeDayKey, setActiveDayKey] = useState<string | null>(null);
   const [activeEvent, setActiveEvent] = useState<CalendarEvent | null>(null);
 
+  const previousDayKeyCount = useRef(dayKeys.length);
+
   useEffect(() => {
     if (dayKeys.length === 0) {
       setSelectedDate(todayKey);
       setFocusedMonth(startOfMonth(new Date()));
-      return;
-    }
-
-    if (!eventsByDay[selectedDate]) {
-      const nextSelected = dayKeys[0];
+    } else if (previousDayKeyCount.current === 0 && dayKeys.length > 0) {
+      const nextSelected = dayKeys.find((key) => key >= todayKey) ?? dayKeys[0];
       setSelectedDate(nextSelected);
       setFocusedMonth(startOfMonth(parseISO(nextSelected)));
     }
-  }, [dayKeys, eventsByDay, selectedDate, todayKey]);
+    previousDayKeyCount.current = dayKeys.length;
+  }, [dayKeys, todayKey]);
 
   useEffect(() => {
     setFocusedMonth(startOfMonth(parseISO(selectedDate)));
@@ -133,60 +131,36 @@ export default function CalendarScreen() {
       setSelectedDate(key);
       if (hasEvents) {
         setActiveDayKey(key);
+      } else {
+        setActiveDayKey(null);
+        setActiveEvent(null);
       }
     },
     []
   );
 
   const activeDayEvents = activeDayKey ? eventsByDay[activeDayKey] ?? [] : [];
-  const heroMonthLabel = format(focusedMonth, 'yyyy年M月', { locale: ja });
-  const nextUpcoming = useMemo(() => {
-    const upcoming = dayKeys
-      .flatMap((key) => eventsByDay[key] ?? [])
-      .filter((event) => isAfter(new Date(event.dateTime), new Date()))
-      .sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime());
-    return upcoming[0];
-  }, [dayKeys, eventsByDay]);
-
+  const currentMonthLabel = format(focusedMonth, 'yyyy年M月', { locale: ja });
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ThemedView style={styles.screen}>
-        <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-          <PageHeader
-            icon="calendar"
-            title="カレンダー"
-            subtitle="予定と候補日を一目で把握"
-            iconColor={PRIMARY}
-            iconBackgroundColor="rgba(37, 99, 235, 0.18)"
-            style={styles.pageHeader}
-            titleStyle={styles.pageHeaderTitle}
-            subtitleStyle={styles.pageHeaderSubtitle}
-          />
-          <View style={styles.heroCard}>
-            <View>
-              <ThemedText type="title" style={styles.heroTitle}>
-                {heroMonthLabel}
-              </ThemedText>
-              <ThemedText style={styles.heroSubtitle}>
-                {nextUpcoming
-                  ? `次の予定: ${nextUpcoming.companyName}（${formatDisplayDate(nextUpcoming.dateTime)}）`
-                  : '候補日や確定日を登録すると、次の予定がここに表示されます。'}
-              </ThemedText>
-            </View>
-            <View style={styles.heroActions}>
-              <Pressable
-                style={styles.heroButton}
-                onPress={() => setFocusedMonth((prev) => addMonths(prev, -1))}
-              >
-                <MaterialIcons name="chevron-left" size={20} color={PRIMARY} />
-              </Pressable>
-              <Pressable
-                style={styles.heroButton}
-                onPress={() => setFocusedMonth((prev) => addMonths(prev, 1))}
-              >
-                <MaterialIcons name="chevron-right" size={20} color={PRIMARY} />
-              </Pressable>
-            </View>
+        <View style={styles.container}>
+          <View style={styles.monthSwitcher}>
+            <Pressable
+              style={styles.monthButton}
+              onPress={() => setFocusedMonth((prev) => addMonths(prev, -1))}
+            >
+              <MaterialIcons name="chevron-left" size={22} color={PRIMARY} />
+            </Pressable>
+            <ThemedText type="title" style={styles.monthLabel}>
+              {currentMonthLabel}
+            </ThemedText>
+            <Pressable
+              style={styles.monthButton}
+              onPress={() => setFocusedMonth((prev) => addMonths(prev, 1))}
+            >
+              <MaterialIcons name="chevron-right" size={22} color={PRIMARY} />
+            </Pressable>
           </View>
 
           <View style={styles.weekHeader}>
@@ -259,7 +233,7 @@ export default function CalendarScreen() {
               );
             })}
           </View>
-        </ScrollView>
+        </View>
       </ThemedView>
 
       <Modal visible={Boolean(activeDayKey)} transparent animationType="fade">
@@ -376,52 +350,19 @@ const styles = StyleSheet.create({
     backgroundColor: BACKGROUND,
   },
   container: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    paddingBottom: 120,
-    gap: 20,
-  },
-  pageHeader: {
-    marginHorizontal: -20,
-    paddingHorizontal: 20,
-    paddingBottom: 12,
-    marginBottom: 16,
-  },
-  pageHeaderTitle: {
-    color: TEXT_PRIMARY,
-    fontSize: 24,
-    lineHeight: 30,
-    fontWeight: '400',
-  },
-  pageHeaderSubtitle: {
-    color: TEXT_MUTED,
-  },
-  heroCard: {
-    backgroundColor: SURFACE,
-    padding: 20,
-    borderRadius: 20,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: BORDER,
-    shadowColor: '#CBD5F5',
-    shadowOpacity: 0.18,
-    shadowOffset: { width: 0, height: 8 },
-    shadowRadius: 16,
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 16,
     gap: 12,
   },
-  heroTitle: {
-    color: TEXT_PRIMARY,
-    fontSize: 22,
-    fontWeight: '700',
-  },
-  heroSubtitle: {
-    color: TEXT_MUTED,
-    marginTop: 4,
-  },
-  heroActions: {
+  monthSwitcher: {
     flexDirection: 'row',
-    gap: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
   },
-  heroButton: {
+  monthButton: {
     width: 44,
     height: 44,
     borderRadius: 12,
@@ -429,7 +370,12 @@ const styles = StyleSheet.create({
     borderColor: BORDER,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: SURFACE_SUBTLE,
+    backgroundColor: SURFACE,
+  },
+  monthLabel: {
+    color: TEXT_PRIMARY,
+    fontSize: 22,
+    fontWeight: '700',
   },
   weekHeader: {
     flexDirection: 'row',
@@ -442,16 +388,22 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   calendarGrid: {
+    flex: 1,
     flexDirection: 'row',
     flexWrap: 'wrap',
+    alignContent: 'stretch',
     borderRadius: 20,
     overflow: 'hidden',
+    backgroundColor: SURFACE,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: BORDER,
   },
   dayCell: {
     width: COLUMN_WIDTH,
     padding: 10,
     gap: 8,
-    minHeight: 92,
+    minHeight: 72,
+    flexGrow: 1,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: 'rgba(100, 116, 139, 0.08)',
     backgroundColor: SURFACE,

@@ -1,3 +1,9 @@
+import {
+  NotoSansJP_400Regular,
+  NotoSansJP_500Medium,
+  NotoSansJP_600SemiBold,
+  NotoSansJP_700Bold,
+} from '@expo-google-fonts/noto-sans-jp';
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
@@ -6,10 +12,15 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
+const BASE = 'NotoSansJP_400Regular';
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    NotoSansJP_400Regular,
+    NotoSansJP_500Medium,
+    NotoSansJP_600SemiBold,
+    NotoSansJP_700Bold,
   });
 
   if (!loaded) {

@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-start',
     paddingVertical: 12,
     gap: 16,
     backgroundColor: 'transparent',
@@ -117,5 +117,8 @@ const styles = StyleSheet.create({
   rightSlot: {
     marginLeft: 16,
     flexShrink: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
   },
 });

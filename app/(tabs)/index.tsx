@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
     marginHorizontal: -20,
     paddingHorizontal: 20,
     paddingBottom: 12,
-    marginBottom: 16,
+    marginBottom: 28,
   },
   pageHeaderTitle: { color: TEXT_PRIMARY, fontSize: 24, lineHeight: 30, fontWeight: '400' },
   pageHeaderSubtitle: { color: TEXT_MUTED },

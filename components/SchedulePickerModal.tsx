@@ -1,32 +1,40 @@
-import DateTimePicker, { AndroidNativeProps } from '@react-native-community/datetimepicker';
-import { format, parse } from 'date-fns';
+import { Picker } from '@react-native-picker/picker';
+import {
+  addMonths,
+  eachDayOfInterval,
+  endOfMonth,
+  endOfWeek,
+  format,
+  isSameDay,
+  isSameMonth,
+  startOfMonth,
+  startOfWeek,
+} from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { useEffect, useMemo, useState } from 'react';
-import {
-  Alert,
-  Modal,
-  Platform,
-  Pressable,
-  StyleSheet,
-  TextInput,
-  View,
-} from 'react-native';
+import { Modal, Pressable, StyleSheet, View } from 'react-native';
 
 import { ScheduleChip } from '@/components/ScheduleChip';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { NOTO_SANS_JP } from '@/constants/Typography';
 
 type PickerStage = 'date' | 'time' | 'confirm';
 
 export type SchedulePickerModalProps = {
   visible: boolean;
-  status: 'candidate' | 'confirmed';
+  status: 'candidate' | 'confirmed' | 'task';
   initialValue?: string;
   onCancel: () => void;
   onConfirm: (iso: string) => void;
 };
 
-const formatDateLabel = (date: Date) => format(date, 'yyyy年M月d日（EEE）', { locale: ja });
+const WEEKDAY_LABELS = ['日', '月', '火', '水', '木', '金', '土'];
+const HOURS = Array.from({ length: 24 }, (_, index) => index);
+const MINUTES = Array.from({ length: 60 }, (_, index) => index);
+const HOUR_LABEL = '時間';
+const MINUTE_LABEL = '分';
+const formatDateLabel = (date: Date) => format(date, "yyyy'年'MM'月'd'日'(EEE)", { locale: ja });
 const formatTimeLabel = (date: Date) => format(date, 'HH:mm');
 
 export function SchedulePickerModal({
@@ -46,17 +54,25 @@ export function SchedulePickerModal({
 
   const [stage, setStage] = useState<PickerStage>('date');
   const [workingDate, setWorkingDate] = useState<Date>(baseDate);
-  const [webDateInput, setWebDateInput] = useState(format(baseDate, 'yyyy-MM-dd'));
-  const [webTimeInput, setWebTimeInput] = useState(format(baseDate, 'HH:mm'));
+  const [calendarMonth, setCalendarMonth] = useState(() => startOfMonth(baseDate));
 
   useEffect(() => {
     if (visible) {
       setStage('date');
       setWorkingDate(baseDate);
-      setWebDateInput(format(baseDate, 'yyyy-MM-dd'));
-      setWebTimeInput(format(baseDate, 'HH:mm'));
+      setCalendarMonth(startOfMonth(baseDate));
     }
   }, [baseDate, visible]);
+
+  const calendarDays = useMemo(() => {
+    const start = startOfWeek(startOfMonth(calendarMonth), { locale: ja });
+    const end = endOfWeek(endOfMonth(calendarMonth), { locale: ja });
+    return eachDayOfInterval({ start, end });
+  }, [calendarMonth]);
+
+  const today = useMemo(() => new Date(), []);
+  const selectedHour = workingDate.getHours();
+  const selectedMinute = workingDate.getMinutes();
 
   if (!visible) {
     return null;
@@ -68,7 +84,7 @@ export function SchedulePickerModal({
       next.setFullYear(selected.getFullYear(), selected.getMonth(), selected.getDate());
       return next;
     });
-    setWebDateInput(format(selected, 'yyyy-MM-dd'));
+    setCalendarMonth(startOfMonth(selected));
   };
 
   const handleTimePart = (selected: Date) => {
@@ -77,55 +93,34 @@ export function SchedulePickerModal({
       next.setHours(selected.getHours(), selected.getMinutes(), 0, 0);
       return next;
     });
-    setWebTimeInput(format(selected, 'HH:mm'));
+  };
+
+  const shiftCalendarMonth = (delta: number) => {
+    setCalendarMonth((prev) => addMonths(prev, delta));
+  };
+
+  const handleHourSelect = (hour: number) => {
+    const next = new Date(workingDate);
+    next.setHours(hour);
+    handleTimePart(next);
+  };
+
+  const handleMinuteSelect = (minute: number) => {
+    const next = new Date(workingDate);
+    next.setMinutes(minute);
+    handleTimePart(next);
   };
 
   const handleDateStageNext = () => {
-    if (Platform.OS === 'web') {
-      const parsed = parse(webDateInput.trim(), 'yyyy-MM-dd', new Date());
-      if (Number.isNaN(parsed.getTime())) {
-        Alert.alert('無効な日付', 'YYYY-MM-DD 形式で入力してください。');
-        return;
-      }
-      handleDatePart(parsed);
-    }
     setStage('time');
   };
 
   const handleTimeStageNext = () => {
-    if (Platform.OS === 'web') {
-      const parsed = parse(webTimeInput.trim(), 'HH:mm', new Date());
-      if (Number.isNaN(parsed.getTime())) {
-        Alert.alert('無効な時刻', 'HH:mm 形式で入力してください。');
-        return;
-      }
-      handleTimePart(parsed);
-    }
     setStage('confirm');
   };
 
   const handleConfirm = () => {
     onConfirm(workingDate.toISOString());
-  };
-
-  const handleAndroidDateChange: NonNullable<AndroidNativeProps['onChange']> = (event, selected) => {
-    if (event.type === 'dismissed' || !selected) {
-      return;
-    }
-    handleDatePart(selected);
-    if (stage === 'date') {
-      setStage('time');
-    }
-  };
-
-  const handleAndroidTimeChange: NonNullable<AndroidNativeProps['onChange']> = (event, selected) => {
-    if (event.type === 'dismissed' || !selected) {
-      return;
-    }
-    handleTimePart(selected);
-    if (stage === 'time') {
-      setStage('confirm');
-    }
   };
 
   return (
@@ -140,35 +135,76 @@ export function SchedulePickerModal({
             {stage === 'date' ? (
               <>
                 <ThemedText style={styles.stageLabel}>まず日付を選びましょう</ThemedText>
-                {Platform.OS === 'web' ? (
-                  <TextInput
-                    style={[styles.input, styles.webInput]}
-                    placeholder="YYYY-MM-DD"
-                    value={webDateInput}
-                    onChangeText={setWebDateInput}
-                    inputMode="numeric"
-                  />
-                ) : Platform.OS === 'ios' ? (
-                  <DateTimePicker
-                    mode="date"
-                    display="inline"
-                    value={workingDate}
-                    onChange={(_, selected) => {
-                      if (selected) {
-                        handleDatePart(selected);
-                      }
-                    }}
-                  />
-                ) : (
-                  <DateTimePicker
-                    mode="date"
-                    display="calendar"
-                    value={workingDate}
-                    onChange={handleAndroidDateChange}
-                  />
-                )}
+                <View style={styles.calendar}>
+                  <View style={styles.calendarHeader}>
+                    <Pressable
+                      accessibilityLabel="前の月へ"
+                      style={styles.calendarNavButton}
+                      onPress={() => shiftCalendarMonth(-1)}
+                    >
+                      <ThemedText style={styles.calendarNavLabel}>{'<'}</ThemedText>
+                    </Pressable>
+                    <ThemedText style={styles.calendarMonthLabel}>
+                      {format(calendarMonth, "yyyy'年'MM'月'", { locale: ja })}
+                    </ThemedText>
+                    <Pressable
+                      accessibilityLabel="次の月へ"
+                      style={styles.calendarNavButton}
+                      onPress={() => shiftCalendarMonth(1)}
+                    >
+                      <ThemedText style={styles.calendarNavLabel}>{'>'}</ThemedText>
+                    </Pressable>
+                  </View>
+
+                  <View style={styles.weekdayRow}>
+                    {WEEKDAY_LABELS.map((label) => (
+                      <ThemedText key={label} style={styles.weekdayLabel}>
+                        {label}
+                      </ThemedText>
+                    ))}
+                  </View>
+
+                  <View style={styles.calendarGrid}>
+                    {calendarDays.map((day) => {
+                      const isSelected = isSameDay(day, workingDate);
+                      const isOutside = !isSameMonth(day, calendarMonth);
+                      const isToday = isSameDay(day, today);
+
+                      return (
+                        <Pressable
+                          key={day.toISOString()}
+                          onPress={() => handleDatePart(day)}
+                          style={[
+                            styles.dayCell,
+                            isOutside && styles.dayCellOutside,
+                            isSelected && styles.dayCellSelected,
+                          ]}
+                        >
+                          <ThemedText
+                            style={[
+                              styles.dayCellLabel,
+                              isOutside && styles.dayCellLabelOutside,
+                              isSelected && styles.dayCellLabelSelected,
+                            ]}
+                          >
+                            {format(day, 'd')}
+                          </ThemedText>
+                          {isToday ? (
+                            <View
+                              style={[
+                                styles.todayDot,
+                                isSelected && styles.todayDotSelected,
+                              ]}
+                            />
+                          ) : null}
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                </View>
+
                 <ThemedText style={styles.previewText}>
-                  選択中: {formatDateLabel(workingDate)}
+                  選択: {formatDateLabel(workingDate)}
                 </ThemedText>
               </>
             ) : null}
@@ -176,36 +212,50 @@ export function SchedulePickerModal({
             {stage === 'time' ? (
               <>
                 <ThemedText style={styles.stageLabel}>次に時間を選びましょう</ThemedText>
-                {Platform.OS === 'web' ? (
-                  <TextInput
-                    style={[styles.input, styles.webInput]}
-                    placeholder="HH:mm"
-                    value={webTimeInput}
-                    onChangeText={setWebTimeInput}
-                    inputMode="numeric"
-                  />
-                ) : Platform.OS === 'ios' ? (
-                  <DateTimePicker
-                    mode="time"
-                    display="spinner"
-                    value={workingDate}
-                    onChange={(_, selected) => {
-                      if (selected) {
-                        handleTimePart(selected);
-                      }
-                    }}
-                  />
-                ) : (
-                  <DateTimePicker
-                    mode="time"
-                    display="spinner"
-                    value={workingDate}
-                    is24Hour
-                    onChange={handleAndroidTimeChange}
-                  />
-                )}
+                <View style={styles.timePicker}>
+                  <View style={styles.timeDropdown}>
+                    <ThemedText style={styles.timeSectionLabel}>{HOUR_LABEL}</ThemedText>
+                    <View style={styles.pickerShell}>
+                      <Picker
+                        selectedValue={selectedHour}
+                        onValueChange={(value) => handleHourSelect(value)}
+                        style={styles.picker}
+                        itemStyle={styles.pickerItem}
+                        dropdownIconColor="#0F172A"
+                      >
+                        {HOURS.map((hour) => (
+                          <Picker.Item
+                            key={`hour-${hour}`}
+                            label={`${hour} 時`}
+                            value={hour}
+                          />
+                        ))}
+                      </Picker>
+                    </View>
+                  </View>
+                  <View style={styles.timeDropdown}>
+                    <ThemedText style={styles.timeSectionLabel}>{MINUTE_LABEL}</ThemedText>
+                    <View style={styles.pickerShell}>
+                      <Picker
+                        selectedValue={selectedMinute}
+                        onValueChange={(value) => handleMinuteSelect(value)}
+                        style={styles.picker}
+                        itemStyle={styles.pickerItem}
+                        dropdownIconColor="#0F172A"
+                      >
+                        {MINUTES.map((minute) => (
+                          <Picker.Item
+                            key={`minute-${minute}`}
+                            label={`${minute} 分`}
+                            value={minute.toString()}
+                          />
+                        ))}
+                      </Picker>
+                    </View>
+                  </View>
+                </View>
                 <ThemedText style={styles.previewText}>
-                  選択中: {formatTimeLabel(workingDate)} 頃
+                  選択: {formatTimeLabel(workingDate)}
                 </ThemedText>
               </>
             ) : null}
@@ -296,24 +346,118 @@ const styles = StyleSheet.create({
   },
   stageLabel: {
     color: '#1E293B',
-    fontWeight: '600',
+    fontFamily: NOTO_SANS_JP.semibold,
   },
-  input: {
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(148, 163, 184, 0.6)',
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
+  calendar: {
+    gap: 12,
+  },
+  calendarHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  calendarNavButton: {
+    padding: 8,
+  },
+  calendarNavLabel: {
+    fontFamily: NOTO_SANS_JP.bold,
+    color: '#1E293B',
+    fontSize: 16,
+  },
+  calendarMonthLabel: {
+    fontFamily: NOTO_SANS_JP.semibold,
     color: '#0F172A',
     fontSize: 16,
+  },
+  weekdayRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 4,
+  },
+  weekdayLabel: {
+    width: '14.2857%',
+    textAlign: 'center',
+    color: '#94A3B8',
+    fontFamily: NOTO_SANS_JP.semibold,
+    fontSize: 12,
+  },
+  calendarGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 8,
+  },
+  dayCell: {
+    width: '14.2857%',
+    aspectRatio: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+    marginBottom: 8,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'transparent',
+  },
+  dayCellOutside: {
+    opacity: 0.4,
+  },
+  dayCellSelected: {
+    backgroundColor: '#2563EB',
+    borderColor: '#2563EB',
+  },
+  dayCellLabel: {
+    fontFamily: NOTO_SANS_JP.semibold,
+    color: '#0F172A',
+  },
+  dayCellLabelOutside: {
+    color: '#94A3B8',
+  },
+  dayCellLabelSelected: {
+    color: '#FFFFFF',
+  },
+  todayDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginTop: 4,
+    backgroundColor: '#2563EB',
+  },
+  todayDotSelected: {
     backgroundColor: '#FFFFFF',
   },
-  webInput: {
-    fontVariant: ['tabular-nums'],
+  timePicker: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  timeDropdown: {
+    flex: 1,
+    gap: 8,
+  },
+  timeSectionLabel: {
+    color: '#475569',
+    fontFamily: NOTO_SANS_JP.semibold,
+  },
+  pickerShell: {
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(148, 163, 184, 0.4)',
+    overflow: 'hidden',
+    backgroundColor: '#FFFFFF',
+  },
+  picker: {
+    width: '100%',
+    color: '#0F172A',
+    textAlign: 'center',
+  },
+  pickerItem: {
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    fontFamily: NOTO_SANS_JP.semibold,
   },
   previewText: {
     color: '#64748B',
     fontSize: 13,
+    textAlign: 'center',
+    alignSelf: 'center',
+    fontFamily: NOTO_SANS_JP.semibold,
   },
   actions: {
     flexDirection: 'row',
@@ -330,7 +474,7 @@ const styles = StyleSheet.create({
   },
   actionLabel: {
     color: '#1E293B',
-    fontWeight: '600',
+    fontFamily: NOTO_SANS_JP.semibold,
   },
   primaryAction: {
     backgroundColor: '#2563EB',
@@ -338,6 +482,13 @@ const styles = StyleSheet.create({
   },
   primaryLabel: {
     color: '#FFFFFF',
-    fontWeight: '700',
+    fontFamily: NOTO_SANS_JP.bold,
   },
 });
+
+
+
+
+
+
+

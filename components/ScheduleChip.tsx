@@ -5,10 +5,23 @@ import { StyleSheet, View, Pressable } from 'react-native';
 
 import { ThemedText } from '@/components/ThemedText';
 
-const CANDIDATE_BG = 'rgba(37, 99, 235, 0.12)';
-const CONFIRMED_BG = 'rgba(34, 197, 94, 0.12)';
-const CANDIDATE_ICON = '#2563EB';
-const CONFIRMED_ICON = '#22C55E';
+const STATUS_PRESETS = {
+  candidate: {
+    background: 'rgba(37, 99, 235, 0.12)',
+    iconColor: '#2563EB',
+    icon: 'hourglass-bottom' as const,
+  },
+  confirmed: {
+    background: 'rgba(34, 197, 94, 0.12)',
+    iconColor: '#22C55E',
+    icon: 'event-available' as const,
+  },
+  task: {
+    background: 'rgba(37, 99, 235, 0.12)',
+    iconColor: '#2563EB',
+    icon: 'hourglass-bottom' as const,
+  },
+};
 const BORDER = 'rgba(148, 163, 184, 0.24)';
 
 export type ScheduleChipAction = {
@@ -22,21 +35,19 @@ export type ScheduleChipAction = {
 
 type Props = {
   iso: string;
-  status: 'candidate' | 'confirmed';
+  status: keyof typeof STATUS_PRESETS;
   actions?: ScheduleChipAction[];
+  actionsAlign?: 'left' | 'right';
 };
 
 const formatDisplayDate = (iso: string) =>
   format(parseISO(iso), 'M月d日（EEE） HH:mm', { locale: ja });
 
-export function ScheduleChip({ iso, status, actions = [] }: Props) {
-  const isCandidate = status === 'candidate';
-  const backgroundColor = isCandidate ? CANDIDATE_BG : CONFIRMED_BG;
-  const icon = isCandidate ? 'hourglass-bottom' : 'event-available';
-  const iconColor = isCandidate ? CANDIDATE_ICON : CONFIRMED_ICON;
+export function ScheduleChip({ iso, status, actions = [], actionsAlign = 'left' }: Props) {
+  const { background, iconColor, icon } = STATUS_PRESETS[status];
 
   return (
-    <View style={[styles.container, { backgroundColor }]}>
+    <View style={[styles.container, { backgroundColor: background }]}>
       <View style={styles.meta}>
         <View style={[styles.iconBadge, { backgroundColor: `${iconColor}1A` }]}>
           <MaterialIcons name={icon} size={18} color={iconColor} />
@@ -44,7 +55,12 @@ export function ScheduleChip({ iso, status, actions = [] }: Props) {
         <ThemedText style={styles.dateLabel}>{formatDisplayDate(iso)}</ThemedText>
       </View>
       {actions.length > 0 ? (
-        <View style={styles.actions}>
+        <View
+          style={[
+            styles.actions,
+            actionsAlign === 'right' ? styles.actionsRight : styles.actionsLeft,
+          ]}
+        >
           {actions.map((action) => (
             <Pressable
               key={action.key}
@@ -93,6 +109,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+    justifyContent: 'flex-start',
+  },
+  actionsLeft: {},
+  actionsRight: {
+    justifyContent: 'flex-end',
+    width: '100%',
+    alignSelf: 'stretch',
   },
   actionButton: {
     flexDirection: 'row',

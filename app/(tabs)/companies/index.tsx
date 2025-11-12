@@ -3,7 +3,7 @@ import { format, parseISO } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { Link } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { Alert, FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Alert, FlatList, Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { PageHeader } from '@/components/PageHeader';
@@ -11,6 +11,7 @@ import { ScheduleChip } from '@/components/ScheduleChip';
 import { SchedulePickerModal } from '@/components/SchedulePickerModal';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { NOTO_SANS_JP } from '@/constants/Typography';
 import { useAppStore } from '@/store/useAppStore';
 
 const BACKGROUND = '#EFF6FF';
@@ -21,23 +22,27 @@ const TEXT_PRIMARY = '#1E293B';
 const TEXT_MUTED = '#64748B';
 const PRIMARY = '#2563EB';
 const SUCCESS = '#22C55E';
-const WARNING = '#F59E0B';
 const DANGER = '#F87171';
 
 const formatDisplayDate = (iso: string) =>
   format(parseISO(iso), "yyyy'年'MM'月'dd'日'(EEE)HH:mm", { locale: ja });
 
-type PickerMode = 'candidate' | 'confirmed';
+const formatTaskDueLabel = (iso: string) => format(parseISO(iso), "M月d日 HH:mm", { locale: ja });
+
+type PickerMode = 'candidate' | 'task';
 
 export default function CompaniesScreen() {
   const companies = useAppStore((state) => state.companies);
   const createCompany = useAppStore((state) => state.createCompany);
 
-  const [isFormOpen, setFormOpen] = useState(false);
+  const [createModalVisible, setCreateModalVisible] = useState(false);
   const [formName, setFormName] = useState('');
   const [formProgress, setFormProgress] = useState('');
   const [formNotes, setFormNotes] = useState('');
   const [formNextAction, setFormNextAction] = useState('');
+  const [formTasks, setFormTasks] = useState<{ title: string; dueDate?: string }[]>([]);
+  const [formTaskDraft, setFormTaskDraft] = useState('');
+  const [formTaskDue, setFormTaskDue] = useState<string | undefined>();
   const [formCandidates, setFormCandidates] = useState<string[]>([]);
   const [formConfirmedDate, setFormConfirmedDate] = useState<string | undefined>();
 
@@ -49,13 +54,55 @@ export default function CompaniesScreen() {
     setFormProgress('');
     setFormNotes('');
     setFormNextAction('');
+    setFormTaskDraft('');
+    setFormTasks([]);
+    setFormTaskDue(undefined);
     setFormCandidates([]);
     setFormConfirmedDate(undefined);
   }, []);
 
-  const toggleForm = useCallback(() => {
-    setFormOpen((prev) => !prev);
+  const openCreateModal = useCallback(() => {
+    setCreateModalVisible(true);
   }, []);
+
+  const handleCancelCreate = useCallback(() => {
+    const hasChanges =
+      formName.trim() ||
+      formProgress.trim() ||
+      formNotes.trim() ||
+      formNextAction.trim() ||
+      formTaskDraft.trim() ||
+      formTaskDue ||
+      formTasks.length > 0 ||
+      formCandidates.length > 0 ||
+      formConfirmedDate;
+    if (hasChanges) {
+      Alert.alert('入力内容を破棄しますか？', 'キャンセルすると入力中の内容はすべて削除されます。', [
+        { text: '続ける', style: 'cancel' },
+        {
+          text: '破棄する',
+          style: 'destructive',
+          onPress: () => {
+            resetForm();
+            setCreateModalVisible(false);
+          },
+        },
+      ]);
+      return;
+    }
+    setCreateModalVisible(false);
+  }, [
+    formCandidates.length,
+    formConfirmedDate,
+    formName,
+    formNotes,
+    formNextAction,
+    formTaskDraft,
+    formTaskDue,
+    formTasks.length,
+    formProgress,
+    resetForm,
+  ]);
 
   const handlePickerOpen = useCallback((mode: PickerMode) => {
     setPickerMode(mode);
@@ -72,8 +119,8 @@ export default function CompaniesScreen() {
       if (!pickerMode) return;
       if (pickerMode === 'candidate') {
         setFormCandidates((prev) => Array.from(new Set([...prev, iso])).sort());
-      } else {
-        setFormConfirmedDate(iso);
+      } else if (pickerMode === 'task') {
+        setFormTaskDue(iso);
       }
       handlePickerClose();
     },
@@ -81,9 +128,9 @@ export default function CompaniesScreen() {
   );
 
   const pickerInitialValue = useMemo(() => {
-    if (pickerMode === 'confirmed' && formConfirmedDate) return formConfirmedDate;
+    if (pickerMode === 'task' && formTaskDue) return formTaskDue;
     return undefined;
-  }, [pickerMode, formConfirmedDate]);
+  }, [pickerMode, formTaskDue]);
 
   const handleRemoveCandidate = useCallback((iso: string) => {
     setFormCandidates((prev) => prev.filter((date) => date !== iso));
@@ -98,6 +145,25 @@ export default function CompaniesScreen() {
     setFormConfirmedDate(undefined);
   }, []);
 
+  const hasSchedulePreview = formCandidates.length > 0 || Boolean(formConfirmedDate);
+  const canAddTask = formTaskDraft.trim().length > 0;
+
+  const handleAddTask = useCallback(() => {
+    const title = formTaskDraft.trim();
+    if (!title) return;
+    setFormTasks((prev) => [...prev, { title, dueDate: formTaskDue }]);
+    setFormTaskDraft('');
+    setFormTaskDue(undefined);
+  }, [formTaskDraft, formTaskDue]);
+
+  const handleRemoveTask = useCallback((index: number) => {
+    setFormTasks((prev) => prev.filter((_, idx) => idx !== index));
+  }, []);
+
+  const handleClearTaskDue = useCallback(() => {
+    setFormTaskDue(undefined);
+  }, []);
+
   const handleCreateCompany = useCallback(() => {
     const name = formName.trim();
     const progress = formProgress.trim();
@@ -106,9 +172,18 @@ export default function CompaniesScreen() {
       return;
     }
 
+    const tasksPayload = formTasks
+      .map((task) => ({
+        title: task.title.trim(),
+        dueDate: task.dueDate,
+        isDone: false,
+      }))
+      .filter((task) => task.title.length > 0);
+
     createCompany({
       name,
       progressStatus: progress,
+      tasks: tasksPayload,
       candidateDates: formCandidates,
       confirmedDate: formConfirmedDate,
       remarks: formNotes.trim() || undefined,
@@ -116,15 +191,17 @@ export default function CompaniesScreen() {
     });
 
     resetForm();
-    setFormOpen(false);
+    setCreateModalVisible(false);
   }, [
     createCompany,
     formCandidates,
     formConfirmedDate,
     formName,
     formNotes,
-    formProgress,
     formNextAction,
+    formProgress,
+    formTasks,
+    setCreateModalVisible,
     resetForm,
   ]);
 
@@ -141,7 +218,7 @@ export default function CompaniesScreen() {
           titleStyle={styles.pageHeaderTitle}
           subtitleStyle={styles.pageHeaderSubtitle}
           rightSlot={
-            <Pressable style={styles.primaryButton} onPress={toggleForm}>
+            <Pressable style={styles.primaryButton} onPress={openCreateModal}>
               <MaterialIcons name="add" size={18} color="#FFFFFF" />
               <ThemedText style={styles.primaryButtonLabel}>企業を追加</ThemedText>
             </Pressable>
@@ -161,145 +238,7 @@ export default function CompaniesScreen() {
               </ThemedText>
             </ThemedView>
           }
-          ListHeaderComponent={
-            isFormOpen ? (
-              <ThemedView style={styles.formCard}>
-                <View style={styles.formHeader}>
-                  <ThemedText style={styles.formTitle}>新規企業</ThemedText>
-                  <ThemedText style={styles.formLead}>
-                    入力した内容は企業一覧とカレンダーに反映され、進捗管理がしやすくなります。
-                  </ThemedText>
-                </View>
-
-                <ThemedText style={styles.formHeading}>基礎情報</ThemedText>
-                <View style={styles.formSection}>
-                  <View style={styles.inputBlock}>
-                    <ThemedText style={styles.fieldLabel}>企業名</ThemedText>
-                    <TextInput
-                      style={styles.input}
-                      value={formName}
-                      onChangeText={setFormName}
-                    />
-                  </View>
-                  <View style={styles.inputBlock}>
-                    <ThemedText style={styles.fieldLabel}>進捗</ThemedText>
-                    <TextInput
-                      style={styles.input}
-                      value={formProgress}
-                      placeholder="例：選考中／結果待ち／内定 など"
-                      onChangeText={setFormProgress}
-                    />
-                  </View>
-                  <View style={styles.inputBlock}>
-                    <ThemedText style={styles.fieldLabel}>メモ（任意）</ThemedText>
-                    <TextInput
-                      style={[styles.input, styles.multilineInput]}
-                      value={formNotes}
-                      onChangeText={setFormNotes}
-                      multiline
-                    />
-                  </View>
-                </View>
-
-                <ThemedText style={styles.formHeading}>日程管理</ThemedText>
-                <View style={[styles.formSection, styles.scheduleSection]}>
-                  <View style={styles.inputBlock}>
-                    <ThemedText style={styles.fieldLabel}>次にやること</ThemedText>
-                    <TextInput
-                      style={styles.input}
-                      value={formNextAction}
-                      onChangeText={setFormNextAction}
-                      placeholder="例：一次面接の準備資料を仕上げる"
-                    />
-                  </View>
-                  <View style={styles.scheduleHeader}>
-                    <ThemedText style={styles.formLabel}>候補日・確定日</ThemedText>
-                    <View style={styles.scheduleActions}>
-                      <Pressable style={styles.secondaryButton} onPress={() => handlePickerOpen('candidate')}>
-                        <MaterialIcons name="event" size={16} color={PRIMARY} />
-                        <ThemedText style={styles.secondaryButtonLabel}>候補を追加</ThemedText>
-                      </Pressable>
-                      <Pressable style={styles.secondaryButton} onPress={() => handlePickerOpen('confirmed')}>
-                        <MaterialIcons name="event-available" size={16} color={PRIMARY} />
-                        <ThemedText style={styles.secondaryButtonLabel}>確定を設定</ThemedText>
-                      </Pressable>
-                    </View>
-                  </View>
-
-                  {formConfirmedDate ? (
-                    <View style={styles.confirmedBlock}>
-                      <ThemedText style={styles.formCaption}>確定した予定</ThemedText>
-                      <ScheduleChip
-                        iso={formConfirmedDate}
-                        status="confirmed"
-                        actions={[
-                          {
-                            key: 'clear',
-                            label: 'クリア',
-                            icon: 'close',
-                            color: WARNING,
-                            backgroundColor: 'rgba(245, 158, 11, 0.18)',
-                            onPress: handleClearConfirmed,
-                          },
-                        ]}
-                      />
-                      {formNextAction ? (
-                        <ThemedText style={styles.actionSummary}>{formNextAction}</ThemedText>
-                      ) : null}
-                    </View>
-                  ) : null}
-
-                  {formCandidates.length > 0 ? (
-                    <View style={styles.candidateBlock}>
-                      <ThemedText style={styles.formCaption}>候補日</ThemedText>
-                      <View style={styles.chipColumn}>
-                        {formCandidates.map((iso) => (
-                          <ScheduleChip
-                            key={iso}
-                            iso={iso}
-                            status="candidate"
-                            actions={[
-                              {
-                                key: 'promote',
-                                label: '確定',
-                                icon: 'event-available',
-                                color: SUCCESS,
-                                backgroundColor: 'rgba(34, 197, 94, 0.18)',
-                                onPress: () => handlePromoteCandidate(iso),
-                              },
-                              {
-                                key: 'remove',
-                                label: '削除',
-                                icon: 'delete',
-                                color: DANGER,
-                                backgroundColor: 'rgba(248, 113, 113, 0.18)',
-                                onPress: () => handleRemoveCandidate(iso),
-                              },
-                            ]}
-                          />
-                        ))}
-                      </View>
-                    </View>
-                  ) : null}
-
-                  {!formConfirmedDate && formCandidates.length === 0 ? (
-                    <ThemedText style={styles.formHint}>
-                      ������m�����o�^����Ƃ�����ɕ\������܂��B
-                    </ThemedText>
-                  ) : null}
-                </View>
-
-                <View style={styles.modalActions}>
-                  <Pressable style={styles.modalButton} onPress={toggleForm}>
-                    <ThemedText style={styles.modalButtonLabel}>キャンセル</ThemedText>
-                  </Pressable>
-                  <Pressable style={[styles.modalButton, styles.modalPrimaryButton]} onPress={handleCreateCompany}>
-                    <ThemedText style={styles.modalPrimaryLabel}>保存</ThemedText>
-                  </Pressable>
-                </View>
-              </ThemedView>
-            ) : null
-          }
+          ListHeaderComponent={null}
           renderItem={({ item }) => {
             const hasConfirmed = Boolean(item.confirmedDate);
             const candidateCount = item.candidateDates.length;
@@ -352,7 +291,7 @@ export default function CompaniesScreen() {
                       <View style={styles.cardCandidateRow}>
                         <MaterialIcons name="event" size={16} color={PRIMARY} />
                         <ThemedText style={styles.cardCandidateLabel}>
-                          ���� {candidateCount} ���o�^�ς�
+                          候補日 {candidateCount} 件登録があります
                         </ThemedText>
                       </View>
                     ) : null}
@@ -368,11 +307,232 @@ export default function CompaniesScreen() {
             );
           }}
         />
+
+        <Modal visible={createModalVisible} animationType="slide">
+          <View style={styles.createModalOverlay}>
+            <ThemedView style={styles.createModalCard}>
+              <ScrollView contentContainerStyle={styles.createModalContent} keyboardShouldPersistTaps="handled">
+                <View style={styles.formHeader}>
+                  <ThemedText style={styles.formTitle}>企業を追加</ThemedText>
+                </View>
+
+                <View style={styles.sectionGroup}>
+                  <ThemedText style={styles.formHeading}>基本情報</ThemedText>
+                  <View style={styles.formSection}>
+                    <View style={styles.inputBlock}>
+                      <View style={styles.labelRow}>
+                        <ThemedText style={styles.fieldLabel}>企業名</ThemedText>
+                        <ThemedText style={styles.requiredTag}>必須</ThemedText>
+                      </View>
+                      <TextInput style={styles.input} value={formName} onChangeText={setFormName} />
+                    </View>
+                    <View style={styles.inputBlock}>
+                      <View style={styles.labelRow}>
+                        <ThemedText style={styles.fieldLabel}>進捗ステータス</ThemedText>
+                        <ThemedText style={styles.requiredTag}>必須</ThemedText>
+                      </View>
+                      <TextInput
+                        style={styles.input}
+                        value={formProgress}
+                        placeholder="例: 書類選考/一次選考 など"
+                        onChangeText={setFormProgress}
+                      />
+                    </View>
+                    <View style={styles.inputBlock}>
+                      <ThemedText style={styles.fieldLabel}>メモ</ThemedText>
+                      <TextInput
+                        style={[styles.input, styles.multilineInput]}
+                        value={formNotes}
+                        onChangeText={setFormNotes}
+                        multiline
+                      />
+                    </View>
+                  </View>
+                </View>
+
+                <View style={styles.sectionGroup}>
+                  <ThemedText style={styles.formHeading}>スケジュール</ThemedText>
+                  <View style={[styles.formSection, styles.scheduleSection]}>
+                    <View style={styles.inputBlock}>
+                      <View style={styles.labelRow}>
+                        <ThemedText style={styles.fieldLabel}>日程調整</ThemedText>
+                      </View>
+                    <TextInput
+                      style={styles.input}
+                      value={formNextAction}
+                      onChangeText={setFormNextAction}
+                      placeholder="例: 一次面接"
+                    />
+                  </View>
+                  <View style={styles.scheduleActions}>
+                    <Pressable
+                      style={[
+                        styles.secondaryButton,
+                        formConfirmedDate && styles.secondaryButtonDisabled,
+                      ]}
+                      disabled={Boolean(formConfirmedDate)}
+                      onPress={() => {
+                        if (formConfirmedDate) return;
+                        handlePickerOpen('candidate');
+                      }}
+                    >
+                      <MaterialIcons name="event" size={16} color={PRIMARY} />
+                      <ThemedText style={styles.secondaryButtonLabel}>候補日を追加</ThemedText>
+                    </Pressable>
+                  </View>
+
+                    {hasSchedulePreview ? (
+                      <View style={styles.scheduleSummaryCard}>
+                        {formConfirmedDate ? (
+                          <View style={styles.confirmedBlock}>
+                            <ThemedText style={styles.formCaption}>確定済みの予定</ThemedText>
+                            <ScheduleChip
+                              iso={formConfirmedDate}
+                              status="confirmed"
+                              actionsAlign="right"
+                              actions={[
+                                {
+                                  key: 'clear',
+                                  label: '削除',
+                                  icon: 'close',
+                                  color: DANGER,
+                                  backgroundColor: 'rgba(248, 113, 113, 0.18)',
+                                  onPress: handleClearConfirmed,
+                                },
+                              ]}
+                            />
+                          </View>
+                        ) : null}
+
+                        {formCandidates.length > 0 ? (
+                          <View
+                            style={[
+                              styles.candidateBlock,
+                              formConfirmedDate && styles.scheduleSummaryDivider,
+                            ]}
+                          >
+                            <ThemedText style={styles.formCaption}>候補日</ThemedText>
+                            <View style={styles.chipColumn}>
+                              {formCandidates.map((iso) => (
+                                <ScheduleChip
+                                  key={iso}
+                                  iso={iso}
+                                  status="candidate"
+                                  actions={[
+                                    {
+                                      key: 'promote',
+                                      label: '確定',
+                                      icon: 'event-available',
+                                      color: SUCCESS,
+                                      backgroundColor: 'rgba(34, 197, 94, 0.18)',
+                                      onPress: () => handlePromoteCandidate(iso),
+                                    },
+                                    {
+                                      key: 'remove',
+                                      label: '削除',
+                                      icon: 'close',
+                                      color: DANGER,
+                                      backgroundColor: 'rgba(248, 113, 113, 0.18)',
+                                      onPress: () => handleRemoveCandidate(iso),
+                                    },
+                                  ]}
+                                />
+                              ))}
+                            </View>
+                          </View>
+                        ) : null}
+                      </View>
+                    ) : null}
+
+                    <View style={[styles.taskSection, styles.taskInlineSection]}>
+                    <View style={styles.inputBlock}>
+                      <View style={styles.labelRow}>
+                        <ThemedText style={styles.fieldLabel}>タスク</ThemedText>
+                      </View>
+                      <View style={styles.taskComposer}>
+                        <TextInput
+                          style={[styles.input, styles.taskInput]}
+                          value={formTaskDraft}
+                          onChangeText={setFormTaskDraft}
+                      placeholder="例:ES提出"
+                          returnKeyType="done"
+                          onSubmitEditing={handleAddTask}
+                        />
+                      </View>
+                      {formTaskDue ? (
+                        <View style={styles.taskDuePreview}>
+                          <ScheduleChip iso={formTaskDue} status="task" />
+                          <Pressable style={styles.taskDueClearButton} onPress={handleClearTaskDue}>
+                            <MaterialIcons name="close" size={12} color={TEXT_MUTED} />
+                            <ThemedText style={styles.taskDueClearLabel}>期限をクリア</ThemedText>
+                          </Pressable>
+                        </View>
+                      ) : null}
+                      <View style={styles.taskActionsRow}>
+                        <Pressable
+                          style={[styles.secondaryButton, styles.taskDueButton]}
+                          onPress={() => handlePickerOpen('task')}
+                        >
+                          <MaterialIcons name="event" size={16} color={PRIMARY} />
+                          <ThemedText style={styles.secondaryButtonLabel}>
+                            {formTaskDue ? '期限を変更' : '期限を設定'}
+                          </ThemedText>
+                        </Pressable>
+                        <Pressable
+                          style={[
+                            styles.secondaryButton,
+                            styles.taskAddButton,
+                            !canAddTask && styles.secondaryButtonDisabled,
+                          ]}
+                          onPress={handleAddTask}
+                          disabled={!canAddTask}
+                        >
+                          <MaterialIcons name="add" size={16} color={PRIMARY} />
+                          <ThemedText style={styles.secondaryButtonLabel}>追加</ThemedText>
+                        </Pressable>
+                      </View>
+                    </View>
+                    {formTasks.length > 0 ? (
+                      <View style={styles.taskListPreview}>
+                        {formTasks.map((task, index) => (
+                          <View key={`${task.title}-${index}`} style={styles.taskPill}>
+                            <View style={styles.taskPillText}>
+                              <ThemedText style={styles.taskPillLabel}>{task.title}</ThemedText>
+                              {task.dueDate ? (
+                                <ThemedText style={styles.taskPillDue}>
+                                  {formatTaskDueLabel(task.dueDate)}
+                                </ThemedText>
+                              ) : null}
+                            </View>
+                            <Pressable onPress={() => handleRemoveTask(index)} style={styles.taskPillRemove}>
+                              <MaterialIcons name="close" size={14} color={TEXT_MUTED} />
+                            </Pressable>
+                          </View>
+                        ))}
+                      </View>
+                    ) : null}
+                  </View>
+                </View>
+                </View>
+              </ScrollView>
+
+              <View style={styles.modalActions}>
+                <Pressable style={styles.secondaryButton} onPress={handleCancelCreate}>
+                  <ThemedText style={styles.secondaryButtonLabel}>キャンセル</ThemedText>
+                </Pressable>
+                <Pressable style={styles.primaryButton} onPress={handleCreateCompany}>
+                  <ThemedText style={styles.primaryButtonLabel}>保存</ThemedText>
+                </Pressable>
+              </View>
+            </ThemedView>
+          </View>
+        </Modal>
+
       </View>
 
       <SchedulePickerModal
         visible={pickerVisible}
-        status={pickerMode ?? 'candidate'}
+        status={pickerMode === 'task' ? 'task' : pickerMode ?? 'candidate'}
         initialValue={pickerInitialValue}
         onCancel={handlePickerClose}
         onConfirm={handlePickerConfirm}
@@ -393,9 +553,10 @@ const styles = StyleSheet.create({
   },
   pageHeader: {
     marginHorizontal: -20,
-    paddingHorizontal: 20,
+    paddingLeft: 20,
+    paddingRight: 0,
     paddingBottom: 12,
-    marginBottom: 16,
+    marginBottom: 28,
   },
   list: { flex: 1 },
   listContent: { gap: 16, paddingBottom: 160 },
@@ -444,15 +605,13 @@ const styles = StyleSheet.create({
   formHeader: {
     gap: 6,
   },
+  sectionGroup: {
+    gap: 4,
+  },
   formTitle: {
     color: TEXT_PRIMARY,
     fontSize: 18,
     fontWeight: '700',
-  },
-  formLead: {
-    color: TEXT_MUTED,
-    fontSize: 13,
-    lineHeight: 20,
   },
   formHeading: {
     color: TEXT_PRIMARY,
@@ -460,7 +619,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   formSection: {
-    gap: 16,
+    gap: 14,
     padding: 16,
     borderRadius: 16,
     backgroundColor: SURFACE_SUBTLE,
@@ -468,14 +627,29 @@ const styles = StyleSheet.create({
     borderColor: BORDER,
   },
   scheduleSection: {
-    gap: 18,
+    gap: 14,
+  },
+  taskSection: {
+    gap: 14,
+  },
+  taskInlineSection: {
+    paddingTop: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: BORDER,
+    gap: 14,
   },
   inputBlock: {
     width: '100%',
-    gap: 6,
+    gap: 4,
   },
   fieldLabel: {
     color: TEXT_PRIMARY,
+    fontWeight: '600',
+  },
+  labelRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  requiredTag: {
+    color: DANGER,
+    fontSize: 12,
     fontWeight: '600',
   },
   card: {
@@ -508,7 +682,7 @@ const styles = StyleSheet.create({
   companyName: {
     flexShrink: 1,
     color: TEXT_PRIMARY,
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
   },
   statusBadge: {
@@ -520,7 +694,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: 'rgba(37, 99, 235, 0.12)',
   },
-  statusBadgeLabel: { color: PRIMARY, fontWeight: '700', fontSize: 12 },
+  statusBadgeLabel: { color: PRIMARY, fontWeight: '700', fontSize: 13 },
   cardMetaRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -533,18 +707,19 @@ const styles = StyleSheet.create({
   },
   metaLabel: {
     color: TEXT_MUTED,
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
     letterSpacing: 0.4,
   },
   metaValue: {
     color: TEXT_PRIMARY,
     fontWeight: '600',
+    fontSize: 14,
   },
   metaAction: {
     color: TEXT_PRIMARY,
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 12,
+    lineHeight: 16,
   },
   metaPills: {
     flexDirection: 'row',
@@ -565,7 +740,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(34, 197, 94, 0.12)',
   },
   metaPillLabel: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
   },
   metaConfirmedLabel: {
@@ -587,12 +762,12 @@ const styles = StyleSheet.create({
   cardCandidateLabel: {
     color: PRIMARY,
     fontWeight: '600',
-    fontSize: 12,
+    fontSize: 11,
   },
   noteSnippet: {
     color: TEXT_MUTED,
-    fontSize: 12,
-    lineHeight: 18,
+    fontSize: 11,
+    lineHeight: 16,
     marginTop: 12,
   },
   input: {
@@ -600,8 +775,9 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(37, 99, 235, 0.35)',
     borderRadius: 14,
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
+    paddingVertical: 4,
+    fontSize: 14,
+    fontFamily: NOTO_SANS_JP.semibold,
     backgroundColor: '#F1F5FF',
     color: TEXT_PRIMARY,
   },
@@ -617,29 +793,109 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: BORDER,
   },
-  secondaryButtonLabel: { color: PRIMARY, fontWeight: '600' },
-  scheduleHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
+  secondaryButtonDisabled: {
+    opacity: 0.5,
   },
+  secondaryButtonLabel: { color: PRIMARY, fontWeight: '600' },
   scheduleActions: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'flex-end',
+    alignItems: 'center',
+    alignSelf: 'flex-end',
     gap: 10,
+  },
+  scheduleSummaryCard: {
+    borderRadius: 18,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: BORDER,
+    backgroundColor: SURFACE,
+    padding: 16,
+    gap: 16,
+  },
+  scheduleSummaryDivider: {
+    paddingTop: 16,
+    marginTop: 8,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: BORDER,
+  },
+  taskComposer: {
+    width: '100%',
+  },
+  taskActionsRow: {
+    marginTop: 8,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    gap: 12,
+  },
+  taskInput: {
+    flex: 1,
+  },
+  taskDueButton: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+  },
+  taskAddButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  taskDuePreview: {
+    marginTop: 8,
+    width: '100%',
+    gap: 8,
+  },
+  taskDueClearButton: {
+    alignSelf: 'flex-end',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  taskDueClearLabel: {
+    color: TEXT_MUTED,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  taskListPreview: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  taskPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: SURFACE_SUBTLE,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: BORDER,
+  },
+  taskPillLabel: {
+    color: TEXT_PRIMARY,
+    fontWeight: '600',
+  },
+  taskPillText: {
+    flexDirection: 'column',
+    gap: 2,
+    alignItems: 'flex-start',
+  },
+  taskPillDue: {
+    color: PRIMARY,
+    fontSize: 11,
+  },
+  taskPillRemove: {
+    padding: 2,
   },
   confirmedBlock: {
     gap: 8,
   },
   candidateBlock: {
     gap: 8,
-  },
-  actionSummary: {
-    color: TEXT_PRIMARY,
-    fontSize: 13,
-    fontWeight: '600',
   },
   formLabel: {
     color: TEXT_PRIMARY,
@@ -658,8 +914,26 @@ const styles = StyleSheet.create({
   modalActions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    gap: 12,
-    marginTop: 10,
+    gap: 16,
+    marginTop: 16,
+    paddingHorizontal: 20,
+  },
+  createModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.55)',
+    padding: 20,
+    justifyContent: 'center',
+  },
+  createModalCard: {
+    backgroundColor: SURFACE,
+    borderRadius: 24,
+    paddingVertical: 20,
+    paddingHorizontal: 0,
+    maxHeight: '90%',
+  },
+  createModalContent: {
+    paddingHorizontal: 20,
+    gap: 24,
   },
   modalButton: {
     flexDirection: 'row',
@@ -677,4 +951,3 @@ const styles = StyleSheet.create({
   modalPrimaryLabel: { color: '#FFFFFF', fontWeight: '700' },
   chipColumn: { gap: 12 },
 });
-

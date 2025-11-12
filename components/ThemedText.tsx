@@ -1,5 +1,6 @@
 import { StyleSheet, Text, type TextProps } from 'react-native';
 
+import { NOTO_SANS_JP } from '@/constants/Typography';
 import { useThemeColor } from '@/hooks/useThemeColor';
 
 export type ThemedTextProps = TextProps & {
@@ -33,28 +34,34 @@ export function ThemedText({
   );
 }
 
+const FONT_REGULAR = NOTO_SANS_JP.regular;
+const FONT_SEMIBOLD = NOTO_SANS_JP.semibold;
+const FONT_BOLD = NOTO_SANS_JP.bold;
+
 const styles = StyleSheet.create({
   default: {
     fontSize: 16,
     lineHeight: 24,
+    fontFamily: FONT_SEMIBOLD,
   },
   defaultSemiBold: {
     fontSize: 16,
     lineHeight: 24,
-    fontWeight: '600',
+    fontFamily: FONT_SEMIBOLD,
   },
   title: {
     fontSize: 32,
-    fontWeight: 'bold',
     lineHeight: 32,
+    fontFamily: FONT_BOLD,
   },
   subtitle: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: FONT_BOLD,
   },
   link: {
     lineHeight: 30,
     fontSize: 16,
     color: '#0a7ea4',
+    fontFamily: FONT_REGULAR,
   },
 });

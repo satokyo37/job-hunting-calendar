@@ -1,4 +1,4 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+﻿import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { format, parseISO } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { Link } from 'expo-router';
@@ -61,8 +61,8 @@ export default function TasksHomeScreen() {
           keyExtractor={(item) => item.id}
           ListEmptyComponent={
             <ThemedView style={styles.empty}>
-              <ThemedText style={styles.emptyText}>タスクはまだありません</ThemedText>
-              <ThemedText style={styles.emptyHint}>「企業」タブからタスクを追加してください</ThemedText>
+              <ThemedText style={styles.emptyText}>登録されているタスクはありません</ThemedText>
+              <ThemedText style={styles.emptyHint}>企業詳細ページの「タスク」欄から追加できます</ThemedText>
             </ThemedView>
           }
           renderItem={({ item }) => (

@@ -351,147 +351,147 @@ export default function CompaniesScreen() {
                 </View>
 
                 <View style={styles.sectionGroup}>
-                  <ThemedText style={styles.formHeading}>スケジュール</ThemedText>
-                  <View style={[styles.formSection, styles.scheduleSection]}>
-                    <View style={styles.inputBlock}>
-                      <View style={styles.labelRow}>
-                        <ThemedText style={styles.fieldLabel}>日程調整</ThemedText>
-                      </View>
-                    <TextInput
-                      style={styles.input}
-                      value={formNextAction}
-                      onChangeText={setFormNextAction}
-                      placeholder="例: 一次面接"
+          <ThemedText style={styles.formHeading}>日程調整</ThemedText>
+          <View style={[styles.formSection, styles.scheduleSection]}>
+            <View style={styles.inputBlock}>
+                <ThemedText style={styles.formHint}>内容</ThemedText>
+                <TextInput
+                  style={styles.input}
+                  value={formNextAction}
+                  onChangeText={setFormNextAction}
+                  placeholder="例: 面談調整"
+                />
+            </View>
+            <View style={styles.scheduleActions}>
+              <Pressable
+                style={[
+                  styles.secondaryButton,
+                  formConfirmedDate && styles.secondaryButtonDisabled,
+                ]}
+                disabled={Boolean(formConfirmedDate)}
+                onPress={() => {
+                  if (formConfirmedDate) return;
+                  handlePickerOpen('candidate');
+                }}
+              >
+                <MaterialIcons name="event" size={16} color={PRIMARY} />
+                <ThemedText style={styles.secondaryButtonLabel}>候補日を追加</ThemedText>
+              </Pressable>
+            </View>
+
+            {hasSchedulePreview ? (
+              <View style={styles.scheduleSummaryCard}>
+                {formConfirmedDate ? (
+                  <View style={styles.confirmedBlock}>
+                    <ThemedText style={styles.formCaption}>確定済みの予定</ThemedText>
+                    <ScheduleChip
+                      iso={formConfirmedDate}
+                      status="confirmed"
+                      actionsAlign="right"
+                      actions={[
+                        {
+                          key: 'clear',
+                          label: '削除',
+                          icon: 'close',
+                          color: DANGER,
+                          backgroundColor: 'rgba(248, 113, 113, 0.18)',
+                          onPress: handleClearConfirmed,
+                        },
+                      ]}
                     />
                   </View>
-                  <View style={styles.scheduleActions}>
-                    <Pressable
-                      style={[
-                        styles.secondaryButton,
-                        formConfirmedDate && styles.secondaryButtonDisabled,
-                      ]}
-                      disabled={Boolean(formConfirmedDate)}
-                      onPress={() => {
-                        if (formConfirmedDate) return;
-                        handlePickerOpen('candidate');
-                      }}
-                    >
-                      <MaterialIcons name="event" size={16} color={PRIMARY} />
-                      <ThemedText style={styles.secondaryButtonLabel}>候補日を追加</ThemedText>
-                    </Pressable>
-                  </View>
+                ) : null}
 
-                    {hasSchedulePreview ? (
-                      <View style={styles.scheduleSummaryCard}>
-                        {formConfirmedDate ? (
-                          <View style={styles.confirmedBlock}>
-                            <ThemedText style={styles.formCaption}>確定済みの予定</ThemedText>
-                            <ScheduleChip
-                              iso={formConfirmedDate}
-                              status="confirmed"
-                              actionsAlign="right"
-                              actions={[
-                                {
-                                  key: 'clear',
-                                  label: '削除',
-                                  icon: 'close',
-                                  color: DANGER,
-                                  backgroundColor: 'rgba(248, 113, 113, 0.18)',
-                                  onPress: handleClearConfirmed,
-                                },
-                              ]}
-                            />
-                          </View>
-                        ) : null}
-
-                        {formCandidates.length > 0 ? (
-                          <View
-                            style={[
-                              styles.candidateBlock,
-                              formConfirmedDate && styles.scheduleSummaryDivider,
-                            ]}
-                          >
-                            <ThemedText style={styles.formCaption}>候補日</ThemedText>
-                            <View style={styles.chipColumn}>
-                              {formCandidates.map((iso) => (
-                                <ScheduleChip
-                                  key={iso}
-                                  iso={iso}
-                                  status="candidate"
-                                  actions={[
-                                    {
-                                      key: 'promote',
-                                      label: '確定',
-                                      icon: 'event-available',
-                                      color: SUCCESS,
-                                      backgroundColor: 'rgba(34, 197, 94, 0.18)',
-                                      onPress: () => handlePromoteCandidate(iso),
-                                    },
-                                    {
-                                      key: 'remove',
-                                      label: '削除',
-                                      icon: 'close',
-                                      color: DANGER,
-                                      backgroundColor: 'rgba(248, 113, 113, 0.18)',
-                                      onPress: () => handleRemoveCandidate(iso),
-                                    },
-                                  ]}
-                                />
-                              ))}
-                            </View>
-                          </View>
-                        ) : null}
-                      </View>
-                    ) : null}
-
-                    <View style={[styles.taskSection, styles.taskInlineSection]}>
-                    <View style={styles.inputBlock}>
-                      <View style={styles.labelRow}>
-                        <ThemedText style={styles.fieldLabel}>タスク</ThemedText>
-                      </View>
-                      <View style={styles.taskComposer}>
-                        <TextInput
-                          style={[styles.input, styles.taskInput]}
-                          value={formTaskDraft}
-                          onChangeText={setFormTaskDraft}
-                      placeholder="例:ES提出"
-                          returnKeyType="done"
-                          onSubmitEditing={handleAddTask}
-                        />
-                      </View>
-                      {formTaskDue ? (
-                        <View style={styles.taskDuePreview}>
-                          <ScheduleChip iso={formTaskDue} status="task" />
-                          <Pressable style={styles.taskDueClearButton} onPress={handleClearTaskDue}>
-                            <MaterialIcons name="close" size={12} color={TEXT_MUTED} />
-                            <ThemedText style={styles.taskDueClearLabel}>期限をクリア</ThemedText>
-                          </Pressable>
-                        </View>
-                      ) : null}
-                      <View style={styles.taskActionsRow}>
-                        <Pressable
-                          style={[styles.secondaryButton, styles.taskDueButton]}
-                          onPress={() => handlePickerOpen('task')}
-                        >
-                          <MaterialIcons name="event" size={16} color={PRIMARY} />
-                          <ThemedText style={styles.secondaryButtonLabel}>
-                            {formTaskDue ? '期限を変更' : '期限を設定'}
-                          </ThemedText>
-                        </Pressable>
-                        <Pressable
-                          style={[
-                            styles.secondaryButton,
-                            styles.taskAddButton,
-                            !canAddTask && styles.secondaryButtonDisabled,
+                {formCandidates.length > 0 ? (
+                  <View
+                    style={[
+                      styles.candidateBlock,
+                      formConfirmedDate && styles.scheduleSummaryDivider,
+                    ]}
+                  >
+                    <ThemedText style={styles.formCaption}>候補日</ThemedText>
+                    <View style={styles.chipColumn}>
+                      {formCandidates.map((iso) => (
+                        <ScheduleChip
+                          key={iso}
+                          iso={iso}
+                          status="candidate"
+                          actions={[
+                            {
+                              key: 'promote',
+                              label: '確定',
+                              icon: 'event-available',
+                              color: SUCCESS,
+                              backgroundColor: 'rgba(34, 197, 94, 0.18)',
+                              onPress: () => handlePromoteCandidate(iso),
+                            },
+                            {
+                              key: 'remove',
+                              label: '削除',
+                              icon: 'close',
+                              color: DANGER,
+                              backgroundColor: 'rgba(248, 113, 113, 0.18)',
+                              onPress: () => handleRemoveCandidate(iso),
+                            },
                           ]}
-                          onPress={handleAddTask}
-                          disabled={!canAddTask}
-                        >
-                          <MaterialIcons name="add" size={16} color={PRIMARY} />
-                          <ThemedText style={styles.secondaryButtonLabel}>追加</ThemedText>
-                        </Pressable>
-                      </View>
+                        />
+                      ))}
                     </View>
+                  </View>
+                ) : null}
+              </View>
+            ) : null}
+          </View>
+        </View>
+
+        <View style={styles.sectionGroup}>
+          <ThemedText style={styles.formHeading}>タスク</ThemedText>
+          <View style={[styles.formSection, styles.taskSection]}>
+            <View style={styles.inputBlock}>
+              <ThemedText style={styles.formHint}>内容</ThemedText>
+              <View style={styles.taskComposer}>
+                <TextInput
+                  style={[styles.input, styles.taskInput]}
+                  value={formTaskDraft}
+                  onChangeText={setFormTaskDraft}
+                  placeholder="例:ES提出"
+                  returnKeyType="done"
+                  onSubmitEditing={handleAddTask}
+                />
+              </View>
+              {formTaskDue ? (
+                <View style={styles.taskDuePreview}>
+                  <ScheduleChip iso={formTaskDue} status="task" />
+                  <Pressable style={styles.taskDueClearButton} onPress={handleClearTaskDue}>
+                    <MaterialIcons name="close" size={12} color={TEXT_MUTED} />
+                    <ThemedText style={styles.taskDueClearLabel}>締切をクリア</ThemedText>
+                  </Pressable>
+                </View>
+              ) : null}
+              <View style={styles.taskActionsRow}>
+                <Pressable
+                  style={[styles.secondaryButton, styles.taskDueButton]}
+                  onPress={() => handlePickerOpen('task')}
+                >
+                  <MaterialIcons name="event" size={16} color={PRIMARY} />
+                  <ThemedText style={styles.secondaryButtonLabel}>
+                    {formTaskDue ? '締切を変更' : '締切を設定'}
+                  </ThemedText>
+                </Pressable>
+                <Pressable
+                  style={[
+                    styles.secondaryButton,
+                    styles.taskAddButton,
+                    !canAddTask && styles.secondaryButtonDisabled,
+                  ]}
+                  onPress={handleAddTask}
+                  disabled={!canAddTask}
+                >
+                  <MaterialIcons name="add" size={16} color={PRIMARY} />
+                  <ThemedText style={styles.secondaryButtonLabel}>追加</ThemedText>
+                </Pressable>
+              </View>
+            </View>
                     {formTasks.length > 0 ? (
                       <View style={styles.taskListPreview}>
                         {formTasks.map((task, index) => (
@@ -512,7 +512,6 @@ export default function CompaniesScreen() {
                       </View>
                     ) : null}
                   </View>
-                </View>
                 </View>
               </ScrollView>
 
@@ -616,7 +615,8 @@ const styles = StyleSheet.create({
   formHeading: {
     color: TEXT_PRIMARY,
     fontWeight: '700',
-    fontSize: 14,
+    fontSize: 16,
+    letterSpacing: 0.2,
   },
   formSection: {
     gap: 14,
@@ -645,6 +645,8 @@ const styles = StyleSheet.create({
   fieldLabel: {
     color: TEXT_PRIMARY,
     fontWeight: '600',
+    fontSize: 16,
+    letterSpacing: 0.2,
   },
   labelRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   requiredTag: {

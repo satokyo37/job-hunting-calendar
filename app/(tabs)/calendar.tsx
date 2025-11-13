@@ -48,7 +48,6 @@ interface CalendarEvent {
 }
 
 const weekDays = ['日', '月', '火', '水', '木', '金', '土'];
-const COLUMN_WIDTH = '14.2857%';
 const MAX_INLINE_EVENTS = 3;
 
 export default function CalendarScreen() {
@@ -125,6 +124,13 @@ export default function CalendarScreen() {
     const end = endOfWeek(endOfMonth(focusedMonth), { weekStartsOn: 0 });
     return eachDayOfInterval({ start, end });
   }, [focusedMonth]);
+  const calendarWeeks = useMemo(() => {
+    const weeks: Date[][] = [];
+    for (let index = 0; index < calendarDays.length; index += 7) {
+      weeks.push(calendarDays.slice(index, index + 7));
+    }
+    return weeks;
+  }, [calendarDays]);
 
   const handleSelectDay = useCallback(
     (key: string, hasEvents: boolean) => {
@@ -172,66 +178,101 @@ export default function CalendarScreen() {
           </View>
 
           <View style={styles.calendarGrid}>
-            {calendarDays.map((day) => {
-              const key = toDateKey(day);
-              const dayEvents = eventsByDay[key] ?? [];
-              const isCurrentMonth = isSameMonth(day, focusedMonth);
-              const isSelected = key === selectedDate;
-              const today = isToday(day);
+            {calendarWeeks.map((week, weekIndex) => (
+              <View
+                key={`${week[0].toISOString()}-${weekIndex}`}
+                style={[
+                  styles.weekRow,
+                  weekIndex === calendarWeeks.length - 1 && styles.lastWeekRow,
+                ]}
+              >
+                {week.map((day, dayIndex) => {
+                  const key = toDateKey(day);
+                  const dayEvents = eventsByDay[key] ?? [];
+                  const isCurrentMonth = isSameMonth(day, focusedMonth);
+                  const isSelected = key === selectedDate;
+                  const today = isToday(day);
+                  const isLastColumn = dayIndex === week.length - 1;
 
-              const inlineEvents = dayEvents.slice(0, MAX_INLINE_EVENTS);
-              const remainingCount = Math.max(dayEvents.length - inlineEvents.length, 0);
+                  const inlineEvents = dayEvents.slice(0, MAX_INLINE_EVENTS);
+                  const remainingCount = Math.max(dayEvents.length - inlineEvents.length, 0);
 
-              return (
-                <Pressable
-                  key={key}
-                  style={[
-                    styles.dayCell,
-                    !isCurrentMonth && styles.outsideCell,
-                    isSelected && styles.selectedCell,
-                    today && styles.todayOutline,
-                  ]}
-                  onPress={() => handleSelectDay(key, dayEvents.length > 0)}
-                >
-                  <View style={styles.dayHeader}>
-                    <ThemedText style={styles.dayNumber}>{format(day, 'd')}</ThemedText>
-                    {today && <View style={styles.todayDot} />}
-                  </View>
-                  <View style={styles.dayEvents}>
-                    {inlineEvents.map((event) => (
-                      <View
-                        key={`${event.companyId}-${event.dateTime}-${event.type}`}
-                        style={[
-                          styles.eventChip,
-                          event.type === 'confirmed' ? styles.confirmedChip : styles.candidateChip,
-                        ]}
-                      >
-                        <MaterialIcons
-                          name={event.type === 'confirmed' ? 'check-circle' : 'hourglass-bottom'}
-                          size={12}
-                          color={event.type === 'confirmed' ? SUCCESS : WARNING}
-                        />
+                  return (
+                    <Pressable
+                      key={key}
+                      style={[
+                        styles.dayCell,
+                        isLastColumn && styles.lastColumnCell,
+                        !isCurrentMonth && styles.outsideCell,
+                        isSelected && styles.selectedCell,
+                        today && styles.todayOutline,
+                      ]}
+                      onPress={() => handleSelectDay(key, dayEvents.length > 0)}
+                    >
+                      <View style={styles.dayHeader}>
                         <ThemedText
-                          style={[
-                            styles.eventChipText,
-                            event.type === 'confirmed'
-                              ? styles.confirmedChipText
-                              : styles.candidateChipText,
-                          ]}
+                          style={[styles.dayNumber, !isCurrentMonth && styles.outsideDayNumber]}
                         >
-                          {formatTimeLabel(event.dateTime)}
+                          {format(day, 'd')}
                         </ThemedText>
+                        {today && <View style={styles.todayDot} />}
                       </View>
-                    ))}
-                    {remainingCount > 0 && (
-                      <View style={styles.moreChip}>
-                        <ThemedText style={styles.moreChipText}>+{remainingCount}</ThemedText>
+                      <View style={styles.dayEvents}>
+                        {inlineEvents.map((event) => (
+                          <View
+                            key={`${event.companyId}-${event.dateTime}-${event.type}`}
+                            style={[
+                              styles.eventChip,
+                              event.type === 'confirmed'
+                                ? styles.confirmedChip
+                                : styles.candidateChip,
+                            ]}
+                          >
+                            <View
+                              style={[
+                                styles.eventIndicator,
+                                event.type === 'confirmed'
+                                  ? styles.confirmedIndicator
+                                  : styles.candidateIndicator,
+                              ]}
+                            />
+                            <View style={styles.eventChipBody}>
+                              <ThemedText
+                                style={[
+                                  styles.eventTime,
+                                  event.type === 'confirmed'
+                                    ? styles.confirmedChipText
+                                    : styles.candidateChipText,
+                                ]}
+                              >
+                                {formatTimeLabel(event.dateTime)}
+                              </ThemedText>
+                              <ThemedText
+                                style={[
+                                  styles.eventChipText,
+                                  event.type === 'confirmed'
+                                    ? styles.confirmedChipText
+                                    : styles.candidateChipText,
+                                ]}
+                                numberOfLines={1}
+                                ellipsizeMode="tail"
+                              >
+                                {event.companyName}
+                              </ThemedText>
+                            </View>
+                          </View>
+                        ))}
+                        {remainingCount > 0 && (
+                          <View style={styles.moreChip}>
+                            <ThemedText style={styles.moreChipText}>+{remainingCount}</ThemedText>
+                          </View>
+                        )}
                       </View>
-                    )}
-                  </View>
-                </Pressable>
-              );
-            })}
+                    </Pressable>
+                  );
+                })}
+              </View>
+            ))}
           </View>
         </View>
       </ThemedView>
@@ -379,34 +420,42 @@ const styles = StyleSheet.create({
   },
   weekHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    paddingHorizontal: 4,
   },
   weekDay: {
-    width: COLUMN_WIDTH,
+    flex: 1,
     textAlign: 'center',
     color: TEXT_MUTED,
     fontWeight: '600',
   },
   calendarGrid: {
-    flex: 1,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignContent: 'stretch',
+    marginTop: 12,
     borderRadius: 20,
     overflow: 'hidden',
     backgroundColor: SURFACE,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: BORDER,
   },
+  weekRow: {
+    flexDirection: 'row',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: 'rgba(100, 116, 139, 0.18)',
+  },
+  lastWeekRow: {
+    borderBottomWidth: 0,
+  },
   dayCell: {
-    width: COLUMN_WIDTH,
-    padding: 10,
-    gap: 8,
-    minHeight: 72,
-    flexGrow: 1,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(100, 116, 139, 0.08)',
+    flex: 1,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    gap: 6,
+    minHeight: 110,
+    borderRightWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(100, 116, 139, 0.12)',
     backgroundColor: SURFACE,
+  },
+  lastColumnCell: {
+    borderRightWidth: 0,
   },
   outsideCell: {
     backgroundColor: SURFACE_SUBTLE,
@@ -429,6 +478,9 @@ const styles = StyleSheet.create({
     color: TEXT_PRIMARY,
     fontWeight: '700',
   },
+  outsideDayNumber: {
+    color: TEXT_MUTED,
+  },
   todayDot: {
     width: 6,
     height: 6,
@@ -436,19 +488,36 @@ const styles = StyleSheet.create({
     backgroundColor: PRIMARY,
   },
   dayEvents: {
-    gap: 6,
+    marginTop: 6,
+    gap: 4,
   },
   eventChip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    width: '100%',
+  },
+  eventIndicator: {
+    width: 4,
     borderRadius: 999,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    alignSelf: 'stretch',
+  },
+  eventChipBody: {
+    flex: 1,
+    gap: 2,
+  },
+  eventTime: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.4,
   },
   eventChipText: {
     fontSize: 12,
     fontWeight: '600',
+    flexShrink: 1,
   },
   confirmedChip: {
     backgroundColor: 'rgba(22, 163, 74, 0.12)',
@@ -456,11 +525,17 @@ const styles = StyleSheet.create({
   confirmedChipText: {
     color: SUCCESS,
   },
+  confirmedIndicator: {
+    backgroundColor: SUCCESS,
+  },
   candidateChip: {
     backgroundColor: 'rgba(249, 115, 22, 0.12)',
   },
   candidateChipText: {
     color: WARNING,
+  },
+  candidateIndicator: {
+    backgroundColor: WARNING,
   },
   moreChip: {
     borderRadius: 999,

@@ -1,11 +1,11 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import type { NavigationAction } from '@react-navigation/native';
 import { format, parseISO } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { Stack, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import type { NavigationAction } from '@react-navigation/native';
 
 import { ScheduleChip } from '@/components/ScheduleChip';
 import { SchedulePickerModal } from '@/components/SchedulePickerModal';
@@ -352,7 +352,7 @@ export default function CompanyDetailScreen() {
 
   const renderTaskRows = (readonly: boolean) => {
     if (!hasTasks) {
-      return <ThemedText style={styles.placeholder}>タスクはまだ登録されていません。</ThemedText>;
+      return <ThemedText style={styles.placeholder}>登録されているタスクはありません</ThemedText>;
     }
 
     return (
@@ -399,38 +399,47 @@ export default function CompanyDetailScreen() {
       <ThemedView style={styles.section}>
         <ThemedText style={styles.sectionTitle}>基本情報</ThemedText>
         <View style={styles.readOnlyGroup}>
-          <View style={styles.readOnlyRow}>
-            <ThemedText style={styles.readOnlyLabel}>企業名</ThemedText>
-            <ThemedText style={styles.readOnlyValue}>{company.name}</ThemedText>
+          <View style={styles.readOnlyField}>
+            <ThemedText style={styles.fieldLabel}>企業名</ThemedText>
+            <TextInput
+              style={[styles.input, styles.readOnlyInput]}
+              value={company.name}
+              editable={false}
+              selectTextOnFocus={false}
+            />
           </View>
-          <View style={styles.readOnlyRow}>
-            <ThemedText style={styles.readOnlyLabel}>進捗ステータス</ThemedText>
-            <ThemedText style={styles.readOnlyValue}>{company.progressStatus}</ThemedText>
+          <View style={styles.readOnlyField}>
+            <ThemedText style={styles.fieldLabel}>進捗ステータス</ThemedText>
+            <TextInput
+              style={[styles.input, styles.readOnlyInput]}
+              value={company.progressStatus}
+              editable={false}
+              selectTextOnFocus={false}
+            />
           </View>
-          <View style={styles.readOnlyNote}>
-            <ThemedText style={styles.readOnlyLabel}>メモ</ThemedText>
-            <ThemedText style={styles.readOnlyBody}>
-              {company.remarks?.length ? company.remarks : 'メモは登録されていません。'}
-            </ThemedText>
+          <View style={styles.readOnlyField}>
+            <ThemedText style={styles.fieldLabel}>メモ</ThemedText>
+            <TextInput
+              style={[styles.input, styles.multilineInput, styles.readOnlyInput]}
+              value={company.remarks ?? ''}
+              editable={false}
+              selectTextOnFocus={false}
+              multiline
+              scrollEnabled={false}
+            />
           </View>
         </View>
       </ThemedView>
 
       <ThemedView style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
-            日程調整
-          </ThemedText>
+        <ThemedText style={styles.sectionTitle}>日程調整</ThemedText>
+        <View style={styles.readOnlyScheduleSection}>
+          {hasSchedulePreview ? (
+            renderSchedulePreview()
+          ) : (
+            <ThemedText style={styles.placeholder}>日程調整はまだ登録されていません。</ThemedText>
+          )}
         </View>
-        <View style={styles.readOnlyGroup}>
-          <View style={styles.readOnlyRow}>
-            <ThemedText style={styles.readOnlyLabel}>タイトル</ThemedText>
-            <ThemedText style={styles.readOnlyValue}>
-              {company.nextAction ?? '未設定'}
-            </ThemedText>
-          </View>
-        </View>
-        {renderSchedulePreview()}
       </ThemedView>
 
       <ThemedView style={styles.section}>
@@ -511,17 +520,17 @@ export default function CompanyDetailScreen() {
           </View>
         </View>
 
-            <View style={styles.sectionGroup}>
-              <ThemedText style={styles.formHeading}>タスク</ThemedText>
-              <View style={styles.formSection}>
-                <View style={styles.taskComposer}>
-                  <TextInput
-                    style={[styles.input, styles.taskInput]}
-                    value={taskTitle}
-                    placeholder="例:ES提出"
-                    onChangeText={setTaskTitle}
-                  />
-                </View>
+        <View style={styles.sectionGroup}>
+          <ThemedText style={styles.formHeading}>タスク</ThemedText>
+          <View style={[styles.formSection, styles.taskSection]}>
+            <View style={styles.taskComposer}>
+              <TextInput
+                style={[styles.input, styles.taskInput]}
+                value={taskTitle}
+                placeholder="例:ES提出"
+                onChangeText={setTaskTitle}
+              />
+            </View>
             {taskDueDate ? (
               <View style={styles.taskDueBadge}>
                 <MaterialIcons name="schedule" size={14} color={PRIMARY} />
@@ -538,7 +547,7 @@ export default function CompanyDetailScreen() {
               >
                 <MaterialIcons name="event" size={16} color={PRIMARY} />
                 <ThemedText style={styles.secondaryButtonLabel}>
-                  {taskDueDate ? '期限を変更' : '期限を設定'}
+                  {taskDueDate ? '締切を変更' : '締切を設定'}
                 </ThemedText>
               </Pressable>
               <Pressable
@@ -672,6 +681,8 @@ const styles = StyleSheet.create({
   sectionTitle: {
     color: TEXT_PRIMARY,
     fontWeight: '600',
+    fontSize: 18,
+    letterSpacing: 0.2,
   },
   placeholder: {
     color: TEXT_MUTED,
@@ -713,30 +724,14 @@ const styles = StyleSheet.create({
     marginTop: 8,
     gap: 12,
   },
-  readOnlyRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 6,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: BORDER,
+  readOnlyScheduleSection: {
+    gap: 16,
   },
-  readOnlyLabel: {
-    color: TEXT_MUTED,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  readOnlyValue: {
-    color: TEXT_PRIMARY,
-    fontWeight: '700',
-  },
-  readOnlyNote: {
+  readOnlyField: {
     gap: 6,
-    paddingTop: 6,
   },
-  readOnlyBody: {
-    color: TEXT_PRIMARY,
-    lineHeight: 20,
+  readOnlyInput: {
+    color: TEXT_MUTED,
   },
   readOnlyControl: {
     opacity: 0.4,
@@ -755,7 +750,8 @@ const styles = StyleSheet.create({
   formHeading: {
     color: TEXT_PRIMARY,
     fontWeight: '700',
-    fontSize: 14,
+    fontSize: 16,
+    letterSpacing: 0.2,
   },
   formSection: {
     gap: 14,
@@ -766,6 +762,15 @@ const styles = StyleSheet.create({
     borderColor: BORDER,
   },
   scheduleSection: {
+    gap: 14,
+  },
+  taskSection: {
+    gap: 14,
+  },
+  taskInlineSection: {
+    paddingTop: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: BORDER,
     gap: 14,
   },
   scheduleActions: {

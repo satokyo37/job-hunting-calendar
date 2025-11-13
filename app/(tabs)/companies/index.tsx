@@ -354,12 +354,13 @@ export default function CompaniesScreen() {
           <ThemedText style={styles.formHeading}>日程調整</ThemedText>
           <View style={[styles.formSection, styles.scheduleSection]}>
             <View style={styles.inputBlock}>
-                <ThemedText style={styles.formHint}>内容</ThemedText>
+                <ThemedText style={styles.fieldLabel}>内容</ThemedText>
                 <TextInput
-                  style={styles.input}
+                  style={[styles.input, styles.multilineInput]}
                   value={formNextAction}
                   onChangeText={setFormNextAction}
-                  placeholder="例: 面談調整"
+                  placeholder="例: 一次面接"
+                  multiline
                 />
             </View>
             <View style={styles.scheduleActions}>
@@ -448,7 +449,7 @@ export default function CompaniesScreen() {
           <ThemedText style={styles.formHeading}>タスク</ThemedText>
           <View style={[styles.formSection, styles.taskSection]}>
             <View style={styles.inputBlock}>
-              <ThemedText style={styles.formHint}>内容</ThemedText>
+              <ThemedText style={styles.fieldLabel}>内容</ThemedText>
               <View style={styles.taskComposer}>
                 <TextInput
                   style={[styles.input, styles.taskInput]}
@@ -640,7 +641,7 @@ const styles = StyleSheet.create({
   },
   inputBlock: {
     width: '100%',
-    gap: 4,
+    gap: 6,
   },
   fieldLabel: {
     color: TEXT_PRIMARY,

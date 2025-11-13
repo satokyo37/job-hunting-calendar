@@ -61,7 +61,7 @@ export default function TasksHomeScreen() {
           keyExtractor={(item) => item.id}
           ListEmptyComponent={
             <ThemedView style={styles.empty}>
-              <ThemedText style={styles.emptyText}>登録されているタスクはありません</ThemedText>
+              <ThemedText style={styles.emptyText}>現在登録されているタスクはありません</ThemedText>
               <ThemedText style={styles.emptyHint}>企業詳細ページの「タスク」欄から追加できます</ThemedText>
             </ThemedView>
           }

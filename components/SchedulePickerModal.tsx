@@ -133,7 +133,7 @@ export function SchedulePickerModal({
             </ThemedText>
 
             {stage === 'date' ? (
-              <>
+              <View style={styles.stageSection}>
                 <ThemedText style={styles.stageLabel}>まず日付を選びましょう</ThemedText>
                 <View style={styles.calendar}>
                   <View style={styles.calendarHeader}>
@@ -206,11 +206,11 @@ export function SchedulePickerModal({
                 <ThemedText style={styles.previewText}>
                   選択: {formatDateLabel(workingDate)}
                 </ThemedText>
-              </>
+              </View>
             ) : null}
 
             {stage === 'time' ? (
-              <>
+              <View style={styles.stageSection}>
                 <ThemedText style={styles.stageLabel}>次に時間を選びましょう</ThemedText>
                 <View style={styles.timePicker}>
                   <View style={styles.timeDropdown}>
@@ -257,14 +257,14 @@ export function SchedulePickerModal({
                 <ThemedText style={styles.previewText}>
                   選択: {formatTimeLabel(workingDate)}
                 </ThemedText>
-              </>
+              </View>
             ) : null}
 
             {stage === 'confirm' ? (
-              <>
+              <View style={styles.stageSection}>
                 <ThemedText style={styles.stageLabel}>この内容で登録しますか？</ThemedText>
                 <ScheduleChip iso={workingDate.toISOString()} status={status} />
-              </>
+              </View>
             ) : null}
 
             <View style={styles.actions}>
@@ -332,14 +332,18 @@ const styles = StyleSheet.create({
   },
   shell: {
     width: '100%',
+    alignItems: 'center',
   },
   card: {
-    width: '100%',
+    width: 360,
+    maxWidth: '100%',
+    alignSelf: 'center',
     borderRadius: 24,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: 'rgba(148, 163, 184, 0.3)',
     padding: 24,
     gap: 18,
+    height: 620,
   },
   title: {
     textAlign: 'center',
@@ -348,8 +352,15 @@ const styles = StyleSheet.create({
     color: '#1E293B',
     fontFamily: NOTO_SANS_JP.semibold,
   },
+  stageSection: {
+    gap: 2,
+  },
   calendar: {
-    gap: 12,
+    gap: 8,
+    width: 320,
+    maxWidth: '100%',
+    alignSelf: 'center',
+    minHeight: 380,
   },
   calendarHeader: {
     flexDirection: 'row',
@@ -384,7 +395,7 @@ const styles = StyleSheet.create({
   calendarGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    marginTop: 8,
+    marginTop: 6,
   },
   dayCell: {
     width: '14.2857%',
@@ -392,7 +403,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 12,
-    marginBottom: 8,
+    marginBottom: 4,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: 'transparent',
   },
@@ -463,6 +474,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     gap: 12,
+    marginTop: 'auto',
   },
   actionButton: {
     paddingHorizontal: 18,
@@ -485,10 +497,3 @@ const styles = StyleSheet.create({
     fontFamily: NOTO_SANS_JP.bold,
   },
 });
-
-
-
-
-
-
-

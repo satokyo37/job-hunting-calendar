@@ -352,7 +352,7 @@ export default function CompanyDetailScreen() {
 
   const renderTaskRows = (readonly: boolean) => {
     if (!hasTasks) {
-      return <ThemedText style={styles.placeholder}>登録されているタスクはありません</ThemedText>;
+      return <ThemedText style={styles.placeholder}>現在登録されているタスクはありません</ThemedText>;
     }
 
     return (
@@ -437,7 +437,7 @@ export default function CompanyDetailScreen() {
           {hasSchedulePreview ? (
             renderSchedulePreview()
           ) : (
-            <ThemedText style={styles.placeholder}>日程調整はまだ登録されていません。</ThemedText>
+            <ThemedText style={styles.placeholder}>現在調整中の日程はありません</ThemedText>
           )}
         </View>
       </ThemedView>
@@ -496,9 +496,10 @@ export default function CompanyDetailScreen() {
             <View style={styles.inputBlock}>
               <ThemedText style={styles.fieldLabel}>タイトル</ThemedText>
               <TextInput
-                style={styles.input}
+                style={[styles.input, styles.multilineInput]}
                 value={draftNextAction}
                 onChangeText={setDraftNextAction}
+                multiline
               />
             </View>
             <View style={styles.scheduleActions}>

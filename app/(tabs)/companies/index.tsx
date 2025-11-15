@@ -7,22 +7,27 @@ import { Alert, FlatList, Modal, Pressable, ScrollView, StyleSheet, TextInput, V
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { PageHeader } from '@/components/PageHeader';
+import { ProgressStatusPickerModal } from '@/components/ProgressStatusPickerModal';
 import { ScheduleChip } from '@/components/ScheduleChip';
 import { SchedulePickerModal } from '@/components/SchedulePickerModal';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { Palette } from '@/constants/Palette';
+import { PROGRESS_STATUS_ITEMS, ProgressStatusValue } from '@/constants/progressStatus';
 import { NOTO_SANS_JP } from '@/constants/Typography';
 import { useAppStore } from '@/store/useAppStore';
 
-const BACKGROUND = '#EFF6FF';
-const SURFACE = '#FFFFFF';
-const SURFACE_SUBTLE = '#F8FAFF';
-const BORDER = '#D9E6FF';
-const TEXT_PRIMARY = '#1E293B';
-const TEXT_MUTED = '#64748B';
-const PRIMARY = '#2563EB';
-const SUCCESS = '#22C55E';
-const DANGER = '#F87171';
+const {
+  background: BACKGROUND,
+  surface: SURFACE,
+  surfaceSubtle: SURFACE_SUBTLE,
+  border: BORDER,
+  textPrimary: TEXT_PRIMARY,
+  textMuted: TEXT_MUTED,
+  primary: PRIMARY,
+  success: SUCCESS,
+  danger: DANGER,
+} = Palette;
 
 const formatDisplayDate = (iso: string) =>
   format(parseISO(iso), "yyyy'年'MM'月'dd'日'(EEE)HH:mm", { locale: ja });
@@ -37,7 +42,7 @@ export default function CompaniesScreen() {
 
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [formName, setFormName] = useState('');
-  const [formProgress, setFormProgress] = useState('');
+  const [formProgress, setFormProgress] = useState<ProgressStatusValue | ''>('');
   const [formNotes, setFormNotes] = useState('');
   const [formNextAction, setFormNextAction] = useState('');
   const [formTasks, setFormTasks] = useState<{ title: string; dueDate?: string }[]>([]);
@@ -48,6 +53,12 @@ export default function CompaniesScreen() {
 
   const [pickerVisible, setPickerVisible] = useState(false);
   const [pickerMode, setPickerMode] = useState<PickerMode | null>(null);
+  const [statusPickerVisible, setStatusPickerVisible] = useState(false);
+
+  const selectedProgressMeta = useMemo(
+    () => PROGRESS_STATUS_ITEMS.find((item) => item.value === formProgress),
+    [formProgress]
+  );
 
   const resetForm = useCallback(() => {
     setFormName('');
@@ -68,7 +79,7 @@ export default function CompaniesScreen() {
   const handleCancelCreate = useCallback(() => {
     const hasChanges =
       formName.trim() ||
-      formProgress.trim() ||
+      formProgress ||
       formNotes.trim() ||
       formNextAction.trim() ||
       formTaskDraft.trim() ||
@@ -85,12 +96,14 @@ export default function CompaniesScreen() {
           onPress: () => {
             resetForm();
             setCreateModalVisible(false);
+            setStatusPickerVisible(false);
           },
         },
       ]);
       return;
     }
     setCreateModalVisible(false);
+    setStatusPickerVisible(false);
   }, [
     formCandidates.length,
     formConfirmedDate,
@@ -112,6 +125,18 @@ export default function CompaniesScreen() {
   const handlePickerClose = useCallback(() => {
     setPickerVisible(false);
     setPickerMode(null);
+  }, []);
+
+  const handleOpenStatusPicker = useCallback(() => {
+    setStatusPickerVisible(true);
+  }, []);
+
+  const handleCloseStatusPicker = useCallback(() => {
+    setStatusPickerVisible(false);
+  }, []);
+
+  const handleStatusSelect = useCallback((value: ProgressStatusValue) => {
+    setFormProgress(value);
   }, []);
 
   const handlePickerConfirm = useCallback(
@@ -166,7 +191,7 @@ export default function CompaniesScreen() {
 
   const handleCreateCompany = useCallback(() => {
     const name = formName.trim();
-    const progress = formProgress.trim();
+    const progress = formProgress;
     if (!name || !progress) {
       Alert.alert('入力エラー', '企業名と進捗ステータスを入力してください。');
       return;
@@ -192,6 +217,7 @@ export default function CompaniesScreen() {
 
     resetForm();
     setCreateModalVisible(false);
+    setStatusPickerVisible(false);
   }, [
     createCompany,
     formCandidates,
@@ -202,6 +228,7 @@ export default function CompaniesScreen() {
     formProgress,
     formTasks,
     setCreateModalVisible,
+    setStatusPickerVisible,
     resetForm,
   ]);
 
@@ -327,17 +354,46 @@ export default function CompaniesScreen() {
                       <TextInput style={styles.input} value={formName} onChangeText={setFormName} />
                     </View>
                     <View style={styles.inputBlock}>
-                      <View style={styles.labelRow}>
-                        <ThemedText style={styles.fieldLabel}>進捗ステータス</ThemedText>
-                        <ThemedText style={styles.requiredTag}>必須</ThemedText>
-                      </View>
-                      <TextInput
-                        style={styles.input}
-                        value={formProgress}
-                        placeholder="例: 書類選考/一次選考 など"
-                        onChangeText={setFormProgress}
-                      />
+                    <View style={styles.labelRow}>
+                      <ThemedText style={styles.fieldLabel}>進捗ステータス</ThemedText>
+                      <ThemedText style={styles.requiredTag}>必須</ThemedText>
                     </View>
+                    <Pressable
+                      style={[styles.input, styles.selectInput]}
+                      onPress={handleOpenStatusPicker}
+                    >
+                      {selectedProgressMeta ? (
+                        <View style={styles.selectContent}>
+                          <View
+                            style={[
+                              styles.selectIcon,
+                              {
+                                backgroundColor: selectedProgressMeta.background,
+                                borderColor: selectedProgressMeta.border,
+                              },
+                            ]}
+                          >
+                            <MaterialIcons
+                              name={selectedProgressMeta.icon as any}
+                              size={18}
+                              color={selectedProgressMeta.accent}
+                            />
+                          </View>
+                          <View style={styles.selectTexts}>
+                            <ThemedText style={styles.selectValue}>
+                              {selectedProgressMeta.value}
+                            </ThemedText>
+                            <ThemedText style={styles.selectDescription}>
+                              {selectedProgressMeta.description}
+                            </ThemedText>
+                          </View>
+                        </View>
+                      ) : (
+                        <ThemedText style={styles.selectPlaceholder}>選択してください</ThemedText>
+                      )}
+                      <MaterialIcons name="expand-more" size={22} color={TEXT_MUTED} />
+                    </Pressable>
+                  </View>
                     <View style={styles.inputBlock}>
                       <ThemedText style={styles.fieldLabel}>メモ</ThemedText>
                       <TextInput
@@ -529,6 +585,13 @@ export default function CompaniesScreen() {
         </Modal>
 
       </View>
+
+      <ProgressStatusPickerModal
+        visible={createModalVisible && statusPickerVisible}
+        selected={formProgress || null}
+        onClose={handleCloseStatusPicker}
+        onSelect={handleStatusSelect}
+      />
 
       <SchedulePickerModal
         visible={pickerVisible}
@@ -783,6 +846,42 @@ const styles = StyleSheet.create({
     fontFamily: NOTO_SANS_JP.semibold,
     backgroundColor: '#F1F5FF',
     color: TEXT_PRIMARY,
+  },
+  selectInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    minHeight: 52,
+  },
+  selectContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  selectIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  selectTexts: {
+    flex: 1,
+  },
+  selectValue: {
+    color: TEXT_PRIMARY,
+    fontWeight: '700',
+  },
+  selectDescription: {
+    color: TEXT_MUTED,
+    fontSize: 12,
+  },
+  selectPlaceholder: {
+    color: TEXT_MUTED,
+    fontWeight: '600',
   },
   multilineInput: { minHeight: 96, textAlignVertical: 'top' },
   secondaryButton: {

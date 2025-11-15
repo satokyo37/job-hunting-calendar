@@ -18,17 +18,21 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { Palette } from '@/constants/Palette';
+import { ProgressStatusValue } from '@/constants/progressStatus';
 import { useAppStore } from '@/store/useAppStore';
 
-const BACKGROUND = '#F2F6FF';
-const SURFACE = '#FFFFFF';
-const SURFACE_SUBTLE = '#F8FAFF';
-const BORDER = '#D8E3FF';
-const TEXT_PRIMARY = '#1E293B';
-const TEXT_MUTED = '#64748B';
-const PRIMARY = '#2563EB';
-const SUCCESS = '#16A34A';
-const WARNING = '#F97316';
+const {
+  backgroundAlt: BACKGROUND,
+  surface: SURFACE,
+  surfaceSubtle: SURFACE_SUBTLE,
+  borderAlt: BORDER,
+  textPrimary: TEXT_PRIMARY,
+  textMuted: TEXT_MUTED,
+  primary: PRIMARY,
+  successStrong: SUCCESS,
+  warning: WARNING,
+} = Palette;
 
 const formatDateKey = (iso: string) => format(parseISO(iso), 'yyyy-MM-dd');
 const toDateKey = (date: Date) => format(date, 'yyyy-MM-dd');
@@ -41,7 +45,7 @@ const formatTimeLabel = (iso: string) => format(parseISO(iso), 'HH:mm', { locale
 interface CalendarEvent {
   companyId: string;
   companyName: string;
-  progressStatus: string;
+  progressStatus: ProgressStatusValue;
   remarks?: string;
   type: 'candidate' | 'confirmed';
   dateTime: string;
@@ -463,6 +467,10 @@ const styles = StyleSheet.create({
   selectedCell: {
     borderColor: PRIMARY,
     borderWidth: 2,
+    borderLeftWidth: 2,
+    borderRightWidth: 2,
+    borderTopWidth: 2,
+    borderBottomWidth: 2,
   },
   todayOutline: {
     shadowColor: '#2563EB33',

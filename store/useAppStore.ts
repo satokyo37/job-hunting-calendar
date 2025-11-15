@@ -2,6 +2,7 @@
 import { monotonicFactory } from 'ulid';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
+import { ProgressStatusValue } from '../constants/progressStatus';
 import {
   CandidateDateSchema,
   CompanyCreateInput,
@@ -22,7 +23,7 @@ export interface Task {
 export interface Company {
   id: string;
   name: string;
-  progressStatus: string;
+  progressStatus: ProgressStatusValue;
   tasks: Task[];
   candidateDates: string[];
   confirmedDate?: string;
@@ -81,7 +82,7 @@ export const useAppStore = create<Store>()(
         const newCompany: Company = {
           id,
           name: data.name.trim(),
-          progressStatus: data.progressStatus.trim(),
+          progressStatus: data.progressStatus,
           tasks: mapTasksFromCreate(data.tasks),
           candidateDates: normalizeCandidateDates(data.candidateDates ?? []),
           confirmedDate: data.confirmedDate ?? undefined,

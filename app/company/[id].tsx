@@ -9,20 +9,26 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ScheduleChip } from '@/components/ScheduleChip';
 import { SchedulePickerModal } from '@/components/SchedulePickerModal';
+import { ProgressStatusPickerModal } from '@/components/ProgressStatusPickerModal';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { Palette } from '@/constants/Palette';
+import { PROGRESS_STATUS_ITEMS, ProgressStatusValue, isProgressStatusValue } from '@/constants/progressStatus';
 import { NOTO_SANS_JP } from '@/constants/Typography';
 import { useAppStore } from '@/store/useAppStore';
 
-const BACKGROUND = '#EFF6FF';
-const SURFACE = '#FFFFFF';
-const SURFACE_SUBTLE = '#F8FAFF';
-const BORDER = '#D9E6FF';
-const TEXT_PRIMARY = '#1E293B';
-const TEXT_MUTED = '#64748B';
-const PRIMARY = '#2563EB';
-const SUCCESS = '#22C55E';
-const DANGER = '#F87171';
+const {
+  background: BACKGROUND,
+  surface: SURFACE,
+  surfaceSubtle: SURFACE_SUBTLE,
+  border: BORDER,
+  textPrimary: TEXT_PRIMARY,
+  textMuted: TEXT_MUTED,
+  primary: PRIMARY,
+  success: SUCCESS,
+  danger: DANGER,
+} = Palette;
+const DEFAULT_PROGRESS_STATUS = PROGRESS_STATUS_ITEMS[0].value;
 
 const formatTaskDueLabel = (iso: string) =>
   format(parseISO(iso), 'M月d日(EEE) HH:mm', { locale: ja });
@@ -54,11 +60,17 @@ export default function CompanyDetailScreen() {
   const [taskTitle, setTaskTitle] = useState('');
   const [taskDueDate, setTaskDueDate] = useState<string | undefined>();
   const [draftName, setDraftName] = useState('');
-  const [draftProgress, setDraftProgress] = useState('');
+  const [draftProgress, setDraftProgress] = useState<ProgressStatusValue>(DEFAULT_PROGRESS_STATUS);
   const [draftRemarks, setDraftRemarks] = useState('');
   const [draftNextAction, setDraftNextAction] = useState('');
   const [unsavedWarningVisible, setUnsavedWarningVisible] = useState(false);
   const [pendingNavAction, setPendingNavAction] = useState<NavigationAction | null>(null);
+  const [statusPickerVisible, setStatusPickerVisible] = useState(false);
+
+  const selectedProgressMeta = useMemo(
+    () => PROGRESS_STATUS_ITEMS.find((item) => item.value === draftProgress),
+    [draftProgress]
+  );
 
   const resetEditingControls = useCallback(() => {
     setTaskTitle('');
@@ -72,7 +84,9 @@ export default function CompanyDetailScreen() {
       return;
     }
     setDraftName(company.name);
-    setDraftProgress(company.progressStatus);
+    setDraftProgress(
+      isProgressStatusValue(company.progressStatus) ? company.progressStatus : DEFAULT_PROGRESS_STATUS
+    );
     setDraftRemarks(company.remarks ?? '');
     setDraftNextAction(company.nextAction ?? '');
   }, [company]);
@@ -80,6 +94,12 @@ export default function CompanyDetailScreen() {
   useEffect(() => {
     syncDrafts();
   }, [syncDrafts]);
+
+  useEffect(() => {
+    if (!isEditing) {
+      setStatusPickerVisible(false);
+    }
+  }, [isEditing]);
 
   const handleEnterEditingMode = useCallback(() => {
     if (!company) {
@@ -95,7 +115,7 @@ export default function CompanyDetailScreen() {
       return;
     }
     const name = draftName.trim();
-    const progress = draftProgress.trim();
+    const progress = draftProgress;
     if (!name || !progress) {
       Alert.alert('入力エラー', '会社名と進捗ステータスを入力してください。');
       return;
@@ -119,35 +139,25 @@ export default function CompanyDetailScreen() {
     updateCompany,
   ]);
 
-  if (!companyId || !company) {
-    return (
-      <SafeAreaView style={styles.safeArea}>
-        <Stack.Screen options={{ title: '企業詳細' }} />
-        <ThemedView style={[styles.container, styles.centered]}>
-          <ThemedText type="defaultSemiBold">指定された企業が見つかりませんでした。</ThemedText>
-        </ThemedView>
-      </SafeAreaView>
-    );
-  }
+  const hasConfirmedSchedule = Boolean(company?.confirmedDate);
+  const hasTasks = (company?.tasks.length ?? 0) > 0;
+  const hasSchedulePreview = hasConfirmedSchedule || (company?.candidateDates.length ?? 0) > 0;
 
-  const hasConfirmedSchedule = Boolean(company.confirmedDate);
-  const hasTasks = company.tasks.length > 0;
-  const hasSchedulePreview = hasConfirmedSchedule || company.candidateDates.length > 0;
   const canAddTask = isEditing && taskTitle.trim().length > 0;
   const taskDueLabel = taskDueDate ? formatTaskDueLabel(taskDueDate) : '期限未設定';
 
   const hasUnsavedDraft = useMemo(() => {
+    if (!company) {
+      return false;
+    }
     const nameChanged = draftName.trim() !== company.name;
-    const progressChanged = draftProgress.trim() !== company.progressStatus;
+    const progressChanged = draftProgress !== company.progressStatus;
     const remarksChanged = (draftRemarks.trim() || '') !== (company.remarks ?? '');
     const nextActionChanged = (draftNextAction.trim() || '') !== (company.nextAction ?? '');
     const taskComposerChanged = taskTitle.trim().length > 0 || Boolean(taskDueDate);
     return nameChanged || progressChanged || remarksChanged || nextActionChanged || taskComposerChanged;
   }, [
-    company.name,
-    company.nextAction,
-    company.progressStatus,
-    company.remarks,
+    company,
     draftName,
     draftNextAction,
     draftProgress,
@@ -168,6 +178,19 @@ export default function CompanyDetailScreen() {
   const handlePickerClose = useCallback(() => {
     setPickerVisible(false);
     setPickerMode(null);
+  }, []);
+
+  const handleStatusPickerOpen = useCallback(() => {
+    if (!isEditing) return;
+    setStatusPickerVisible(true);
+  }, [isEditing]);
+
+  const handleStatusPickerClose = useCallback(() => {
+    setStatusPickerVisible(false);
+  }, []);
+
+  const handleStatusSelected = useCallback((value: ProgressStatusValue) => {
+    setDraftProgress(value);
   }, []);
 
   const handlePickerConfirm = useCallback(
@@ -273,6 +296,17 @@ export default function CompanyDetailScreen() {
 
     return subscription;
   }, [hasUnsavedDraft, isEditing, navigation]);
+
+  if (!companyId || !company) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <Stack.Screen options={{ title: '企業詳細' }} />
+        <ThemedView style={[styles.container, styles.centered]}>
+          <ThemedText type="defaultSemiBold">指定された企業が見つかりませんでした。</ThemedText>
+        </ThemedView>
+      </SafeAreaView>
+    );
+  }
 
   const renderSchedulePreview = () => {
     if (!hasSchedulePreview) {
@@ -471,12 +505,41 @@ export default function CompanyDetailScreen() {
                 <ThemedText style={styles.fieldLabel}>進捗ステータス</ThemedText>
                 <ThemedText style={styles.requiredTag}>必須</ThemedText>
               </View>
-              <TextInput
-                style={styles.input}
-                value={draftProgress}
-                placeholder="例: 書類選考/一次選考 など"
-                onChangeText={setDraftProgress}
-              />
+              <Pressable
+                style={[styles.input, styles.selectInput]}
+                onPress={handleStatusPickerOpen}
+              >
+                {selectedProgressMeta ? (
+                  <View style={styles.selectContent}>
+                    <View
+                      style={[
+                        styles.selectIcon,
+                        {
+                          backgroundColor: selectedProgressMeta.background,
+                          borderColor: selectedProgressMeta.border,
+                        },
+                      ]}
+                    >
+                      <MaterialIcons
+                        name={selectedProgressMeta.icon as any}
+                        size={18}
+                        color={selectedProgressMeta.accent}
+                      />
+                    </View>
+                    <View style={styles.selectTexts}>
+                      <ThemedText style={styles.selectValue}>
+                        {selectedProgressMeta.value}
+                      </ThemedText>
+                      <ThemedText style={styles.selectDescription}>
+                        {selectedProgressMeta.description}
+                      </ThemedText>
+                    </View>
+                  </View>
+                ) : (
+                  <ThemedText style={styles.selectPlaceholder}>選択してください</ThemedText>
+                )}
+                <MaterialIcons name="expand-more" size={22} color={TEXT_MUTED} />
+              </Pressable>
             </View>
             <View style={styles.inputBlock}>
               <ThemedText style={styles.fieldLabel}>メモ</ThemedText>
@@ -605,6 +668,15 @@ export default function CompanyDetailScreen() {
         />
       ) : null}
 
+      {isEditing ? (
+        <ProgressStatusPickerModal
+          visible={statusPickerVisible}
+          selected={draftProgress}
+          onClose={handleStatusPickerClose}
+          onSelect={handleStatusSelected}
+        />
+      ) : null}
+
       {unsavedWarningVisible ? (
         <Modal visible transparent animationType="fade" onRequestClose={handleStayEditing}>
           <Pressable style={styles.modalOverlay} onPress={handleStayEditing}>
@@ -716,6 +788,42 @@ const styles = StyleSheet.create({
     fontFamily: NOTO_SANS_JP.semibold,
     backgroundColor: '#F1F5FF',
     color: TEXT_PRIMARY,
+  },
+  selectInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    minHeight: 52,
+  },
+  selectContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  selectIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  selectTexts: {
+    flex: 1,
+  },
+  selectValue: {
+    color: TEXT_PRIMARY,
+    fontWeight: '700',
+  },
+  selectDescription: {
+    color: TEXT_MUTED,
+    fontSize: 12,
+  },
+  selectPlaceholder: {
+    color: TEXT_MUTED,
+    fontWeight: '600',
   },
   multilineInput: {
     minHeight: 96,
@@ -956,3 +1064,5 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
 });
+
+

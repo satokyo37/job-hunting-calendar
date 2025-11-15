@@ -44,13 +44,13 @@ type TodayScheduleItem = {
   companyId: string;
   companyName: string;
   iso: string;
-  scheduleType: 'candidate' | 'confirmed';
+  scheduleType: 'confirmed';
   sortTime: number;
 };
 
 type TodayItem = TodayTaskItem | TodayScheduleItem;
 
-export default function TasksHomeScreen() {
+export default function HomeScreen() {
   const companies = useAppStore((s) => s.companies);
   const toggleTaskDone = useAppStore((s) => s.toggleTaskDone);
   const removeTask = useAppStore((s) => s.removeTaskFromCompany);
@@ -81,39 +81,29 @@ export default function TasksHomeScreen() {
     });
   }, [companies]);
 
-  const scheduleItems = useMemo(() => {
+  const scheduleItems = useMemo((): TodayScheduleItem[] => {
     const today = startOfDay(new Date());
-    return companies.flatMap((company) => {
-      const entries: {
-        kind: 'schedule';
-        companyId: string;
-        companyName: string;
-        iso: string;
-        scheduleType: 'candidate' | 'confirmed';
-      }[] = [];
 
-      if (company.confirmedDate && isSameDay(parseISO(company.confirmedDate), today)) {
-        entries.push({
-          kind: 'schedule',
+    return companies.flatMap((company) => {
+      if (!company.confirmedDate) return [];
+
+      const confirmed = parseISO(company.confirmedDate);
+      if (!isSameDay(confirmed, today)) return [];
+
+      return [
+        {
+          kind: 'schedule' as const,
           companyId: company.id,
           companyName: company.name,
           iso: company.confirmedDate,
-          scheduleType: 'confirmed',
-        });
-      }
-
-      return entries;
+          scheduleType: 'confirmed' as const,
+          sortTime: confirmed.getTime(),
+        },
+      ];
     });
   }, [companies]);
 
   const todayItems: TodayItem[] = useMemo(() => {
-    const scheduled: TodayScheduleItem[] = scheduleItems
-      .map((item) => ({
-        ...item,
-        sortTime: new Date(item.iso).getTime(),
-      }))
-      .sort((a, b) => a.sortTime - b.sortTime);
-
     const tasks: TodayTaskItem[] = taskItems.map((task) => ({
       kind: 'task',
       id: task.id,
@@ -125,7 +115,7 @@ export default function TasksHomeScreen() {
       sortTime: new Date(task.dueDate!).getTime(),
     }));
 
-    return [...scheduled, ...tasks].sort((a, b) => a.sortTime - b.sortTime);
+    return [...scheduleItems, ...tasks].sort((a, b) => a.sortTime - b.sortTime);
   }, [scheduleItems, taskItems]);
 
   const pendingTaskCount = taskItems.length;
@@ -252,7 +242,7 @@ export default function TasksHomeScreen() {
                 color={PRIMARY}
                 style={{ marginBottom: 8, opacity: 0.7 }}
               />
-              <ThemedText style={styles.emptyText}>今日やることはありません</ThemedText>
+              <ThemedText style={styles.emptyText}>今日の予定・タスクはありません</ThemedText>
               <Link href="/(tabs)/tasks" asChild>
                 <Pressable style={styles.emptyButton}>
                   <MaterialIcons name="list" size={16} color="#FFFFFF" />
@@ -301,7 +291,7 @@ export default function TasksHomeScreen() {
               <View style={[styles.taskRow, styles.scheduleRow]}>
                 <View style={styles.scheduleIconBadge}>
                   <MaterialIcons
-                    name={item.scheduleType === 'confirmed' ? 'event-available' : 'event-note'}
+                    name='event-available'
                     size={18}
                     color={PRIMARY}
                   />
@@ -310,7 +300,7 @@ export default function TasksHomeScreen() {
                   <ThemedText style={styles.taskTitle}>{item.companyName}</ThemedText>
                   <View style={styles.metaRow}>
                     <ThemedText style={styles.scheduleLabel}>
-                      {item.scheduleType === 'confirmed' ? '確定面接' : '候補日'}
+                      確定面接
                     </ThemedText>
                     <ThemedText style={styles.due}>
                       {format(parseISO(item.iso), "HH:mm 開始", { locale: ja })}
@@ -491,6 +481,3 @@ const styles = StyleSheet.create({
   scheduleLabel: { color: TEXT_MUTED, fontSize: 12, fontWeight: '600' },
   scheduleLink: { padding: 4 },
 });
-
-
-

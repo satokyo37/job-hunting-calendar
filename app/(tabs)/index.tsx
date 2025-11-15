@@ -300,7 +300,7 @@ export default function HomeScreen() {
                   <ThemedText style={styles.taskTitle}>{item.companyName}</ThemedText>
                   <View style={styles.metaRow}>
                     <ThemedText style={styles.scheduleLabel}>
-                      確定面接
+                      予定
                     </ThemedText>
                     <ThemedText style={styles.due}>
                       {format(parseISO(item.iso), "HH:mm 開始", { locale: ja })}

@@ -157,6 +157,18 @@ export default function CompaniesScreen() {
     return undefined;
   }, [pickerMode, formTaskDue]);
 
+  const pickerTitle = useMemo(() => {
+    if (pickerMode === 'candidate') {
+      const value = formNextAction.trim();
+      return value.length > 0 ? value : undefined;
+    }
+    if (pickerMode === 'task') {
+      const value = formTaskDraft.trim();
+      return value.length > 0 ? value : undefined;
+    }
+    return undefined;
+  }, [formNextAction, formTaskDraft, pickerMode]);
+
   const handleRemoveCandidate = useCallback((iso: string) => {
     setFormCandidates((prev) => prev.filter((date) => date !== iso));
   }, []);
@@ -444,6 +456,7 @@ export default function CompaniesScreen() {
                     <ScheduleChip
                       iso={formConfirmedDate}
                       status="confirmed"
+                      title={formNextAction.trim() || undefined}
                       actionsAlign="right"
                       actions={[
                         {
@@ -473,6 +486,7 @@ export default function CompaniesScreen() {
                           key={iso}
                           iso={iso}
                           status="candidate"
+                          title={formNextAction.trim() || undefined}
                           actions={[
                             {
                               key: 'promote',
@@ -518,7 +532,11 @@ export default function CompaniesScreen() {
               </View>
               {formTaskDue ? (
                 <View style={styles.taskDuePreview}>
-                  <ScheduleChip iso={formTaskDue} status="task" />
+                  <ScheduleChip
+                    iso={formTaskDue}
+                    status="task"
+                    title={formTaskDraft.trim() || undefined}
+                  />
                   <Pressable style={styles.taskDueClearButton} onPress={handleClearTaskDue}>
                     <MaterialIcons name="close" size={12} color={TEXT_MUTED} />
                     <ThemedText style={styles.taskDueClearLabel}>締切をクリア</ThemedText>
@@ -597,6 +615,7 @@ export default function CompaniesScreen() {
         visible={pickerVisible}
         status={pickerMode === 'task' ? 'task' : pickerMode ?? 'candidate'}
         initialValue={pickerInitialValue}
+        title={pickerTitle}
         onCancel={handlePickerClose}
         onConfirm={handlePickerConfirm}
       />

@@ -43,6 +43,11 @@ type Actions = {
   confirmCandidateDate: (id: string, dateISO: string) => void;
   addTaskToCompany: (companyId: string, input: TaskCreateInput) => string;
   toggleTaskDone: (companyId: string, taskId: string) => void;
+  updateTaskInCompany: (
+    companyId: string,
+    taskId: string,
+    updates: { title?: string; dueDate?: string | null }
+  ) => void;
   removeTaskFromCompany: (companyId: string, taskId: string) => void;
 };
 
@@ -217,6 +222,28 @@ export const useAppStore = create<Store>()(
           const tasks = company.tasks.map((t) =>
             t.id === taskId ? { ...t, isDone: !t.isDone } : t
           );
+          const companies = state.companies.slice();
+          companies[index] = { ...company, tasks };
+          return { companies };
+        });
+      },
+
+      updateTaskInCompany: (companyId, taskId, updates) => {
+        set((state) => {
+          const index = state.companies.findIndex((c) => c.id === companyId);
+          if (index === -1) throw new Error('Company not found: ' + companyId);
+          const company = state.companies[index];
+          const tasks = company.tasks.map((task) => {
+            if (task.id !== taskId) return task;
+            const next: Task = {
+              ...task,
+              title: updates.title !== undefined ? updates.title.trim() : task.title,
+            };
+            if (Object.prototype.hasOwnProperty.call(updates, 'dueDate')) {
+              next.dueDate = updates.dueDate ?? undefined;
+            }
+            return next;
+          });
           const companies = state.companies.slice();
           companies[index] = { ...company, tasks };
           return { companies };

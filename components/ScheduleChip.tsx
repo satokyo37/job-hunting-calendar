@@ -36,6 +36,7 @@ export type ScheduleChipAction = {
 type Props = {
   iso: string;
   status: keyof typeof STATUS_PRESETS;
+  title?: string;
   actions?: ScheduleChipAction[];
   actionsAlign?: 'left' | 'right';
 };
@@ -43,7 +44,13 @@ type Props = {
 const formatDisplayDate = (iso: string) =>
   format(parseISO(iso), 'M月d日（EEE） HH:mm', { locale: ja });
 
-export function ScheduleChip({ iso, status, actions = [], actionsAlign = 'left' }: Props) {
+export function ScheduleChip({
+  iso,
+  status,
+  title,
+  actions = [],
+  actionsAlign = 'left',
+}: Props) {
   const { background, iconColor, icon } = STATUS_PRESETS[status];
 
   return (
@@ -54,6 +61,7 @@ export function ScheduleChip({ iso, status, actions = [], actionsAlign = 'left' 
         </View>
         <ThemedText style={styles.dateLabel}>{formatDisplayDate(iso)}</ThemedText>
       </View>
+      {title ? <ThemedText style={styles.title}>{title}</ThemedText> : null}
       {actions.length > 0 ? (
         <View
           style={[
@@ -92,6 +100,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+  },
+  title: {
+    color: '#0F172A',
+    fontWeight: '700',
   },
   iconBadge: {
     width: 36,

@@ -3,10 +3,9 @@ import { format, isBefore, isSameDay, parseISO, startOfDay } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { Link } from 'expo-router';
 import { useMemo } from 'react';
-import { FlatList, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { FlatList, Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { PageHeader } from '@/components/PageHeader';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Palette } from '@/constants/Palette';
@@ -16,6 +15,7 @@ import {
   ProgressStatusValue,
 } from '@/constants/progressStatus';
 import { useAppStore } from '@/store/useAppStore';
+import type { CompanySchedule, CompanyTaskItem } from '@/types/companyItems';
 
 const {
   background: BACKGROUND,
@@ -28,23 +28,16 @@ const {
   success: SUCCESS,
 } = Palette;
 
-type TodayTaskItem = {
+const APP_LOGO = require('@/assets/images/schetto.png');
+
+type TodayTaskItem = CompanyTaskItem & {
   kind: 'task';
-  id: string;
-  title: string;
-  companyId: string;
-  companyName: string;
   dueDate: string;
-  isDone: boolean;
   sortTime: number;
 };
 
-type TodayScheduleItem = {
+type TodayScheduleItem = CompanySchedule & {
   kind: 'schedule';
-  companyId: string;
-  companyName: string;
-  iso: string;
-  scheduleType: 'confirmed';
   sortTime: number;
 };
 
@@ -55,7 +48,7 @@ export default function HomeScreen() {
   const toggleTaskDone = useAppStore((s) => s.toggleTaskDone);
   const removeTask = useAppStore((s) => s.removeTaskFromCompany);
 
-  const taskItems = useMemo(() => {
+  const taskItems = useMemo<CompanyTaskItem[]>(() => {
     const today = new Date();
     const todayStart = startOfDay(today);
 
@@ -81,7 +74,7 @@ export default function HomeScreen() {
     });
   }, [companies]);
 
-  const scheduleItems = useMemo((): TodayScheduleItem[] => {
+  const scheduleItems = useMemo<CompanySchedule[]>(() => {
     const today = startOfDay(new Date());
 
     return companies.flatMap((company) => {
@@ -92,30 +85,31 @@ export default function HomeScreen() {
 
       return [
         {
-          kind: 'schedule' as const,
           companyId: company.id,
           companyName: company.name,
           iso: company.confirmedDate,
           scheduleType: 'confirmed' as const,
-          sortTime: confirmed.getTime(),
+          title: company.nextAction?.trim() || undefined,
         },
       ];
     });
   }, [companies]);
 
   const todayItems: TodayItem[] = useMemo(() => {
+    const schedules: TodayScheduleItem[] = scheduleItems.map((item) => ({
+      ...item,
+      kind: 'schedule' as const,
+      sortTime: new Date(item.iso).getTime(),
+    }));
+
     const tasks: TodayTaskItem[] = taskItems.map((task) => ({
-      kind: 'task',
-      id: task.id,
-      title: task.title,
-      companyId: task.companyId,
-      companyName: task.companyName,
+      ...task,
+      kind: 'task' as const,
       dueDate: task.dueDate!,
-      isDone: task.isDone,
       sortTime: new Date(task.dueDate!).getTime(),
     }));
 
-    return [...scheduleItems, ...tasks].sort((a, b) => a.sortTime - b.sortTime);
+    return [...schedules, ...tasks].sort((a, b) => a.sortTime - b.sortTime);
   }, [scheduleItems, taskItems]);
 
   const pendingTaskCount = taskItems.length;
@@ -156,14 +150,14 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <PageHeader
-          icon="calendar"
-          title="就活カレンダー"
-          iconColor={PRIMARY}
-          iconBackgroundColor="rgba(37, 99, 235, 0.18)"
-          style={styles.pageHeader}
-          titleStyle={styles.pageHeaderTitle}
-        />
+        <View style={styles.appHero}>
+          <View style={styles.appHeroMain}>
+            <Image source={APP_LOGO} style={styles.appHeroImage} resizeMode="contain" />
+            <View>
+              <ThemedText style={styles.appHeroTitle}>Schetto</ThemedText>
+            </View>
+          </View>
+        </View>
 
         <View style={styles.summarySection}>
           <View style={styles.summaryHeader}>
@@ -269,18 +263,17 @@ export default function HomeScreen() {
                   <ThemedText style={[styles.taskTitle, item.isDone && styles.done]}>
                     {item.title}
                   </ThemedText>
-                  <View style={styles.metaRow}>
-                    <Link href={`/(tabs)/companies/${item.companyId}`} asChild>
-                      <Pressable>
-                        <ThemedText style={styles.companyLink}>{item.companyName}</ThemedText>
-                      </Pressable>
-                    </Link>
-                    {item.dueDate ? (
-                      <ThemedText style={styles.due}>
-                        {format(parseISO(item.dueDate), "yyyy'年'MM'月'dd'日'(EEE) HH:mm", { locale: ja })}
-                      </ThemedText>
-                    ) : null}
-                  </View>
+                  <Link href={`/(tabs)/companies/${item.companyId}`} asChild>
+                    <Pressable>
+                      <ThemedText style={styles.companyLink}>{item.companyName}</ThemedText>
+                    </Pressable>
+                  </Link>
+
+                  {item.dueDate ? (
+                    <ThemedText style={styles.due}>
+                      {format(parseISO(item.dueDate), "yyyy'年'MM'月'dd'日'(EEE) HH:mm", { locale: ja })}
+                    </ThemedText>
+                  ) : null}
                 </View>
 
                 <Pressable onPress={() => removeTask(item.companyId, item.id)} style={styles.deleteBtn}>
@@ -291,22 +284,29 @@ export default function HomeScreen() {
               <View style={[styles.taskRow, styles.scheduleRow]}>
                 <View style={styles.scheduleIconBadge}>
                   <MaterialIcons
-                    name='event-available'
+                    name={item.scheduleType === 'confirmed' ? 'event-available' : 'event-note'}
                     size={18}
                     color={PRIMARY}
                   />
                 </View>
                 <View style={styles.taskBody}>
                   <ThemedText style={styles.taskTitle}>{item.companyName}</ThemedText>
-                  <View style={styles.metaRow}>
+                  {item.title ? (
+                    <ThemedText style={styles.scheduleTitle} numberOfLines={1}>
+                      {item.title}
+                    </ThemedText>
+                  ) : null}
+
+                  <View style={styles.scheduleMetaRow}>
                     <ThemedText style={styles.scheduleLabel}>
-                      予定
+                      {item.scheduleType === 'confirmed' ? '確定日程' : '候補日'}
                     </ThemedText>
                     <ThemedText style={styles.due}>
-                      {format(parseISO(item.iso), "HH:mm 開始", { locale: ja })}
+                      {format(parseISO(item.iso), "HH:mm '開始'", { locale: ja })}
                     </ThemedText>
                   </View>
                 </View>
+
                 <Link href={`/(tabs)/companies/${item.companyId}`} asChild>
                   <Pressable style={styles.scheduleLink}>
                     <MaterialIcons name="chevron-right" size={20} color={TEXT_MUTED} />
@@ -328,14 +328,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 24,
   },
-  pageHeader: {
-    marginHorizontal: -20,
-    paddingHorizontal: 20,
-    paddingBottom: 12,
-    marginBottom: 28,
+  appHero: {
+    gap: 12,
+    marginBottom: 24,
   },
-  pageHeaderTitle: { color: TEXT_PRIMARY, fontSize: 24, lineHeight: 30, fontWeight: '400' },
-  pageHeaderSubtitle: { color: TEXT_MUTED },
+  appHeroMain: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  appHeroImage: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+  },
+  appHeroTitle: {
+    color: TEXT_PRIMARY,
+    fontSize: 22,
+    fontWeight: '700',
+    letterSpacing: 1.5,
+  },
   summarySection: {
     marginBottom: 24,
     padding: 16,
@@ -438,12 +450,6 @@ const styles = StyleSheet.create({
   taskBody: { flex: 1, gap: 4 },
   taskTitle: { color: TEXT_PRIMARY, fontWeight: '600' },
   done: { opacity: 0.5, textDecorationLine: 'line-through' },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 10
-  },
   companyLink: {
     color: PRIMARY,
     fontSize: 12,
@@ -469,7 +475,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
   },
-  scheduleRow: { alignItems: 'center' },
+  scheduleRow: { alignItems: 'center', borderColor: 'rgba(37, 99, 235, 0.25)' },
   scheduleIconBadge: {
     width: 36,
     height: 36,
@@ -478,6 +484,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'rgba(37, 99, 235, 0.12)',
   },
+  scheduleTitle: { color: TEXT_PRIMARY, fontSize: 13, fontWeight: '600' },
   scheduleLabel: { color: TEXT_MUTED, fontSize: 12, fontWeight: '600' },
   scheduleLink: { padding: 4 },
+  scheduleMetaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
 });
+

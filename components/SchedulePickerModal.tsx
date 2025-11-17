@@ -18,13 +18,15 @@ import { ScheduleChip } from '@/components/ScheduleChip';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { NOTO_SANS_JP } from '@/constants/Typography';
+import type { ScheduleType } from '@/types/companyItems';
 
 type PickerStage = 'date' | 'time' | 'confirm';
 
 export type SchedulePickerModalProps = {
   visible: boolean;
-  status: 'candidate' | 'confirmed' | 'task';
+  status: ScheduleType | 'task';
   initialValue?: string;
+  title?: string;
   onCancel: () => void;
   onConfirm: (iso: string) => void;
 };
@@ -41,6 +43,7 @@ export function SchedulePickerModal({
   visible,
   status,
   initialValue,
+  title,
   onCancel,
   onConfirm,
 }: SchedulePickerModalProps) {
@@ -263,7 +266,7 @@ export function SchedulePickerModal({
             {stage === 'confirm' ? (
               <View style={styles.stageSection}>
                 <ThemedText style={styles.stageLabel}>この内容で登録しますか？</ThemedText>
-                <ScheduleChip iso={workingDate.toISOString()} status={status} />
+                <ScheduleChip iso={workingDate.toISOString()} status={status} title={title} />
               </View>
             ) : null}
 

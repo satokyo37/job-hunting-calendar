@@ -21,6 +21,7 @@ import { ThemedView } from '@/components/ThemedView';
 import { Palette } from '@/constants/Palette';
 import { ProgressStatusValue } from '@/constants/progressStatus';
 import { useAppStore } from '@/store/useAppStore';
+import type { CompanySchedule, ScheduleType } from '@/types/companyItems';
 
 const {
   backgroundAlt: BACKGROUND,
@@ -42,14 +43,10 @@ const formatDisplayDay = (iso: string) =>
   format(parseISO(iso), 'M月d日（EEE）', { locale: ja });
 const formatTimeLabel = (iso: string) => format(parseISO(iso), 'HH:mm', { locale: ja });
 
-interface CalendarEvent {
-  companyId: string;
-  companyName: string;
+type CalendarEvent = CompanySchedule & {
   progressStatus: ProgressStatusValue;
   remarks?: string;
-  type: 'candidate' | 'confirmed';
-  dateTime: string;
-}
+};
 
 const weekDays = ['日', '月', '火', '水', '木', '金', '土'];
 const MAX_INLINE_EVENTS = 3;
@@ -67,8 +64,9 @@ export default function CalendarScreen() {
           companyName: company.name,
           progressStatus: company.progressStatus,
           remarks: company.remarks,
-          type: 'candidate',
-          dateTime: date,
+          scheduleType: 'candidate' as ScheduleType,
+          iso: date,
+          title: company.nextAction?.trim() || undefined,
         });
       });
 
@@ -78,14 +76,15 @@ export default function CalendarScreen() {
           companyName: company.name,
           progressStatus: company.progressStatus,
           remarks: company.remarks,
-          type: 'confirmed',
-          dateTime: company.confirmedDate,
+          scheduleType: 'confirmed' as ScheduleType,
+          iso: company.confirmedDate,
+          title: company.nextAction?.trim() || undefined,
         });
       }
     });
 
     const grouped = events.reduce<Record<string, CalendarEvent[]>>((acc, event) => {
-      const key = formatDateKey(event.dateTime);
+      const key = formatDateKey(event.iso);
       if (!acc[key]) {
         acc[key] = [];
       }
@@ -224,10 +223,10 @@ export default function CalendarScreen() {
                       <View style={styles.dayEvents}>
                         {inlineEvents.map((event) => (
                           <View
-                            key={`${event.companyId}-${event.dateTime}-${event.type}`}
+                            key={`${event.companyId}-${event.iso}-${event.scheduleType}`}
                             style={[
                               styles.eventChip,
-                              event.type === 'confirmed'
+                              event.scheduleType === 'confirmed'
                                 ? styles.confirmedChip
                                 : styles.candidateChip,
                             ]}
@@ -235,7 +234,7 @@ export default function CalendarScreen() {
                             <View
                               style={[
                                 styles.eventIndicator,
-                                event.type === 'confirmed'
+                                event.scheduleType === 'confirmed'
                                   ? styles.confirmedIndicator
                                   : styles.candidateIndicator,
                               ]}
@@ -244,25 +243,49 @@ export default function CalendarScreen() {
                               <ThemedText
                                 style={[
                                   styles.eventTime,
-                                  event.type === 'confirmed'
+                                  event.scheduleType === 'confirmed'
                                     ? styles.confirmedChipText
                                     : styles.candidateChipText,
                                 ]}
                               >
-                                {formatTimeLabel(event.dateTime)}
+                                {formatTimeLabel(event.iso)}
                               </ThemedText>
-                              <ThemedText
-                                style={[
-                                  styles.eventChipText,
-                                  event.type === 'confirmed'
-                                    ? styles.confirmedChipText
-                                    : styles.candidateChipText,
-                                ]}
-                                numberOfLines={1}
-                                ellipsizeMode="tail"
-                              >
-                                {event.companyName}
-                              </ThemedText>
+                              {event.title ? (
+                                <>
+                                  <ThemedText
+                                    style={[
+                                      styles.eventChipText,
+                                      event.scheduleType === 'confirmed'
+                                        ? styles.confirmedChipText
+                                        : styles.candidateChipText,
+                                    ]}
+                                    numberOfLines={1}
+                                    ellipsizeMode="tail"
+                                  >
+                                    {event.title}
+                                  </ThemedText>
+                                  <ThemedText
+                                    style={styles.eventChipCompany}
+                                    numberOfLines={1}
+                                    ellipsizeMode="tail"
+                                  >
+                                    {event.companyName}
+                                  </ThemedText>
+                                </>
+                              ) : (
+                                <ThemedText
+                                  style={[
+                                    styles.eventChipText,
+                                    event.scheduleType === 'confirmed'
+                                      ? styles.confirmedChipText
+                                      : styles.candidateChipText,
+                                  ]}
+                                  numberOfLines={1}
+                                  ellipsizeMode="tail"
+                                >
+                                  {event.companyName}
+                                </ThemedText>
+                              )}
                             </View>
                           </View>
                         ))}
@@ -299,24 +322,35 @@ export default function CalendarScreen() {
                 ) : (
                   activeDayEvents.map((event) => (
                     <Pressable
-                      key={`${event.companyId}-${event.dateTime}-${event.type}`}
+                      key={`${event.companyId}-${event.iso}-${event.scheduleType}`}
                       style={styles.dayModalItem}
                       onPress={() => setActiveEvent(event)}
                     >
                       <View style={styles.dayModalMeta}>
                         <View style={styles.dayModalTime}>
                           <MaterialIcons
-                            name={event.type === 'confirmed' ? 'event-available' : 'event-note'}
+                            name={
+                              event.scheduleType === 'confirmed' ? 'event-available' : 'event-note'
+                            }
                             size={16}
-                            color={event.type === 'confirmed' ? SUCCESS : WARNING}
+                            color={event.scheduleType === 'confirmed' ? SUCCESS : WARNING}
                           />
                           <ThemedText style={styles.dayModalTimeText}>
-                            {formatTimeLabel(event.dateTime)}
+                            {formatTimeLabel(event.iso)}
                           </ThemedText>
                         </View>
-                        <ThemedText style={styles.dayModalTitle}>{event.companyName}</ThemedText>
+                        <View style={styles.dayModalInfo}>
+                          <ThemedText style={styles.dayModalTitle}>
+                            {event.title ?? event.companyName}
+                          </ThemedText>
+                          {event.title ? (
+                            <ThemedText style={styles.dayModalCompany}>
+                              {event.companyName}
+                            </ThemedText>
+                          ) : null}
+                        </View>
                       </View>
-                      <StatusTag type={event.type} />
+                      <StatusTag type={event.scheduleType} />
                     </Pressable>
                   ))
                 )}
@@ -334,17 +368,22 @@ export default function CalendarScreen() {
           <Pressable style={styles.modalShell} onPress={(event) => event.stopPropagation()}>
             <ThemedView style={styles.modalCard}>
               <ThemedText type="title" style={styles.modalTitle}>
-                {activeEvent?.companyName ?? ''}
+                {activeEvent?.title ?? activeEvent?.companyName ?? ''}
               </ThemedText>
+              {activeEvent?.title ? (
+                <ThemedText style={styles.modalSubtitle}>
+                  {activeEvent?.companyName}
+                </ThemedText>
+              ) : null}
               <View style={styles.modalSection}>
                 <ThemedText style={styles.modalLabel}>日時</ThemedText>
                 <ThemedText style={styles.modalValue}>
-                  {activeEvent ? formatDisplayDate(activeEvent.dateTime) : ''}
+                  {activeEvent ? formatDisplayDate(activeEvent.iso) : ''}
                 </ThemedText>
               </View>
               <View style={styles.modalSection}>
                 <ThemedText style={styles.modalLabel}>区分</ThemedText>
-                <StatusTag type={activeEvent?.type ?? 'candidate'} />
+                <StatusTag type={activeEvent?.scheduleType ?? 'candidate'} />
               </View>
               {activeEvent?.progressStatus ? (
                 <View style={styles.modalSection}>
@@ -369,7 +408,7 @@ export default function CalendarScreen() {
   );
 }
 
-function StatusTag({ type }: { type: 'candidate' | 'confirmed' }) {
+function StatusTag({ type }: { type: ScheduleType }) {
   const isConfirmed = type === 'confirmed';
   return (
     <View style={[styles.statusTag, { backgroundColor: isConfirmed ? '#DCFCE7' : '#FEF3C7' }]}>
@@ -517,6 +556,10 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 2,
   },
+  eventChipCompany: {
+    fontSize: 10,
+    color: TEXT_MUTED,
+  },
   eventTime: {
     fontSize: 10,
     fontWeight: '700',
@@ -578,6 +621,10 @@ const styles = StyleSheet.create({
     color: TEXT_PRIMARY,
     fontWeight: '700',
   },
+  modalSubtitle: {
+    textAlign: 'center',
+    color: TEXT_MUTED,
+  },
   modalCaption: {
     textAlign: 'center',
     color: TEXT_MUTED,
@@ -605,6 +652,10 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 8,
   },
+  dayModalInfo: {
+    flex: 1,
+    gap: 2,
+  },
   dayModalTime: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -617,6 +668,10 @@ const styles = StyleSheet.create({
   dayModalTitle: {
     color: TEXT_PRIMARY,
     fontWeight: '600',
+  },
+  dayModalCompany: {
+    color: TEXT_MUTED,
+    fontSize: 12,
   },
   primaryButton: {
     flexDirection: 'row',

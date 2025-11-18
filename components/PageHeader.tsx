@@ -32,7 +32,7 @@ export function PageHeader({
   title,
   subtitle,
   iconColor = '#2563EB',
-  iconBackgroundColor = 'rgba(37, 99, 235, 0.12)',
+  iconBackgroundColor = 'transparent',
   style,
   titleStyle,
   subtitleStyle,
@@ -42,7 +42,7 @@ export function PageHeader({
 }: PageHeaderProps) {
   const iconNode =
     iconElement ??
-    (icon ? <IconSymbol size={28} color={iconColor} name={icon} /> : null);
+    (icon ? <IconSymbol size={26} color={iconColor} name={icon} /> : null);
 
   return (
     <ThemedView style={[styles.container, style]} lightColor={lightColor} darkColor={darkColor}>
@@ -95,9 +95,9 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   iconWrapper: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
   },

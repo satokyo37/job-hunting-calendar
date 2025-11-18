@@ -1,4 +1,4 @@
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import {
   addMonths,
   eachDayOfInterval,
@@ -10,18 +10,19 @@ import {
   parseISO,
   startOfMonth,
   startOfWeek,
-} from 'date-fns';
-import { ja } from 'date-fns/locale';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+} from "date-fns";
+import { ja } from "date-fns/locale";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Modal, Pressable, ScrollView, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { Palette } from '@/constants/Palette';
-import { ProgressStatusValue } from '@/constants/progressStatus';
-import { useAppStore } from '@/store/useAppStore';
-import type { CompanySchedule, ScheduleType } from '@/types/companyItems';
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import { ProgressStatusValue } from "@/constants/progressStatus";
+import { Palette } from "@/constants/Palette";
+import { useAppStore } from "@/store/useAppStore";
+import { calendarStyles as styles } from "@/styles/calendarStyles";
+import type { CompanySchedule, ScheduleType } from "@/types/companyItems";
 
 const {
   backgroundAlt: BACKGROUND,
@@ -35,20 +36,21 @@ const {
   warning: WARNING,
 } = Palette;
 
-const formatDateKey = (iso: string) => format(parseISO(iso), 'yyyy-MM-dd');
-const toDateKey = (date: Date) => format(date, 'yyyy-MM-dd');
+const formatDateKey = (iso: string) => format(parseISO(iso), "yyyy-MM-dd");
+const toDateKey = (date: Date) => format(date, "yyyy-MM-dd");
 const formatDisplayDate = (iso: string) =>
-  format(parseISO(iso), 'yyyy年M月d日（EEE）HH:mm', { locale: ja });
+  format(parseISO(iso), "yyyy年M月d日（EEE）HH:mm", { locale: ja });
 const formatDisplayDay = (iso: string) =>
-  format(parseISO(iso), 'M月d日（EEE）', { locale: ja });
-const formatTimeLabel = (iso: string) => format(parseISO(iso), 'HH:mm', { locale: ja });
+  format(parseISO(iso), "M月d日（EEE）", { locale: ja });
+const formatTimeLabel = (iso: string) =>
+  format(parseISO(iso), "HH:mm", { locale: ja });
 
 type CalendarEvent = CompanySchedule & {
   progressStatus: ProgressStatusValue;
   remarks?: string;
 };
 
-const weekDays = ['日', '月', '火', '水', '木', '金', '土'];
+const weekDays = ["日", "月", "火", "水", "木", "金", "土"];
 const MAX_INLINE_EVENTS = 3;
 
 export default function CalendarScreen() {
@@ -64,7 +66,7 @@ export default function CalendarScreen() {
           companyName: company.name,
           progressStatus: company.progressStatus,
           remarks: company.remarks,
-          scheduleType: 'candidate' as ScheduleType,
+          scheduleType: "candidate" as ScheduleType,
           iso: date,
           title: company.nextAction?.trim() || undefined,
         });
@@ -76,21 +78,24 @@ export default function CalendarScreen() {
           companyName: company.name,
           progressStatus: company.progressStatus,
           remarks: company.remarks,
-          scheduleType: 'confirmed' as ScheduleType,
+          scheduleType: "confirmed" as ScheduleType,
           iso: company.confirmedDate,
           title: company.nextAction?.trim() || undefined,
         });
       }
     });
 
-    const grouped = events.reduce<Record<string, CalendarEvent[]>>((acc, event) => {
-      const key = formatDateKey(event.iso);
-      if (!acc[key]) {
-        acc[key] = [];
-      }
-      acc[key].push(event);
-      return acc;
-    }, {});
+    const grouped = events.reduce<Record<string, CalendarEvent[]>>(
+      (acc, event) => {
+        const key = formatDateKey(event.iso);
+        if (!acc[key]) {
+          acc[key] = [];
+        }
+        acc[key].push(event);
+        return acc;
+      },
+      {},
+    );
 
     const keys = Object.keys(grouped).sort();
     return { eventsByDay: grouped, dayKeys: keys };
@@ -100,7 +105,9 @@ export default function CalendarScreen() {
   const initialSelected = dayKeys.find((key) => key >= todayKey) ?? todayKey;
 
   const [selectedDate, setSelectedDate] = useState(initialSelected);
-  const [focusedMonth, setFocusedMonth] = useState(startOfMonth(parseISO(initialSelected)));
+  const [focusedMonth, setFocusedMonth] = useState(
+    startOfMonth(parseISO(initialSelected)),
+  );
   const [activeDayKey, setActiveDayKey] = useState<string | null>(null);
   const [activeEvent, setActiveEvent] = useState<CalendarEvent | null>(null);
 
@@ -135,23 +142,20 @@ export default function CalendarScreen() {
     return weeks;
   }, [calendarDays]);
 
-  const handleSelectDay = useCallback(
-    (key: string, hasEvents: boolean) => {
-      setSelectedDate(key);
-      if (hasEvents) {
-        setActiveDayKey(key);
-      } else {
-        setActiveDayKey(null);
-        setActiveEvent(null);
-      }
-    },
-    []
-  );
+  const handleSelectDay = useCallback((key: string, hasEvents: boolean) => {
+    setSelectedDate(key);
+    if (hasEvents) {
+      setActiveDayKey(key);
+    } else {
+      setActiveDayKey(null);
+      setActiveEvent(null);
+    }
+  }, []);
 
-  const activeDayEvents = activeDayKey ? eventsByDay[activeDayKey] ?? [] : [];
-  const currentMonthLabel = format(focusedMonth, 'yyyy年M月', { locale: ja });
+  const activeDayEvents = activeDayKey ? (eventsByDay[activeDayKey] ?? []) : [];
+  const currentMonthLabel = format(focusedMonth, "yyyy年M月", { locale: ja });
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top']}>
+    <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <ThemedView style={styles.screen}>
         <View style={styles.container}>
           <View style={styles.monthSwitcher}>
@@ -197,8 +201,8 @@ export default function CalendarScreen() {
                   const today = isToday(day);
                   const isLastColumn = dayIndex === week.length - 1;
 
-                  const inlineEvents = dayEvents.slice(0, MAX_INLINE_EVENTS);
-                  const remainingCount = Math.max(dayEvents.length - inlineEvents.length, 0);
+                  const firstEvent = dayEvents[0];
+                  const remainingCount = Math.max(dayEvents.length - 1, 0);
 
                   return (
                     <Pressable
@@ -214,87 +218,42 @@ export default function CalendarScreen() {
                     >
                       <View style={styles.dayHeader}>
                         <ThemedText
-                          style={[styles.dayNumber, !isCurrentMonth && styles.outsideDayNumber]}
+                          style={[
+                            styles.dayNumber,
+                            !isCurrentMonth && styles.outsideDayNumber,
+                          ]}
                         >
-                          {format(day, 'd')}
+                          {format(day, "d")}
                         </ThemedText>
                         {today && <View style={styles.todayDot} />}
                       </View>
-                      <View style={styles.dayEvents}>
-                        {inlineEvents.map((event) => (
+
+                      {/* ▼ ここが1行サマリ */}
+                      {firstEvent && (
+                        <View style={styles.daySummaryRow}>
                           <View
-                            key={`${event.companyId}-${event.iso}-${event.scheduleType}`}
                             style={[
-                              styles.eventChip,
-                              event.scheduleType === 'confirmed'
-                                ? styles.confirmedChip
-                                : styles.candidateChip,
+                              styles.summaryDot,
+                              firstEvent.scheduleType === "confirmed"
+                                ? styles.summaryDotConfirmed
+                                : styles.summaryDotCandidate,
                             ]}
+                          />
+                          <ThemedText
+                            style={styles.daySummaryText}
+                            numberOfLines={1}
+                            ellipsizeMode="tail"
                           >
-                            <View
-                              style={[
-                                styles.eventIndicator,
-                                event.scheduleType === 'confirmed'
-                                  ? styles.confirmedIndicator
-                                  : styles.candidateIndicator,
-                              ]}
-                            />
-                            <View style={styles.eventChipBody}>
-                              <ThemedText
-                                style={[
-                                  styles.eventTime,
-                                  event.scheduleType === 'confirmed'
-                                    ? styles.confirmedChipText
-                                    : styles.candidateChipText,
-                                ]}
-                              >
-                                {formatTimeLabel(event.iso)}
-                              </ThemedText>
-                              {event.title ? (
-                                <>
-                                  <ThemedText
-                                    style={[
-                                      styles.eventChipText,
-                                      event.scheduleType === 'confirmed'
-                                        ? styles.confirmedChipText
-                                        : styles.candidateChipText,
-                                    ]}
-                                    numberOfLines={1}
-                                    ellipsizeMode="tail"
-                                  >
-                                    {event.title}
-                                  </ThemedText>
-                                  <ThemedText
-                                    style={styles.eventChipCompany}
-                                    numberOfLines={1}
-                                    ellipsizeMode="tail"
-                                  >
-                                    {event.companyName}
-                                  </ThemedText>
-                                </>
-                              ) : (
-                                <ThemedText
-                                  style={[
-                                    styles.eventChipText,
-                                    event.scheduleType === 'confirmed'
-                                      ? styles.confirmedChipText
-                                      : styles.candidateChipText,
-                                  ]}
-                                  numberOfLines={1}
-                                  ellipsizeMode="tail"
-                                >
-                                  {event.companyName}
-                                </ThemedText>
-                              )}
-                            </View>
-                          </View>
-                        ))}
-                        {remainingCount > 0 && (
-                          <View style={styles.moreChip}>
-                            <ThemedText style={styles.moreChipText}>+{remainingCount}</ThemedText>
-                          </View>
-                        )}
-                      </View>
+                            {formatTimeLabel(firstEvent.iso)}{" "}
+                            {firstEvent.title?.trim() || firstEvent.companyName}
+                          </ThemedText>
+                          {remainingCount > 0 && (
+                            <ThemedText style={styles.daySummaryMore}>
+                              +{remainingCount}
+                            </ThemedText>
+                          )}
+                        </View>
+                      )}
                     </Pressable>
                   );
                 })}
@@ -305,14 +264,22 @@ export default function CalendarScreen() {
       </ThemedView>
 
       <Modal visible={Boolean(activeDayKey)} transparent animationType="fade">
-        <Pressable style={styles.modalOverlay} onPress={() => setActiveDayKey(null)}>
-          <Pressable style={styles.modalShell} onPress={(event) => event.stopPropagation()}>
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setActiveDayKey(null)}
+        >
+          <Pressable
+            style={styles.modalShell}
+            onPress={(event) => event.stopPropagation()}
+          >
             <ThemedView style={styles.modalCard}>
               <ThemedText type="title" style={styles.modalTitle}>
                 この日の予定
               </ThemedText>
               <ThemedText style={styles.modalCaption}>
-                {activeDayKey ? formatDisplayDay(`${activeDayKey}T00:00:00`) : ''}
+                {activeDayKey
+                  ? formatDisplayDay(`${activeDayKey}T00:00:00`)
+                  : ""}
               </ThemedText>
               <ScrollView contentContainerStyle={styles.dayModalList}>
                 {activeDayEvents.length === 0 ? (
@@ -330,10 +297,16 @@ export default function CalendarScreen() {
                         <View style={styles.dayModalTime}>
                           <MaterialIcons
                             name={
-                              event.scheduleType === 'confirmed' ? 'event-available' : 'event-note'
+                              event.scheduleType === "confirmed"
+                                ? "event-available"
+                                : "event-note"
                             }
                             size={16}
-                            color={event.scheduleType === 'confirmed' ? SUCCESS : WARNING}
+                            color={
+                              event.scheduleType === "confirmed"
+                                ? SUCCESS
+                                : WARNING
+                            }
                           />
                           <ThemedText style={styles.dayModalTimeText}>
                             {formatTimeLabel(event.iso)}
@@ -355,8 +328,13 @@ export default function CalendarScreen() {
                   ))
                 )}
               </ScrollView>
-              <Pressable style={styles.primaryButton} onPress={() => setActiveDayKey(null)}>
-                <ThemedText style={styles.primaryButtonLabel}>閉じる</ThemedText>
+              <Pressable
+                style={styles.primaryButton}
+                onPress={() => setActiveDayKey(null)}
+              >
+                <ThemedText style={styles.primaryButtonLabel}>
+                  閉じる
+                </ThemedText>
               </Pressable>
             </ThemedView>
           </Pressable>
@@ -364,11 +342,17 @@ export default function CalendarScreen() {
       </Modal>
 
       <Modal visible={Boolean(activeEvent)} transparent animationType="fade">
-        <Pressable style={styles.modalOverlay} onPress={() => setActiveEvent(null)}>
-          <Pressable style={styles.modalShell} onPress={(event) => event.stopPropagation()}>
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setActiveEvent(null)}
+        >
+          <Pressable
+            style={styles.modalShell}
+            onPress={(event) => event.stopPropagation()}
+          >
             <ThemedView style={styles.modalCard}>
               <ThemedText type="title" style={styles.modalTitle}>
-                {activeEvent?.title ?? activeEvent?.companyName ?? ''}
+                {activeEvent?.title ?? activeEvent?.companyName ?? ""}
               </ThemedText>
               {activeEvent?.title ? (
                 <ThemedText style={styles.modalSubtitle}>
@@ -378,27 +362,38 @@ export default function CalendarScreen() {
               <View style={styles.modalSection}>
                 <ThemedText style={styles.modalLabel}>日時</ThemedText>
                 <ThemedText style={styles.modalValue}>
-                  {activeEvent ? formatDisplayDate(activeEvent.iso) : ''}
+                  {activeEvent ? formatDisplayDate(activeEvent.iso) : ""}
                 </ThemedText>
               </View>
               <View style={styles.modalSection}>
                 <ThemedText style={styles.modalLabel}>区分</ThemedText>
-                <StatusTag type={activeEvent?.scheduleType ?? 'candidate'} />
+                <StatusTag type={activeEvent?.scheduleType ?? "candidate"} />
               </View>
               {activeEvent?.progressStatus ? (
                 <View style={styles.modalSection}>
-                  <ThemedText style={styles.modalLabel}>進捗ステータス</ThemedText>
-                  <ThemedText style={styles.modalValue}>{activeEvent.progressStatus}</ThemedText>
+                  <ThemedText style={styles.modalLabel}>
+                    進捗ステータス
+                  </ThemedText>
+                  <ThemedText style={styles.modalValue}>
+                    {activeEvent.progressStatus}
+                  </ThemedText>
                 </View>
               ) : null}
               {activeEvent?.remarks ? (
                 <View style={styles.modalSection}>
                   <ThemedText style={styles.modalLabel}>メモ</ThemedText>
-                  <ThemedText style={styles.modalValue}>{activeEvent.remarks}</ThemedText>
+                  <ThemedText style={styles.modalValue}>
+                    {activeEvent.remarks}
+                  </ThemedText>
                 </View>
               ) : null}
-              <Pressable style={styles.primaryButton} onPress={() => setActiveEvent(null)}>
-                <ThemedText style={styles.primaryButtonLabel}>閉じる</ThemedText>
+              <Pressable
+                style={styles.primaryButton}
+                onPress={() => setActiveEvent(null)}
+              >
+                <ThemedText style={styles.primaryButtonLabel}>
+                  閉じる
+                </ThemedText>
               </Pressable>
             </ThemedView>
           </Pressable>
@@ -409,303 +404,27 @@ export default function CalendarScreen() {
 }
 
 function StatusTag({ type }: { type: ScheduleType }) {
-  const isConfirmed = type === 'confirmed';
+  const isConfirmed = type === "confirmed";
   return (
-    <View style={[styles.statusTag, { backgroundColor: isConfirmed ? '#DCFCE7' : '#FEF3C7' }]}>
+    <View
+      style={[
+        styles.statusTag,
+        { backgroundColor: isConfirmed ? "#DCFCE7" : "#FEF3C7" },
+      ]}
+    >
       <MaterialIcons
-        name={isConfirmed ? 'check-circle' : 'hourglass-bottom'}
+        name={isConfirmed ? "check-circle" : "hourglass-bottom"}
         size={14}
         color={isConfirmed ? SUCCESS : WARNING}
       />
-      <ThemedText style={[styles.statusTagLabel, { color: isConfirmed ? SUCCESS : WARNING }]}>
-        {isConfirmed ? '確定' : '候補'}
+      <ThemedText
+        style={[
+          styles.statusTagLabel,
+          { color: isConfirmed ? SUCCESS : WARNING },
+        ]}
+      >
+        {isConfirmed ? "確定" : "候補"}
       </ThemedText>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: BACKGROUND,
-  },
-  screen: {
-    flex: 1,
-    backgroundColor: BACKGROUND,
-  },
-  container: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 16,
-    gap: 12,
-  },
-  monthSwitcher: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-  },
-  monthButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: BORDER,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: SURFACE,
-  },
-  monthLabel: {
-    color: TEXT_PRIMARY,
-    fontSize: 22,
-    fontWeight: '700',
-  },
-  weekHeader: {
-    flexDirection: 'row',
-    paddingHorizontal: 4,
-  },
-  weekDay: {
-    flex: 1,
-    textAlign: 'center',
-    color: TEXT_MUTED,
-    fontWeight: '600',
-  },
-  calendarGrid: {
-    marginTop: 12,
-    borderRadius: 20,
-    overflow: 'hidden',
-    backgroundColor: SURFACE,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: BORDER,
-  },
-  weekRow: {
-    flexDirection: 'row',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: 'rgba(100, 116, 139, 0.18)',
-  },
-  lastWeekRow: {
-    borderBottomWidth: 0,
-  },
-  dayCell: {
-    flex: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    gap: 6,
-    minHeight: 110,
-    borderRightWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(100, 116, 139, 0.12)',
-    backgroundColor: SURFACE,
-  },
-  lastColumnCell: {
-    borderRightWidth: 0,
-  },
-  outsideCell: {
-    backgroundColor: SURFACE_SUBTLE,
-  },
-  selectedCell: {
-    borderColor: PRIMARY,
-    borderWidth: 2,
-    borderLeftWidth: 2,
-    borderRightWidth: 2,
-    borderTopWidth: 2,
-    borderBottomWidth: 2,
-  },
-  todayOutline: {
-    shadowColor: '#2563EB33',
-    shadowOpacity: 0.8,
-    shadowRadius: 12,
-  },
-  dayHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  dayNumber: {
-    color: TEXT_PRIMARY,
-    fontWeight: '700',
-  },
-  outsideDayNumber: {
-    color: TEXT_MUTED,
-  },
-  todayDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: PRIMARY,
-  },
-  dayEvents: {
-    marginTop: 6,
-    gap: 4,
-  },
-  eventChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    width: '100%',
-  },
-  eventIndicator: {
-    width: 4,
-    borderRadius: 999,
-    alignSelf: 'stretch',
-  },
-  eventChipBody: {
-    flex: 1,
-    gap: 2,
-  },
-  eventChipCompany: {
-    fontSize: 10,
-    color: TEXT_MUTED,
-  },
-  eventTime: {
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 0.4,
-  },
-  eventChipText: {
-    fontSize: 12,
-    fontWeight: '600',
-    flexShrink: 1,
-  },
-  confirmedChip: {
-    backgroundColor: 'rgba(22, 163, 74, 0.12)',
-  },
-  confirmedChipText: {
-    color: SUCCESS,
-  },
-  confirmedIndicator: {
-    backgroundColor: SUCCESS,
-  },
-  candidateChip: {
-    backgroundColor: 'rgba(249, 115, 22, 0.12)',
-  },
-  candidateChipText: {
-    color: WARNING,
-  },
-  candidateIndicator: {
-    backgroundColor: WARNING,
-  },
-  moreChip: {
-    borderRadius: 999,
-    backgroundColor: SURFACE_SUBTLE,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    alignSelf: 'flex-start',
-  },
-  moreChipText: {
-    color: TEXT_MUTED,
-    fontSize: 12,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.4)',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  modalShell: {
-    width: '100%',
-  },
-  modalCard: {
-    backgroundColor: SURFACE,
-    borderRadius: 24,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: BORDER,
-    padding: 24,
-    gap: 18,
-  },
-  modalTitle: {
-    textAlign: 'center',
-    color: TEXT_PRIMARY,
-    fontWeight: '700',
-  },
-  modalSubtitle: {
-    textAlign: 'center',
-    color: TEXT_MUTED,
-  },
-  modalCaption: {
-    textAlign: 'center',
-    color: TEXT_MUTED,
-  },
-  dayModalList: {
-    gap: 12,
-  },
-  emptyDayMessage: {
-    color: TEXT_MUTED,
-    textAlign: 'center',
-  },
-  dayModalItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 16,
-    backgroundColor: SURFACE_SUBTLE,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: BORDER,
-  },
-  dayModalMeta: {
-    flex: 1,
-    gap: 8,
-  },
-  dayModalInfo: {
-    flex: 1,
-    gap: 2,
-  },
-  dayModalTime: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  dayModalTimeText: {
-    color: TEXT_PRIMARY,
-    fontWeight: '600',
-  },
-  dayModalTitle: {
-    color: TEXT_PRIMARY,
-    fontWeight: '600',
-  },
-  dayModalCompany: {
-    color: TEXT_MUTED,
-    fontSize: 12,
-  },
-  primaryButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: PRIMARY,
-    paddingVertical: 14,
-    borderRadius: 16,
-  },
-  primaryButtonLabel: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-  },
-  modalSection: {
-    gap: 6,
-  },
-  modalLabel: {
-    color: TEXT_MUTED,
-    fontSize: 12,
-  },
-  modalValue: {
-    color: TEXT_PRIMARY,
-    fontWeight: '600',
-  },
-  statusTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
-  },
-  statusTagLabel: {
-    fontWeight: '600',
-  },
-});

@@ -4,7 +4,7 @@
     "slug": "schetto",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/schetto.png",
+    "icon": "./assets/images/icon-schetto.png",
     "scheme": "schetto",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,

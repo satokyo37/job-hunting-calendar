@@ -12,14 +12,10 @@ import { ThemedView } from "@/components/ThemedView";
 import { Palette } from "@/constants/Palette";
 import { useAppStore } from "@/store/useAppStore";
 import { tasksStyles as styles } from "@/styles/tasksStyles";
-import { TaskEditModal } from "./tasks/TaskEditModal";
 import type { CompanyTaskItem } from "@/types/companyItems";
+import { TaskEditModal } from "./tasks/TaskEditModal";
 
 const {
-  background: BACKGROUND,
-  surface: SURFACE,
-  border: BORDER,
-  textPrimary: TEXT_PRIMARY,
   textMuted: TEXT_MUTED,
   primary: PRIMARY,
   success: SUCCESS,
@@ -28,7 +24,6 @@ const {
 type TaskSection = {
   key: string;
   title: string;
-  caption: string;
   data: CompanyTaskItem[];
 };
 
@@ -77,7 +72,6 @@ export default function TasksTabScreen() {
       data.push({
         key: "pending",
         title: "進行中のタスク",
-        caption: "優先して取り組む予定のタスクをまとめています",
         data: pendingTasks,
       });
     }
@@ -86,7 +80,6 @@ export default function TasksTabScreen() {
       data.push({
         key: "completed",
         title: "完了済み",
-        caption: "対応が終わったタスクはここで振り返れます",
         data: completedTasks,
       });
     }
@@ -186,9 +179,6 @@ export default function TasksTabScreen() {
             <View style={styles.sectionHeader}>
               <ThemedText style={styles.sectionTitle}>
                 {section.title}
-              </ThemedText>
-              <ThemedText style={styles.sectionCaption}>
-                {section.caption}
               </ThemedText>
             </View>
           )}

@@ -49,47 +49,69 @@ export default function CompanyDetailScreen() {
     );
   }
 
-  const hasSchedule = Boolean(company.confirmedDate) || company.candidateDates.length > 0;
-
   const renderSchedule = () => {
-    if (!hasSchedule) {
-      return <ThemedText style={styles.placeholder}>登録された予定はありません</ThemedText>;
+    const hasConfirmed = Boolean(company.confirmedDate);
+    const hasCandidates = company.candidateDates.length > 0;
+
+    if (!hasConfirmed && !hasCandidates) {
+      return (
+        <ThemedText style={styles.placeholder}>
+          登録された予定はありません
+        </ThemedText>
+      );
     }
+
+    const isConfirmedMode = hasConfirmed;
+    const caption = isConfirmedMode ? '確定日' : '候補日';
+
+    const items: { iso: string; status: 'confirmed' | 'candidate' }[] =
+      isConfirmedMode
+        ? [{ iso: company.confirmedDate!, status: 'confirmed' }]
+        : company.candidateDates.map((iso) => ({ iso, status: 'candidate' }));
+
+    const actionTitle = company.nextAction?.trim() ?? '';
+    const hasActionTitle = actionTitle !== '';
 
     return (
       <View style={styles.scheduleSummaryCard}>
-        {company.confirmedDate ? (
-          <View style={styles.confirmedBlock}>
-            <ThemedText style={styles.formCaption}>確定した予定</ThemedText>
-            <ScheduleChip
-              iso={company.confirmedDate}
-              status="confirmed"
-              title={company.nextAction?.trim() || undefined}
-              actionsAlign="right"
+        {!isConfirmedMode && hasActionTitle && (
+          <View style={styles.readOnlyField}>
+            <ThemedText style={styles.fieldLabel}>タイトル</ThemedText>
+            <TextInput
+              style={[styles.input, styles.readOnlyInput]}
+              value={actionTitle}
+              editable={false}
+              multiline={false}
+              numberOfLines={1}
+              scrollEnabled={false}
+              selectTextOnFocus={false}
             />
           </View>
-        ) : null}
+        )}
 
-        {company.candidateDates.length > 0 ? (
-          <View
-            style={[
-              styles.candidateBlock,
-              company.confirmedDate && styles.scheduleSummaryDivider,
-            ]}
-          >
-            <ThemedText style={styles.formCaption}>候補日</ThemedText>
-            <View style={styles.chipColumn}>
-              {company.candidateDates.map((candidate) => (
-                <ScheduleChip
-                  key={candidate}
-                  iso={candidate}
-                  status="candidate"
-                  title={company.nextAction?.trim() || undefined}
-                />
-              ))}
+        <View style={styles.scheduleHeaderRow}>
+          <ThemedText style={[styles.fieldLabel, !isConfirmedMode && hasActionTitle && styles.scheduleCaptionBelowTitle]}>{caption}</ThemedText>
+          {isConfirmedMode ? (
+            <View style={styles.scheduleStatusPill}>
+              <ThemedText style={styles.scheduleStatusPillLabel}>確定</ThemedText>
             </View>
-          </View>
-        ) : null}
+          ) : null}
+        </View>
+
+        <View style={styles.chipColumn}>
+          {items.map((item) => (
+            <ScheduleChip
+              key={`${item.status}-${item.iso}`}
+              iso={item.iso}
+              status={item.status}
+              title={
+                isConfirmedMode && hasActionTitle ? actionTitle : undefined
+              }
+              actionsAlign={item.status === 'confirmed' ? 'right' : 'left'}
+              variant='subtle'
+            />
+          ))}
+        </View>
       </View>
     );
   };
@@ -174,22 +196,11 @@ export default function CompanyDetailScreen() {
                 selectTextOnFocus={false}
               />
             </View>
-            <View style={styles.readOnlyField}>
-              <ThemedText style={styles.fieldLabel}>次のアクション</ThemedText>
-              <TextInput
-                style={[styles.input, styles.multilineInput, styles.readOnlyInput]}
-                value={company.nextAction ?? ''}
-                editable={false}
-                multiline
-                scrollEnabled={false}
-                selectTextOnFocus={false}
-              />
-            </View>
           </View>
         </ThemedView>
 
         <ThemedView style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>スケジュール</ThemedText>
+          <ThemedText style={styles.sectionTitle}>予定</ThemedText>
           <View style={styles.readOnlyScheduleSection}>{renderSchedule()}</View>
         </ThemedView>
 
@@ -276,13 +287,13 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   input: {
-    borderWidth: 1.5,
-    borderColor: 'rgba(37, 99, 235, 0.35)',
+    borderWidth: 0,
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 12,
     color: TEXT_PRIMARY,
-    fontWeight: '600',
+    fontWeight: '500',
+    backgroundColor: 'rgba(148, 163, 184, 0.12)',
   },
   readOnlyInput: {
     color: TEXT_PRIMARY,
@@ -301,23 +312,23 @@ const styles = StyleSheet.create({
     backgroundColor: SURFACE_SUBTLE,
   },
   scheduleSummaryCard: {
-    gap: 16,
+    gap: 12,
   },
-  confirmedBlock: {
-    gap: 10,
+  scheduleHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  candidateBlock: {
-    gap: 10,
+  scheduleStatusPill: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 999,
+    backgroundColor: 'rgba(34, 197, 94, 0.12)',
   },
-  scheduleSummaryDivider: {
-    paddingTop: 12,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: BORDER,
-  },
-  formCaption: {
-    color: TEXT_MUTED,
-    fontSize: 12,
+  scheduleStatusPillLabel: {
+    fontSize: 11,
     fontWeight: '600',
+    color: '#16A34A',
   },
   chipColumn: {
     gap: 10,
@@ -341,4 +352,7 @@ const styles = StyleSheet.create({
   taskTitle: { color: TEXT_PRIMARY, fontWeight: '600' },
   taskTitleDone: { textDecorationLine: 'line-through', opacity: 0.6 },
   taskDue: { color: TEXT_MUTED, fontSize: 12 },
+  scheduleCaptionBelowTitle: {
+    marginTop: 8,
+  },
 });

@@ -6,8 +6,8 @@ import { Modal, Pressable, ScrollView, TextInput, View } from "react-native";
 import { ScheduleChip } from "@/components/ScheduleChip";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { PROGRESS_STATUS_ITEMS } from "@/constants/progressStatus";
 import { Palette } from "@/constants/Palette";
+import { PROGRESS_STATUS_ITEMS } from "@/constants/progressStatus";
 import { companiesStyles as styles } from "@/styles/companiesStyles";
 
 const {
@@ -57,7 +57,7 @@ type CompanyCreateModalProps = {
 const formatTaskDueLabel = (iso: string) =>
   format(parseISO(iso), "M月d日 HH:mm", { locale: ja });
 
-export function CompanyCreateModal({
+export default function CompanyCreateModal({
   visible,
   formName,
   onChangeFormName,

@@ -495,12 +495,16 @@ export default function CompanyEditScreen() {
                 </ThemedText>
               </Pressable>
               <Pressable
-                style={[styles.secondaryButton, styles.taskAddButton, !canAddTask && styles.secondaryButtonDisabled]}
+                style={[
+                  styles.secondaryButton,
+                  styles.taskAddButton,
+                  canAddTask && styles.taskAddButtonActive,
+                ]}
                 disabled={!canAddTask}
                 onPress={handleTaskAdd}
               >
                 <MaterialIcons name="add" size={16} color={canAddTask ? '#FFFFFF' : TEXT_MUTED} />
-                <ThemedText style={[styles.secondaryButtonLabel, !canAddTask && styles.taskAddDisabledLabel]}>
+                <ThemedText style={[styles.taskAddLabel, !canAddTask && styles.taskAddDisabledLabel]}>
                   追加
                 </ThemedText>
               </Pressable>
@@ -518,13 +522,14 @@ export default function CompanyEditScreen() {
         options={{
           title: '編集',
           headerLeft: () => (
-            <Pressable onPress={handleCancel} style={{ paddingHorizontal: 8 }}>
+            <Pressable onPress={handleCancel} style={{ paddingHorizontal: 8, paddingVertical: 6 }} hitSlop={8}>
               <MaterialIcons name="arrow-back" size={24} color={TEXT_MUTED} />
             </Pressable>
           ),
           headerRight: () => (
-            <Pressable onPress={handleSave} style={{ paddingHorizontal: 8 }}>
-              <ThemedText style={{ color: PRIMARY, fontWeight: '600' }}>保存</ThemedText>
+            <Pressable onPress={handleSave} style={styles.headerButtonFilled} hitSlop={8}>
+              <MaterialIcons name="check" size={18} color="#FFFFFF" />
+              <ThemedText style={styles.headerButtonFilledLabel}>保存</ThemedText>
             </Pressable>
           ),
         }}
@@ -623,7 +628,10 @@ const styles = StyleSheet.create({
   },
   headerButtonFilledLabel: { color: '#FFFFFF', fontWeight: '700' },
   headerButtonGhost: {
-    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
     paddingVertical: 6,
   },
   headerButtonGhostLabel: { color: TEXT_MUTED, fontWeight: '600' },
@@ -780,8 +788,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   taskAddButton: {
+    flex: 1,
+  },
+  taskAddButtonActive: {
     backgroundColor: PRIMARY,
     borderColor: PRIMARY,
+  },
+  taskAddLabel: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 12,
   },
   taskAddDisabledLabel: {
     color: TEXT_MUTED,

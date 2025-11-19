@@ -23,7 +23,7 @@ type TaskEditModalProps = {
   onDuePickerConfirm: (iso: string) => void;
 };
 
-export function TaskEditModal({
+export default function TaskEditModal({
   visible,
   title,
   dueLabel,
@@ -57,7 +57,7 @@ export function TaskEditModal({
                 style={styles.modalInput}
                 value={title}
                 onChangeText={onChangeTitle}
-                placeholder="タスク名を入力"
+                placeholder="タスク内容を入力"
               />
             </View>
             <View style={styles.modalField}>

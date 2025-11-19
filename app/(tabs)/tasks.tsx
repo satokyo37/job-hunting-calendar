@@ -13,7 +13,7 @@ import { Palette } from "@/constants/Palette";
 import { useAppStore } from "@/store/useAppStore";
 import { tasksStyles as styles } from "@/styles/tasksStyles";
 import type { CompanyTaskItem } from "@/types/companyItems";
-import { TaskEditModal } from "./tasks/TaskEditModal";
+import TaskEditModal from "@/app/features/tasks/components/TaskEditModal";
 
 const {
   textMuted: TEXT_MUTED,

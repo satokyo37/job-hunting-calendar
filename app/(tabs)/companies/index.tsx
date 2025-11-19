@@ -18,7 +18,7 @@ import {
 } from "@/constants/progressStatus";
 import { useAppStore } from "@/store/useAppStore";
 import { companiesStyles as styles } from "@/styles/companiesStyles";
-import { CompanyCreateModal } from "./CompanyCreateModal";
+import CompanyCreateModal from "@/app/features/companies/components/CompanyCreateModal";
 
 const {
   background: BACKGROUND,

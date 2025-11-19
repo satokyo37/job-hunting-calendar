@@ -1,7 +1,7 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { format, parseISO } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import { StyleSheet, View, Pressable } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/ThemedText';
 
@@ -33,12 +33,15 @@ export type ScheduleChipAction = {
   onPress: () => void;
 };
 
+type ChipVariant = 'default' | 'subtle';
+
 type Props = {
   iso: string;
   status: keyof typeof STATUS_PRESETS;
   title?: string;
   actions?: ScheduleChipAction[];
   actionsAlign?: 'left' | 'right';
+  variant?: ChipVariant;
 };
 
 const formatDisplayDate = (iso: string) =>
@@ -50,19 +53,39 @@ export function ScheduleChip({
   title,
   actions = [],
   actionsAlign = 'left',
+  variant = 'default',
 }: Props) {
   const { background, iconColor, icon } = STATUS_PRESETS[status];
+  const hasTitle = Boolean(title && title.trim() !== '');
+  const containerBackground =
+    variant === 'subtle'
+      ? 'rgba(148, 163, 184, 0.12)'
+      : background;
 
   return (
-    <View style={[styles.container, { backgroundColor: background }]}>
-      <View style={styles.meta}>
+    <View style={[styles.container, { backgroundColor: containerBackground }]}>
+      <View style={styles.headerRow}>
         <View style={[styles.iconBadge, { backgroundColor: `${iconColor}1A` }]}>
           <MaterialIcons name={icon} size={18} color={iconColor} />
         </View>
-        <ThemedText style={styles.dateLabel}>{formatDisplayDate(iso)}</ThemedText>
+
+        <View style={styles.textColumn}>
+          {hasTitle && (
+            <ThemedText style={styles.title} numberOfLines={2}>
+              {title}
+            </ThemedText>
+          )}
+
+          <ThemedText
+            style={[styles.dateLabel, !hasTitle && styles.dateLabelStrong]}
+            numberOfLines={1}
+          >
+            {formatDisplayDate(iso)}
+          </ThemedText>
+        </View>
       </View>
-      {title ? <ThemedText style={styles.title}>{title}</ThemedText> : null}
-      {actions.length > 0 ? (
+
+      {actions.length > 0 && (
         <View
           style={[
             styles.actions,
@@ -72,7 +95,10 @@ export function ScheduleChip({
           {actions.map((action) => (
             <Pressable
               key={action.key}
-              style={[styles.actionButton, { backgroundColor: action.backgroundColor }]}
+              style={[
+                styles.actionButton,
+                { backgroundColor: action.backgroundColor },
+              ]}
               onPress={action.onPress}
             >
               <MaterialIcons name={action.icon} size={14} color={action.color} />
@@ -82,7 +108,7 @@ export function ScheduleChip({
             </Pressable>
           ))}
         </View>
-      ) : null}
+      )}
     </View>
   );
 }
@@ -93,17 +119,13 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: BORDER,
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 10,
     gap: 12,
   },
-  meta: {
+  headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-  },
-  title: {
-    color: '#0F172A',
-    fontWeight: '700',
   },
   iconBadge: {
     width: 36,
@@ -112,10 +134,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  textColumn: {
+    flex: 1,
+    justifyContent: 'center',
+    gap: 4,
+  },
+  title: {
+    color: '#0F172A',
+    fontWeight: '700',
+    fontSize: 14,
+  },
   dateLabel: {
+    color: '#64748B',
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  dateLabelStrong: {
     color: '#0F172A',
     fontWeight: '600',
-    flexShrink: 1,
+    fontSize: 14,
   },
   actions: {
     flexDirection: 'row',

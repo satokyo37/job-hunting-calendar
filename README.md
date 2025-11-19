@@ -50,7 +50,8 @@ pnpm run reset-project  # テンプレートへ初期化
 app/                     # 画面（Expo Router）
   (tabs)/               # タブレイアウト
   company/[id].tsx      # 企業詳細（動的ルート）
-components/             # UI コンポーネント
+  features/             # 各機能専用のフィーチャUI・モーダル（CompanyCreateModal など）
+components/             # 共通UIコンポーネント（PageHeader 等）
 styles/                 # 画面ごとのスタイル定義
 store/                  # Zustand ストア
 schema/                 # スキーマ（zod 等）
@@ -67,7 +68,7 @@ eslint.config.js        # ESLint 設定
 
 - 言語は TypeScript を使用
 - Lint は ESLint（`eslint-config-expo`）を使用し、`pnpm lint` で確認
-- コンポーネント/フックは `components/` と `hooks/` に配置
+- 共通のコンポーネント/フックは `components/` と `hooks/` に格納し、各機能専用のモーダルは `app/features/` 配下に配置
 - ルーティングは Expo Router の規約に従い `app/` 以下で定義
 
 ## トラブルシューティング

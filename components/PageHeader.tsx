@@ -1,11 +1,5 @@
 import { ComponentProps, ReactNode } from 'react';
-import {
-  StyleProp,
-  StyleSheet,
-  TextStyle,
-  View,
-  ViewStyle,
-} from 'react-native';
+import { StyleProp, StyleSheet, TextStyle, View, ViewStyle } from 'react-native';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -41,8 +35,7 @@ export function PageHeader({
   rightSlot,
 }: PageHeaderProps) {
   const iconNode =
-    iconElement ??
-    (icon ? <IconSymbol size={26} color={iconColor} name={icon} /> : null);
+    iconElement ?? (icon ? <IconSymbol size={26} color={iconColor} name={icon} /> : null);
 
   return (
     <ThemedView style={[styles.container, style]} lightColor={lightColor} darkColor={darkColor}>
@@ -87,6 +80,13 @@ const styles = StyleSheet.create({
     gap: 16,
     backgroundColor: 'transparent',
   },
+  iconWrapper: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   leading: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -94,12 +94,15 @@ const styles = StyleSheet.create({
     gap: 16,
     minWidth: 0,
   },
-  iconWrapper: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+  rightSlot: {
+    marginLeft: 16,
+    flexShrink: 0,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
+  },
+  subtitle: {
+    color: '#64748B',
   },
   textArea: {
     flex: 1,
@@ -110,15 +113,5 @@ const styles = StyleSheet.create({
   title: {
     fontWeight: '700',
     color: '#1E293B',
-  },
-  subtitle: {
-    color: '#64748B',
-  },
-  rightSlot: {
-    marginLeft: 16,
-    flexShrink: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
   },
 });

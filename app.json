@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "schetto",
-    "slug": "schetto",
+    "name": "Schetto",
+    "slug": "Schetto",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon-schetto.png",
-    "scheme": "schetto",
+    "scheme": "Schetto",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {

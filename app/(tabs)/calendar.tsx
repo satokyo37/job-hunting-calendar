@@ -1,6 +1,8 @@
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import {
+  addDays,
   addMonths,
+  differenceInCalendarDays,
   eachDayOfInterval,
   endOfMonth,
   endOfWeek,
@@ -10,48 +12,35 @@ import {
   parseISO,
   startOfMonth,
   startOfWeek,
-} from "date-fns";
-import { ja } from "date-fns/locale";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Modal, Pressable, ScrollView, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+} from 'date-fns';
+import { ja } from 'date-fns/locale';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Modal, Pressable, ScrollView, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
-import { ProgressStatusValue } from "@/constants/progressStatus";
-import { Palette } from "@/constants/Palette";
-import { useAppStore } from "@/store/useAppStore";
-import { calendarStyles as styles } from "@/styles/calendarStyles";
-import type { CompanySchedule, ScheduleType } from "@/types/companyItems";
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
+import { Palette } from '@/constants/Palette';
+import { ProgressStatusValue } from '@/constants/progressStatus';
+import { useAppStore } from '@/store/useAppStore';
+import { calendarStyles as styles } from '@/styles/calendarStyles';
+import type { CompanySchedule, ScheduleType } from '@/types/companyItems';
 
-const {
-  backgroundAlt: BACKGROUND,
-  surface: SURFACE,
-  surfaceSubtle: SURFACE_SUBTLE,
-  borderAlt: BORDER,
-  textPrimary: TEXT_PRIMARY,
-  textMuted: TEXT_MUTED,
-  primary: PRIMARY,
-  successStrong: SUCCESS,
-  warning: WARNING,
-} = Palette;
+const { primary: PRIMARY, successStrong: SUCCESS, warning: WARNING } = Palette;
 
-const formatDateKey = (iso: string) => format(parseISO(iso), "yyyy-MM-dd");
-const toDateKey = (date: Date) => format(date, "yyyy-MM-dd");
+const formatDateKey = (iso: string) => format(parseISO(iso), 'yyyy-MM-dd');
+const toDateKey = (date: Date) => format(date, 'yyyy-MM-dd');
 const formatDisplayDate = (iso: string) =>
-  format(parseISO(iso), "yyyy年M月d日（EEE）HH:mm", { locale: ja });
-const formatDisplayDay = (iso: string) =>
-  format(parseISO(iso), "M月d日（EEE）", { locale: ja });
-const formatTimeLabel = (iso: string) =>
-  format(parseISO(iso), "HH:mm", { locale: ja });
+  format(parseISO(iso), 'yyyy年M月d日（EEE）HH:mm', { locale: ja });
+const formatDisplayDay = (iso: string) => format(parseISO(iso), 'M月d日（EEE）', { locale: ja });
+const formatTimeLabel = (iso: string) => format(parseISO(iso), 'HH:mm', { locale: ja });
 
 type CalendarEvent = CompanySchedule & {
   progressStatus: ProgressStatusValue;
   remarks?: string;
 };
 
-const weekDays = ["日", "月", "火", "水", "木", "金", "土"];
-const MAX_INLINE_EVENTS = 3;
+const weekDays = ['日', '月', '火', '水', '木', '金', '土'];
 
 export default function CalendarScreen() {
   const companies = useAppStore((state) => state.companies);
@@ -66,7 +55,7 @@ export default function CalendarScreen() {
           companyName: company.name,
           progressStatus: company.progressStatus,
           remarks: company.remarks,
-          scheduleType: "candidate" as ScheduleType,
+          scheduleType: 'candidate' as ScheduleType,
           iso: date,
           title: company.nextAction?.trim() || undefined,
         });
@@ -78,24 +67,21 @@ export default function CalendarScreen() {
           companyName: company.name,
           progressStatus: company.progressStatus,
           remarks: company.remarks,
-          scheduleType: "confirmed" as ScheduleType,
+          scheduleType: 'confirmed' as ScheduleType,
           iso: company.confirmedDate,
           title: company.nextAction?.trim() || undefined,
         });
       }
     });
 
-    const grouped = events.reduce<Record<string, CalendarEvent[]>>(
-      (acc, event) => {
-        const key = formatDateKey(event.iso);
-        if (!acc[key]) {
-          acc[key] = [];
-        }
-        acc[key].push(event);
-        return acc;
-      },
-      {},
-    );
+    const grouped = events.reduce<Record<string, CalendarEvent[]>>((acc, event) => {
+      const key = formatDateKey(event.iso);
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push(event);
+      return acc;
+    }, {});
 
     const keys = Object.keys(grouped).sort();
     return { eventsByDay: grouped, dayKeys: keys };
@@ -105,9 +91,7 @@ export default function CalendarScreen() {
   const initialSelected = dayKeys.find((key) => key >= todayKey) ?? todayKey;
 
   const [selectedDate, setSelectedDate] = useState(initialSelected);
-  const [focusedMonth, setFocusedMonth] = useState(
-    startOfMonth(parseISO(initialSelected)),
-  );
+  const [focusedMonth, setFocusedMonth] = useState(startOfMonth(parseISO(initialSelected)));
   const [activeDayKey, setActiveDayKey] = useState<string | null>(null);
   const [activeEvent, setActiveEvent] = useState<CalendarEvent | null>(null);
 
@@ -130,8 +114,21 @@ export default function CalendarScreen() {
   }, [selectedDate]);
 
   const calendarDays = useMemo(() => {
-    const start = startOfWeek(startOfMonth(focusedMonth), { weekStartsOn: 0 });
+    const monthStart = startOfMonth(focusedMonth);
+
+    const start = startOfWeek(monthStart, { weekStartsOn: 0 });
     const end = endOfWeek(endOfMonth(focusedMonth), { weekStartsOn: 0 });
+
+    const currentSpan = differenceInCalendarDays(end, start) + 1;
+    const needed = 42 - currentSpan;
+
+    if (needed > 0) {
+      return eachDayOfInterval({
+        start: start,
+        end: addDays(end, needed),
+      });
+    }
+
     return eachDayOfInterval({ start, end });
   }, [focusedMonth]);
   const calendarWeeks = useMemo(() => {
@@ -152,10 +149,15 @@ export default function CalendarScreen() {
     }
   }, []);
 
-  const activeDayEvents = activeDayKey ? (eventsByDay[activeDayKey] ?? []) : [];
-  const currentMonthLabel = format(focusedMonth, "yyyy年M月", { locale: ja });
+  const activeDayEvents = useMemo(() => {
+    if (!activeDayKey) return [];
+    const events = eventsByDay[activeDayKey] ?? [];
+    return [...events].sort((a, b) => new Date(a.iso).getTime() - new Date(b.iso).getTime());
+  }, [activeDayKey, eventsByDay]);
+
+  const currentMonthLabel = format(focusedMonth, 'yyyy年M月', { locale: ja });
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top"]}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
       <ThemedView style={styles.screen}>
         <View style={styles.container}>
           <View style={styles.monthSwitcher}>
@@ -186,74 +188,83 @@ export default function CalendarScreen() {
 
           <View style={styles.calendarGrid}>
             {calendarWeeks.map((week, weekIndex) => (
-              <View
-                key={`${week[0].toISOString()}-${weekIndex}`}
-                style={[
-                  styles.weekRow,
-                  weekIndex === calendarWeeks.length - 1 && styles.lastWeekRow,
-                ]}
-              >
-                {week.map((day, dayIndex) => {
+              <View key={`${week[0].toISOString()}-${weekIndex}`} style={[styles.weekRow]}>
+                {week.map((day) => {
                   const key = toDateKey(day);
                   const dayEvents = eventsByDay[key] ?? [];
                   const isCurrentMonth = isSameMonth(day, focusedMonth);
                   const isSelected = key === selectedDate;
                   const today = isToday(day);
-                  const isLastColumn = dayIndex === week.length - 1;
 
-                  const firstEvent = dayEvents[0];
-                  const remainingCount = Math.max(dayEvents.length - 1, 0);
+                  const sortedDayEvents = [...dayEvents].sort(
+                    (a, b) => new Date(a.iso).getTime() - new Date(b.iso).getTime(),
+                  );
+
+                  const MAX_VISIBLE_EVENTS_PER_DAY = 2;
+                  const visibleEvents = sortedDayEvents.slice(0, MAX_VISIBLE_EVENTS_PER_DAY);
+                  const remainingCount = dayEvents.length - visibleEvents.length;
 
                   return (
                     <Pressable
                       key={key}
-                      style={[
-                        styles.dayCell,
-                        isLastColumn && styles.lastColumnCell,
-                        !isCurrentMonth && styles.outsideCell,
-                        isSelected && styles.selectedCell,
-                        today && styles.todayOutline,
-                      ]}
+                      style={[styles.dayCell, !isCurrentMonth && styles.outsideCell]}
                       onPress={() => handleSelectDay(key, dayEvents.length > 0)}
                     >
-                      <View style={styles.dayHeader}>
-                        <ThemedText
-                          style={[
-                            styles.dayNumber,
-                            !isCurrentMonth && styles.outsideDayNumber,
-                          ]}
-                        >
-                          {format(day, "d")}
-                        </ThemedText>
-                        {today && <View style={styles.todayDot} />}
-                      </View>
-
-                      {/* ▼ ここが1行サマリ */}
-                      {firstEvent && (
-                        <View style={styles.daySummaryRow}>
-                          <View
-                            style={[
-                              styles.summaryDot,
-                              firstEvent.scheduleType === "confirmed"
-                                ? styles.summaryDotConfirmed
-                                : styles.summaryDotCandidate,
-                            ]}
-                          />
-                          <ThemedText
-                            style={styles.daySummaryText}
-                            numberOfLines={1}
-                            ellipsizeMode="tail"
-                          >
-                            {formatTimeLabel(firstEvent.iso)}{" "}
-                            {firstEvent.title?.trim() || firstEvent.companyName}
-                          </ThemedText>
-                          {remainingCount > 0 && (
-                            <ThemedText style={styles.daySummaryMore}>
-                              +{remainingCount}
+                      <View style={[styles.dayInner, isSelected && styles.dayInnerSelected]}>
+                        <View style={styles.dayHeader}>
+                          {today ? (
+                            <View style={styles.todayPill}>
+                              <ThemedText style={styles.todayPillText}>
+                                {format(day, 'd')}
+                              </ThemedText>
+                            </View>
+                          ) : (
+                            <ThemedText
+                              style={[styles.dayNumber, !isCurrentMonth && styles.outsideDayNumber]}
+                            >
+                              {format(day, 'd')}
                             </ThemedText>
                           )}
                         </View>
-                      )}
+
+                        {visibleEvents.length > 0 && (
+                          <View style={styles.dayEventList}>
+                            {visibleEvents.map((event, index) => {
+                              const isConfirmed = event.scheduleType === 'confirmed';
+                              return (
+                                <View
+                                  key={`${event.companyId}-${event.iso}-${event.scheduleType}-${index}`}
+                                  style={[
+                                    styles.daySummaryRow,
+                                    isConfirmed
+                                      ? styles.daySummaryRowConfirmed
+                                      : styles.daySummaryRowCandidate,
+                                  ]}
+                                >
+                                  <ThemedText
+                                    style={[
+                                      styles.daySummaryText,
+                                      isConfirmed
+                                        ? styles.daySummaryTextConfirmed
+                                        : styles.daySummaryTextCandidate,
+                                    ]}
+                                    numberOfLines={1}
+                                    ellipsizeMode="clip"
+                                  >
+                                    {event.title?.trim() || event.companyName}
+                                  </ThemedText>
+                                </View>
+                              );
+                            })}
+
+                            {remainingCount > 0 && (
+                              <ThemedText style={styles.daySummaryMore}>
+                                +{remainingCount}
+                              </ThemedText>
+                            )}
+                          </View>
+                        )}
+                      </View>
                     </Pressable>
                   );
                 })}
@@ -264,22 +275,14 @@ export default function CalendarScreen() {
       </ThemedView>
 
       <Modal visible={Boolean(activeDayKey)} transparent animationType="fade">
-        <Pressable
-          style={styles.modalOverlay}
-          onPress={() => setActiveDayKey(null)}
-        >
-          <Pressable
-            style={styles.modalShell}
-            onPress={(event) => event.stopPropagation()}
-          >
+        <Pressable style={styles.modalOverlay} onPress={() => setActiveDayKey(null)}>
+          <Pressable style={styles.modalShell} onPress={(event) => event.stopPropagation()}>
             <ThemedView style={styles.modalCard}>
               <ThemedText type="title" style={styles.modalTitle}>
                 この日の予定
               </ThemedText>
               <ThemedText style={styles.modalCaption}>
-                {activeDayKey
-                  ? formatDisplayDay(`${activeDayKey}T00:00:00`)
-                  : ""}
+                {activeDayKey ? formatDisplayDay(`${activeDayKey}T00:00:00`) : ''}
               </ThemedText>
               <ScrollView contentContainerStyle={styles.dayModalList}>
                 {activeDayEvents.length === 0 ? (
@@ -297,16 +300,10 @@ export default function CalendarScreen() {
                         <View style={styles.dayModalTime}>
                           <MaterialIcons
                             name={
-                              event.scheduleType === "confirmed"
-                                ? "event-available"
-                                : "event-note"
+                              event.scheduleType === 'confirmed' ? 'event-available' : 'event-note'
                             }
                             size={16}
-                            color={
-                              event.scheduleType === "confirmed"
-                                ? SUCCESS
-                                : WARNING
-                            }
+                            color={event.scheduleType === 'confirmed' ? SUCCESS : WARNING}
                           />
                           <ThemedText style={styles.dayModalTimeText}>
                             {formatTimeLabel(event.iso)}
@@ -328,13 +325,8 @@ export default function CalendarScreen() {
                   ))
                 )}
               </ScrollView>
-              <Pressable
-                style={styles.primaryButton}
-                onPress={() => setActiveDayKey(null)}
-              >
-                <ThemedText style={styles.primaryButtonLabel}>
-                  閉じる
-                </ThemedText>
+              <Pressable style={styles.primaryButton} onPress={() => setActiveDayKey(null)}>
+                <ThemedText style={styles.primaryButtonLabel}>閉じる</ThemedText>
               </Pressable>
             </ThemedView>
           </Pressable>
@@ -342,58 +334,39 @@ export default function CalendarScreen() {
       </Modal>
 
       <Modal visible={Boolean(activeEvent)} transparent animationType="fade">
-        <Pressable
-          style={styles.modalOverlay}
-          onPress={() => setActiveEvent(null)}
-        >
-          <Pressable
-            style={styles.modalShell}
-            onPress={(event) => event.stopPropagation()}
-          >
+        <Pressable style={styles.modalOverlay} onPress={() => setActiveEvent(null)}>
+          <Pressable style={styles.modalShell} onPress={(event) => event.stopPropagation()}>
             <ThemedView style={styles.modalCard}>
               <ThemedText type="title" style={styles.modalTitle}>
-                {activeEvent?.title ?? activeEvent?.companyName ?? ""}
+                {activeEvent?.title ?? activeEvent?.companyName ?? ''}
               </ThemedText>
               {activeEvent?.title ? (
-                <ThemedText style={styles.modalSubtitle}>
-                  {activeEvent?.companyName}
-                </ThemedText>
+                <ThemedText style={styles.modalSubtitle}>{activeEvent?.companyName}</ThemedText>
               ) : null}
               <View style={styles.modalSection}>
                 <ThemedText style={styles.modalLabel}>日時</ThemedText>
                 <ThemedText style={styles.modalValue}>
-                  {activeEvent ? formatDisplayDate(activeEvent.iso) : ""}
+                  {activeEvent ? formatDisplayDate(activeEvent.iso) : ''}
                 </ThemedText>
               </View>
               <View style={styles.modalSection}>
                 <ThemedText style={styles.modalLabel}>区分</ThemedText>
-                <StatusTag type={activeEvent?.scheduleType ?? "candidate"} />
+                <StatusTag type={activeEvent?.scheduleType ?? 'candidate'} />
               </View>
               {activeEvent?.progressStatus ? (
                 <View style={styles.modalSection}>
-                  <ThemedText style={styles.modalLabel}>
-                    進捗ステータス
-                  </ThemedText>
-                  <ThemedText style={styles.modalValue}>
-                    {activeEvent.progressStatus}
-                  </ThemedText>
+                  <ThemedText style={styles.modalLabel}>進捗ステータス</ThemedText>
+                  <ThemedText style={styles.modalValue}>{activeEvent.progressStatus}</ThemedText>
                 </View>
               ) : null}
               {activeEvent?.remarks ? (
                 <View style={styles.modalSection}>
                   <ThemedText style={styles.modalLabel}>メモ</ThemedText>
-                  <ThemedText style={styles.modalValue}>
-                    {activeEvent.remarks}
-                  </ThemedText>
+                  <ThemedText style={styles.modalValue}>{activeEvent.remarks}</ThemedText>
                 </View>
               ) : null}
-              <Pressable
-                style={styles.primaryButton}
-                onPress={() => setActiveEvent(null)}
-              >
-                <ThemedText style={styles.primaryButtonLabel}>
-                  閉じる
-                </ThemedText>
+              <Pressable style={styles.primaryButton} onPress={() => setActiveEvent(null)}>
+                <ThemedText style={styles.primaryButtonLabel}>閉じる</ThemedText>
               </Pressable>
             </ThemedView>
           </Pressable>
@@ -404,26 +377,16 @@ export default function CalendarScreen() {
 }
 
 function StatusTag({ type }: { type: ScheduleType }) {
-  const isConfirmed = type === "confirmed";
+  const isConfirmed = type === 'confirmed';
   return (
-    <View
-      style={[
-        styles.statusTag,
-        { backgroundColor: isConfirmed ? "#DCFCE7" : "#FEF3C7" },
-      ]}
-    >
+    <View style={[styles.statusTag, { backgroundColor: isConfirmed ? '#DCFCE7' : '#FEF3C7' }]}>
       <MaterialIcons
-        name={isConfirmed ? "check-circle" : "hourglass-bottom"}
+        name={isConfirmed ? 'check-circle' : 'hourglass-bottom'}
         size={14}
         color={isConfirmed ? SUCCESS : WARNING}
       />
-      <ThemedText
-        style={[
-          styles.statusTagLabel,
-          { color: isConfirmed ? SUCCESS : WARNING },
-        ]}
-      >
-        {isConfirmed ? "確定" : "候補"}
+      <ThemedText style={[styles.statusTagLabel, { color: isConfirmed ? SUCCESS : WARNING }]}>
+        {isConfirmed ? '確定' : '候補'}
       </ThemedText>
     </View>
   );

@@ -57,10 +57,7 @@ export function ScheduleChip({
 }: Props) {
   const { background, iconColor, icon } = STATUS_PRESETS[status];
   const hasTitle = Boolean(title && title.trim() !== '');
-  const containerBackground =
-    variant === 'subtle'
-      ? 'rgba(148, 163, 184, 0.12)'
-      : background;
+  const containerBackground = variant === 'subtle' ? 'rgba(148, 163, 184, 0.12)' : background;
 
   return (
     <View style={[styles.container, { backgroundColor: containerBackground }]}>
@@ -95,10 +92,7 @@ export function ScheduleChip({
           {actions.map((action) => (
             <Pressable
               key={action.key}
-              style={[
-                styles.actionButton,
-                { backgroundColor: action.backgroundColor },
-              ]}
+              style={[styles.actionButton, { backgroundColor: action.backgroundColor }]}
               onPress={action.onPress}
             >
               <MaterialIcons name={action.icon} size={14} color={action.color} />
@@ -114,6 +108,30 @@ export function ScheduleChip({
 }
 
 const styles = StyleSheet.create({
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  actionLabel: {
+    fontWeight: '600',
+    fontSize: 12,
+  },
+  actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    justifyContent: 'flex-start',
+  },
+  actionsLeft: {},
+  actionsRight: {
+    justifyContent: 'flex-end',
+    width: '100%',
+    alignSelf: 'stretch',
+  },
   container: {
     borderRadius: 18,
     borderWidth: StyleSheet.hairlineWidth,
@@ -121,6 +139,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     gap: 12,
+  },
+  dateLabel: {
+    color: '#64748B',
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  dateLabelStrong: {
+    color: '#0F172A',
+    fontWeight: '600',
+    fontSize: 14,
   },
   headerRow: {
     flexDirection: 'row',
@@ -143,39 +171,5 @@ const styles = StyleSheet.create({
     color: '#0F172A',
     fontWeight: '700',
     fontSize: 14,
-  },
-  dateLabel: {
-    color: '#64748B',
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  dateLabelStrong: {
-    color: '#0F172A',
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  actions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    justifyContent: 'flex-start',
-  },
-  actionsLeft: {},
-  actionsRight: {
-    justifyContent: 'flex-end',
-    width: '100%',
-    alignSelf: 'stretch',
-  },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 999,
-  },
-  actionLabel: {
-    fontWeight: '600',
-    fontSize: 12,
   },
 });

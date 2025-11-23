@@ -1,62 +1,43 @@
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { format, parseISO } from "date-fns";
-import { ja } from "date-fns/locale";
-import { Link } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
-import { Alert, FlatList, Pressable, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { format, parseISO } from 'date-fns';
+import { ja } from 'date-fns/locale';
+import { Link } from 'expo-router';
+import { useCallback, useMemo, useState } from 'react';
+import { Alert, FlatList, Pressable, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { PageHeader } from "@/components/PageHeader";
-import { ProgressStatusPickerModal } from "@/components/ProgressStatusPickerModal";
-import { SchedulePickerModal } from "@/components/SchedulePickerModal";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
-import { Palette } from "@/constants/Palette";
-import {
-  PROGRESS_STATUS_ITEMS,
-  ProgressStatusValue,
-} from "@/constants/progressStatus";
-import { useAppStore } from "@/store/useAppStore";
-import { companiesStyles as styles } from "@/styles/companiesStyles";
-import CompanyCreateModal from "@/app/features/companies/components/CompanyCreateModal";
+import CompanyCreateModal from '@/app/features/companies/components/CompanyCreateModal';
+import { PageHeader } from '@/components/PageHeader';
+import { ProgressStatusPickerModal } from '@/components/ProgressStatusPickerModal';
+import { SchedulePickerModal } from '@/components/SchedulePickerModal';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
+import { Palette } from '@/constants/Palette';
+import { PROGRESS_STATUS_ITEMS, ProgressStatusValue } from '@/constants/progressStatus';
+import { useAppStore } from '@/store/useAppStore';
+import { companiesStyles as styles } from '@/styles/companiesStyles';
 
-const {
-  background: BACKGROUND,
-  surface: SURFACE,
-  surfaceSubtle: SURFACE_SUBTLE,
-  border: BORDER,
-  textPrimary: TEXT_PRIMARY,
-  textMuted: TEXT_MUTED,
-  primary: PRIMARY,
-  success: SUCCESS,
-  danger: DANGER,
-} = Palette;
+const { primary: PRIMARY, success: SUCCESS } = Palette;
 
 const formatDisplayDate = (iso: string) =>
   format(parseISO(iso), "yyyy'年'MM'月'dd'日'(EEE)HH:mm", { locale: ja });
 
-type PickerMode = "candidate" | "task";
+type PickerMode = 'candidate' | 'task';
 
 export default function CompaniesScreen() {
   const companies = useAppStore((state) => state.companies);
   const createCompany = useAppStore((state) => state.createCompany);
 
   const [createModalVisible, setCreateModalVisible] = useState(false);
-  const [formName, setFormName] = useState("");
-  const [formProgress, setFormProgress] = useState<ProgressStatusValue | "">(
-    "",
-  );
-  const [formNotes, setFormNotes] = useState("");
-  const [formNextAction, setFormNextAction] = useState("");
-  const [formTasks, setFormTasks] = useState<
-    { title: string; dueDate?: string }[]
-  >([]);
-  const [formTaskDraft, setFormTaskDraft] = useState("");
+  const [formName, setFormName] = useState('');
+  const [formProgress, setFormProgress] = useState<ProgressStatusValue | ''>('');
+  const [formNotes, setFormNotes] = useState('');
+  const [formNextAction, setFormNextAction] = useState('');
+  const [formTasks, setFormTasks] = useState<{ title: string; dueDate?: string }[]>([]);
+  const [formTaskDraft, setFormTaskDraft] = useState('');
   const [formTaskDue, setFormTaskDue] = useState<string | undefined>();
   const [formCandidates, setFormCandidates] = useState<string[]>([]);
-  const [formConfirmedDate, setFormConfirmedDate] = useState<
-    string | undefined
-  >();
+  const [formConfirmedDate, setFormConfirmedDate] = useState<string | undefined>();
 
   const [pickerVisible, setPickerVisible] = useState(false);
   const [pickerMode, setPickerMode] = useState<PickerMode | null>(null);
@@ -68,11 +49,11 @@ export default function CompaniesScreen() {
   );
 
   const resetForm = useCallback(() => {
-    setFormName("");
-    setFormProgress("");
-    setFormNotes("");
-    setFormNextAction("");
-    setFormTaskDraft("");
+    setFormName('');
+    setFormProgress('');
+    setFormNotes('');
+    setFormNextAction('');
+    setFormTaskDraft('');
     setFormTasks([]);
     setFormTaskDue(undefined);
     setFormCandidates([]);
@@ -96,13 +77,13 @@ export default function CompaniesScreen() {
       formConfirmedDate;
     if (hasChanges) {
       Alert.alert(
-        "入力内容を破棄しますか？",
-        "キャンセルすると入力中の内容はすべて削除されます。",
+        '入力内容を破棄しますか？',
+        'キャンセルすると入力中の内容はすべて削除されます。',
         [
-          { text: "続ける", style: "cancel" },
+          { text: '続ける', style: 'cancel' },
           {
-            text: "破棄する",
-            style: "destructive",
+            text: '破棄する',
+            style: 'destructive',
             onPress: () => {
               resetForm();
               setCreateModalVisible(false);
@@ -153,9 +134,9 @@ export default function CompaniesScreen() {
   const handlePickerConfirm = useCallback(
     (iso: string) => {
       if (!pickerMode) return;
-      if (pickerMode === "candidate") {
+      if (pickerMode === 'candidate') {
         setFormCandidates((prev) => Array.from(new Set([...prev, iso])).sort());
-      } else if (pickerMode === "task") {
+      } else if (pickerMode === 'task') {
         setFormTaskDue(iso);
       }
       handlePickerClose();
@@ -164,16 +145,16 @@ export default function CompaniesScreen() {
   );
 
   const pickerInitialValue = useMemo(() => {
-    if (pickerMode === "task" && formTaskDue) return formTaskDue;
+    if (pickerMode === 'task' && formTaskDue) return formTaskDue;
     return undefined;
   }, [pickerMode, formTaskDue]);
 
   const pickerTitle = useMemo(() => {
-    if (pickerMode === "candidate") {
+    if (pickerMode === 'candidate') {
       const value = formNextAction.trim();
       return value.length > 0 ? value : undefined;
     }
-    if (pickerMode === "task") {
+    if (pickerMode === 'task') {
       const value = formTaskDraft.trim();
       return value.length > 0 ? value : undefined;
     }
@@ -193,15 +174,14 @@ export default function CompaniesScreen() {
     setFormConfirmedDate(undefined);
   }, []);
 
-  const hasSchedulePreview =
-    formCandidates.length > 0 || Boolean(formConfirmedDate);
+  const hasSchedulePreview = formCandidates.length > 0 || Boolean(formConfirmedDate);
   const canAddTask = formTaskDraft.trim().length > 0;
 
   const handleAddTask = useCallback(() => {
     const title = formTaskDraft.trim();
     if (!title) return;
     setFormTasks((prev) => [...prev, { title, dueDate: formTaskDue }]);
-    setFormTaskDraft("");
+    setFormTaskDraft('');
     setFormTaskDue(undefined);
   }, [formTaskDraft, formTaskDue]);
 
@@ -217,7 +197,7 @@ export default function CompaniesScreen() {
     const name = formName.trim();
     const progress = formProgress;
     if (!name || !progress) {
-      Alert.alert("入力エラー", "企業名と進捗ステータスを入力してください。");
+      Alert.alert('入力エラー', '企業名と進捗ステータスを入力してください。');
       return;
     }
 
@@ -271,9 +251,7 @@ export default function CompaniesScreen() {
           rightSlot={
             <Pressable style={styles.primaryButton} onPress={openCreateModal}>
               <MaterialIcons name="add" size={18} color="#FFFFFF" />
-              <ThemedText style={styles.primaryButtonLabel}>
-                企業を追加
-              </ThemedText>
+              <ThemedText style={styles.primaryButtonLabel}>企業を追加</ThemedText>
             </Pressable>
           }
         />
@@ -285,9 +263,7 @@ export default function CompaniesScreen() {
           ListEmptyComponent={
             <ThemedView style={styles.emptyList}>
               <MaterialIcons name="business" size={36} color={PRIMARY} />
-              <ThemedText style={styles.emptyTitle}>
-                まだ企業が登録されていません
-              </ThemedText>
+              <ThemedText style={styles.emptyTitle}>まだ企業が登録されていません</ThemedText>
               <ThemedText style={styles.emptyCopy}>
                 「企業を追加」から候補日や進捗を記録しましょう
               </ThemedText>
@@ -299,18 +275,10 @@ export default function CompaniesScreen() {
             const candidateCount = item.candidateDates.length;
             return (
               <Link href={`/(tabs)/companies/${item.id}`} asChild>
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.card,
-                    pressed && styles.cardPressed,
-                  ]}
-                >
+                <Pressable style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}>
                   <View style={styles.cardSurface}>
                     <View style={styles.cardHeader}>
-                      <ThemedText
-                        type="defaultSemiBold"
-                        style={styles.companyName}
-                      >
+                      <ThemedText type="defaultSemiBold" style={styles.companyName}>
                         {item.name}
                       </ThemedText>
                       <View style={styles.statusBadge}>
@@ -323,55 +291,27 @@ export default function CompaniesScreen() {
                     {hasConfirmed ? (
                       <View style={styles.cardMetaRow}>
                         <View style={styles.metaColumn}>
-                          <ThemedText style={styles.metaLabel}>
-                            確定日時
-                          </ThemedText>
-                          <ThemedText
-                            style={styles.metaValue}
-                            numberOfLines={2}
-                          >
+                          <ThemedText style={styles.metaLabel}>確定日時</ThemedText>
+                          <ThemedText style={styles.metaValue} numberOfLines={2}>
                             {formatDisplayDate(item.confirmedDate!)}
                           </ThemedText>
                           {item.nextAction ? (
-                            <ThemedText
-                              style={styles.metaAction}
-                              numberOfLines={2}
-                            >
+                            <ThemedText style={styles.metaAction} numberOfLines={2}>
                               {item.nextAction}
                             </ThemedText>
                           ) : null}
                         </View>
                         <View style={styles.metaPills}>
-                          <View
-                            style={[styles.metaPill, styles.metaPillConfirmed]}
-                          >
-                            <MaterialIcons
-                              name="event-available"
-                              size={14}
-                              color={SUCCESS}
-                            />
-                            <ThemedText
-                              style={[
-                                styles.metaPillLabel,
-                                styles.metaConfirmedLabel,
-                              ]}
-                            >
+                          <View style={[styles.metaPill, styles.metaPillConfirmed]}>
+                            <MaterialIcons name="event-available" size={14} color={SUCCESS} />
+                            <ThemedText style={[styles.metaPillLabel, styles.metaConfirmedLabel]}>
                               確定あり
                             </ThemedText>
                           </View>
                           {candidateCount > 0 ? (
                             <View style={styles.metaPill}>
-                              <MaterialIcons
-                                name="event"
-                                size={14}
-                                color={PRIMARY}
-                              />
-                              <ThemedText
-                                style={[
-                                  styles.metaPillLabel,
-                                  styles.metaCandidateLabel,
-                                ]}
-                              >
+                              <MaterialIcons name="event" size={14} color={PRIMARY} />
+                              <ThemedText style={[styles.metaPillLabel, styles.metaCandidateLabel]}>
                                 候補 {candidateCount}
                               </ThemedText>
                             </View>
@@ -411,7 +351,7 @@ export default function CompaniesScreen() {
           onChangeFormNextAction={setFormNextAction}
           onAddCandidatePress={() => {
             if (formConfirmedDate) return;
-            handlePickerOpen("candidate");
+            handlePickerOpen('candidate');
           }}
           formConfirmedDate={formConfirmedDate}
           formCandidates={formCandidates}
@@ -422,7 +362,7 @@ export default function CompaniesScreen() {
           formTaskDraft={formTaskDraft}
           onChangeFormTaskDraft={setFormTaskDraft}
           formTaskDue={formTaskDue}
-          onAddTaskDuePress={() => handlePickerOpen("task")}
+          onAddTaskDuePress={() => handlePickerOpen('task')}
           onClearTaskDue={handleClearTaskDue}
           canAddTask={canAddTask}
           onAddTask={handleAddTask}
@@ -442,7 +382,7 @@ export default function CompaniesScreen() {
 
       <SchedulePickerModal
         visible={pickerVisible}
-        status={pickerMode === "task" ? "task" : (pickerMode ?? "candidate")}
+        status={pickerMode === 'task' ? 'task' : (pickerMode ?? 'candidate')}
         initialValue={pickerInitialValue}
         title={pickerTitle}
         onCancel={handlePickerClose}

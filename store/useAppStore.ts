@@ -46,7 +46,7 @@ type Actions = {
   updateTaskInCompany: (
     companyId: string,
     taskId: string,
-    updates: { title?: string; dueDate?: string | null }
+    updates: { title?: string; dueDate?: string | null },
   ) => void;
   removeTaskFromCompany: (companyId: string, taskId: string) => void;
 };
@@ -102,12 +102,9 @@ export const useAppStore = create<Store>()(
       updateCompany: (id: string, patch: CompanyPatchInput) => {
         const includesCandidateDates = Object.prototype.hasOwnProperty.call(
           patch,
-          'candidateDates'
+          'candidateDates',
         );
-        const includesConfirmedDate = Object.prototype.hasOwnProperty.call(
-          patch,
-          'confirmedDate'
-        );
+        const includesConfirmedDate = Object.prototype.hasOwnProperty.call(patch, 'confirmedDate');
         const includesRemarks = Object.prototype.hasOwnProperty.call(patch, 'remarks');
         const includesNextAction = Object.prototype.hasOwnProperty.call(patch, 'nextAction');
 
@@ -128,10 +125,10 @@ export const useAppStore = create<Store>()(
               ? normalizeCandidateDates(data.candidateDates ?? [])
               : current.candidateDates,
             confirmedDate: includesConfirmedDate
-              ? data.confirmedDate ?? undefined
+              ? (data.confirmedDate ?? undefined)
               : current.confirmedDate,
-            remarks: includesRemarks ? data.remarks ?? undefined : current.remarks,
-            nextAction: includesNextAction ? data.nextAction ?? undefined : current.nextAction,
+            remarks: includesRemarks ? (data.remarks ?? undefined) : current.remarks,
+            nextAction: includesNextAction ? (data.nextAction ?? undefined) : current.nextAction,
           };
 
           const companies = state.companies.slice();
@@ -166,7 +163,9 @@ export const useAppStore = create<Store>()(
           }
 
           const company = state.companies[index];
-          const candidateDates = company.candidateDates.filter((candidate) => candidate !== dateISO);
+          const candidateDates = company.candidateDates.filter(
+            (candidate) => candidate !== dateISO,
+          );
 
           const companies = state.companies.slice();
           companies[index] = { ...company, candidateDates };
@@ -220,7 +219,7 @@ export const useAppStore = create<Store>()(
           if (index === -1) throw new Error('Company not found: ' + companyId);
           const company = state.companies[index];
           const tasks = company.tasks.map((t) =>
-            t.id === taskId ? { ...t, isDone: !t.isDone } : t
+            t.id === taskId ? { ...t, isDone: !t.isDone } : t,
           );
           const companies = state.companies.slice();
           companies[index] = { ...company, tasks };
@@ -266,7 +265,6 @@ export const useAppStore = create<Store>()(
       name: 'job-hunting-calendar',
       storage: createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({ companies: state.companies }),
-    }
-  )
+    },
+  ),
 );
-

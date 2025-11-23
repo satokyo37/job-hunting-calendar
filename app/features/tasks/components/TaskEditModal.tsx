@@ -1,10 +1,10 @@
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { Modal, Pressable, TextInput, View } from "react-native";
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Modal, Pressable, TextInput, View } from 'react-native';
 
-import { SchedulePickerModal } from "@/components/SchedulePickerModal";
-import { ThemedText } from "@/components/ThemedText";
-import { Palette } from "@/constants/Palette";
-import { tasksStyles as styles } from "@/styles/tasksStyles";
+import { SchedulePickerModal } from '@/components/SchedulePickerModal';
+import { ThemedText } from '@/components/ThemedText';
+import { Palette } from '@/constants/Palette';
+import { tasksStyles as styles } from '@/styles/tasksStyles';
 
 const { primary: PRIMARY } = Palette;
 
@@ -39,17 +39,9 @@ export default function TaskEditModal({
 }: TaskEditModalProps) {
   return (
     <>
-      <Modal
-        visible={visible}
-        transparent
-        animationType="fade"
-        onRequestClose={onRequestClose}
-      >
+      <Modal visible={visible} transparent animationType="fade" onRequestClose={onRequestClose}>
         <Pressable style={styles.modalOverlay} onPress={onRequestClose}>
-          <Pressable
-            style={styles.modalCard}
-            onPress={(event) => event.stopPropagation()}
-          >
+          <Pressable style={styles.modalCard} onPress={(event) => event.stopPropagation()}>
             <ThemedText style={styles.modalTitle}>タスクを編集</ThemedText>
             <View style={styles.modalField}>
               <ThemedText style={styles.modalLabel}>タイトル</ThemedText>
@@ -71,10 +63,7 @@ export default function TaskEditModal({
               </View>
               <View style={styles.modalDueRow}>
                 <ThemedText style={styles.modalDueValue}>{dueLabel}</ThemedText>
-                <Pressable
-                  style={styles.duePickerButton}
-                  onPress={onOpenDuePicker}
-                >
+                <Pressable style={styles.duePickerButton} onPress={onOpenDuePicker}>
                   <MaterialIcons name="schedule" size={16} color={PRIMARY} />
                   <ThemedText style={styles.duePickerLabel}>設定</ThemedText>
                 </Pressable>
@@ -85,14 +74,9 @@ export default function TaskEditModal({
                 style={[styles.modalButton, styles.modalSecondary]}
                 onPress={onRequestClose}
               >
-                <ThemedText style={styles.modalSecondaryLabel}>
-                  キャンセル
-                </ThemedText>
+                <ThemedText style={styles.modalSecondaryLabel}>キャンセル</ThemedText>
               </Pressable>
-              <Pressable
-                style={[styles.modalButton, styles.modalPrimary]}
-                onPress={onSave}
-              >
+              <Pressable style={[styles.modalButton, styles.modalPrimary]} onPress={onSave}>
                 <ThemedText style={styles.modalPrimaryLabel}>保存</ThemedText>
               </Pressable>
             </View>

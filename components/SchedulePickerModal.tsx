@@ -194,10 +194,7 @@ export function SchedulePickerModal({
                           </ThemedText>
                           {isToday ? (
                             <View
-                              style={[
-                                styles.todayDot,
-                                isSelected && styles.todayDotSelected,
-                              ]}
+                              style={[styles.todayDot, isSelected && styles.todayDotSelected]}
                             />
                           ) : null}
                         </Pressable>
@@ -227,11 +224,7 @@ export function SchedulePickerModal({
                         dropdownIconColor="#0F172A"
                       >
                         {HOURS.map((hour) => (
-                          <Picker.Item
-                            key={`hour-${hour}`}
-                            label={`${hour} 時`}
-                            value={hour}
-                          />
+                          <Picker.Item key={`hour-${hour}`} label={`${hour} 時`} value={hour} />
                         ))}
                       </Picker>
                     </View>
@@ -287,10 +280,7 @@ export function SchedulePickerModal({
 
               {stage === 'time' ? (
                 <>
-                  <Pressable
-                    style={styles.actionButton}
-                    onPress={() => setStage('date')}
-                  >
+                  <Pressable style={styles.actionButton} onPress={() => setStage('date')}>
                     <ThemedText style={styles.actionLabel}>戻る</ThemedText>
                   </Pressable>
                   <Pressable
@@ -304,10 +294,7 @@ export function SchedulePickerModal({
 
               {stage === 'confirm' ? (
                 <>
-                  <Pressable
-                    style={styles.actionButton}
-                    onPress={() => setStage('time')}
-                  >
+                  <Pressable style={styles.actionButton} onPress={() => setStage('time')}>
                     <ThemedText style={styles.actionLabel}>戻る</ThemedText>
                   </Pressable>
                   <Pressable
@@ -327,158 +314,6 @@ export function SchedulePickerModal({
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.4)',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  shell: {
-    width: '100%',
-    alignItems: 'center',
-  },
-  card: {
-    width: 360,
-    maxWidth: '100%',
-    alignSelf: 'center',
-    borderRadius: 24,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(148, 163, 184, 0.3)',
-    padding: 24,
-    gap: 18,
-    height: 620,
-  },
-  title: {
-    textAlign: 'center',
-  },
-  stageLabel: {
-    color: '#1E293B',
-    fontFamily: NOTO_SANS_JP.semibold,
-  },
-  stageSection: {
-    gap: 2,
-  },
-  calendar: {
-    gap: 8,
-    width: 320,
-    maxWidth: '100%',
-    alignSelf: 'center',
-    minHeight: 380,
-  },
-  calendarHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  calendarNavButton: {
-    padding: 8,
-  },
-  calendarNavLabel: {
-    fontFamily: NOTO_SANS_JP.bold,
-    color: '#1E293B',
-    fontSize: 16,
-  },
-  calendarMonthLabel: {
-    fontFamily: NOTO_SANS_JP.semibold,
-    color: '#0F172A',
-    fontSize: 16,
-  },
-  weekdayRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 4,
-  },
-  weekdayLabel: {
-    width: '14.2857%',
-    textAlign: 'center',
-    color: '#94A3B8',
-    fontFamily: NOTO_SANS_JP.semibold,
-    fontSize: 12,
-  },
-  calendarGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 6,
-  },
-  dayCell: {
-    width: '14.2857%',
-    aspectRatio: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 12,
-    marginBottom: 4,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'transparent',
-  },
-  dayCellOutside: {
-    opacity: 0.4,
-  },
-  dayCellSelected: {
-    backgroundColor: '#2563EB',
-    borderColor: '#2563EB',
-  },
-  dayCellLabel: {
-    fontFamily: NOTO_SANS_JP.semibold,
-    color: '#0F172A',
-  },
-  dayCellLabelOutside: {
-    color: '#94A3B8',
-  },
-  dayCellLabelSelected: {
-    color: '#FFFFFF',
-  },
-  todayDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    marginTop: 4,
-    backgroundColor: '#2563EB',
-  },
-  todayDotSelected: {
-    backgroundColor: '#FFFFFF',
-  },
-  timePicker: {
-    flexDirection: 'row',
-    gap: 16,
-  },
-  timeDropdown: {
-    flex: 1,
-    gap: 8,
-  },
-  timeSectionLabel: {
-    color: '#475569',
-    fontFamily: NOTO_SANS_JP.semibold,
-  },
-  pickerShell: {
-    borderRadius: 14,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(148, 163, 184, 0.4)',
-    overflow: 'hidden',
-    backgroundColor: '#FFFFFF',
-  },
-  picker: {
-    width: '100%',
-    color: '#0F172A',
-    textAlign: 'center',
-  },
-  pickerItem: {
-    textAlign: 'center',
-    textAlignVertical: 'center',
-    fontFamily: NOTO_SANS_JP.semibold,
-  },
-  previewText: {
-    color: '#64748B',
-    fontSize: 13,
-    textAlign: 'center',
-    alignSelf: 'center',
-    fontFamily: NOTO_SANS_JP.semibold,
-  },
-  actions: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 12,
-    marginTop: 'auto',
-  },
   actionButton: {
     paddingHorizontal: 18,
     paddingVertical: 10,
@@ -491,6 +326,110 @@ const styles = StyleSheet.create({
     color: '#1E293B',
     fontFamily: NOTO_SANS_JP.semibold,
   },
+  actions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 12,
+    marginTop: 'auto',
+  },
+  calendar: {
+    gap: 8,
+    width: 320,
+    maxWidth: '100%',
+    alignSelf: 'center',
+    minHeight: 380,
+  },
+  calendarGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 6,
+  },
+  calendarHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  calendarMonthLabel: {
+    fontFamily: NOTO_SANS_JP.semibold,
+    color: '#0F172A',
+    fontSize: 16,
+  },
+  calendarNavButton: {
+    padding: 8,
+  },
+  calendarNavLabel: {
+    fontFamily: NOTO_SANS_JP.bold,
+    color: '#1E293B',
+    fontSize: 16,
+  },
+  card: {
+    width: 360,
+    maxWidth: '100%',
+    alignSelf: 'center',
+    borderRadius: 24,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(148, 163, 184, 0.3)',
+    padding: 24,
+    gap: 18,
+    height: 620,
+  },
+  dayCell: {
+    width: '14.2857%',
+    aspectRatio: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+    marginBottom: 4,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'transparent',
+  },
+  dayCellLabel: {
+    fontFamily: NOTO_SANS_JP.semibold,
+    color: '#0F172A',
+  },
+  dayCellLabelOutside: {
+    color: '#94A3B8',
+  },
+  dayCellLabelSelected: {
+    color: '#FFFFFF',
+  },
+  dayCellOutside: {
+    opacity: 0.4,
+  },
+  dayCellSelected: {
+    backgroundColor: '#2563EB',
+    borderColor: '#2563EB',
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.4)',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  picker: {
+    width: '100%',
+    color: '#0F172A',
+    textAlign: 'center',
+  },
+  pickerItem: {
+    textAlign: 'center',
+    textAlignVertical: 'center',
+    fontFamily: NOTO_SANS_JP.semibold,
+  },
+  pickerShell: {
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(148, 163, 184, 0.4)',
+    overflow: 'hidden',
+    backgroundColor: '#FFFFFF',
+  },
+  previewText: {
+    color: '#64748B',
+    fontSize: 13,
+    textAlign: 'center',
+    alignSelf: 'center',
+    fontFamily: NOTO_SANS_JP.semibold,
+  },
   primaryAction: {
     backgroundColor: '#2563EB',
     borderColor: '#2563EB',
@@ -498,5 +437,53 @@ const styles = StyleSheet.create({
   primaryLabel: {
     color: '#FFFFFF',
     fontFamily: NOTO_SANS_JP.bold,
+  },
+  shell: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  stageLabel: {
+    color: '#1E293B',
+    fontFamily: NOTO_SANS_JP.semibold,
+  },
+  stageSection: {
+    gap: 2,
+  },
+  timeDropdown: {
+    flex: 1,
+    gap: 8,
+  },
+  timePicker: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  timeSectionLabel: {
+    color: '#475569',
+    fontFamily: NOTO_SANS_JP.semibold,
+  },
+  title: {
+    textAlign: 'center',
+  },
+  todayDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginTop: 4,
+    backgroundColor: '#2563EB',
+  },
+  todayDotSelected: {
+    backgroundColor: '#FFFFFF',
+  },
+  weekdayLabel: {
+    width: '14.2857%',
+    textAlign: 'center',
+    color: '#94A3B8',
+    fontFamily: NOTO_SANS_JP.semibold,
+    fontSize: 12,
+  },
+  weekdayRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 4,
   },
 });

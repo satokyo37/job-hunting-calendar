@@ -58,24 +58,12 @@ export function ProgressStatusPickerModal({ visible, selected, onClose, onSelect
 }
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(15, 23, 42, 0.55)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
   card: {
     width: '100%',
     borderRadius: 24,
     padding: 20,
     backgroundColor: '#FFFFFF',
     gap: 12,
-  },
-  title: {
-    textAlign: 'center',
-    fontWeight: '700',
-    color: '#0F172A',
   },
   list: {
     gap: 10,
@@ -94,6 +82,14 @@ const styles = StyleSheet.create({
     borderColor: '#2563EB',
     backgroundColor: 'rgba(37, 99, 235, 0.08)',
   },
+  optionBody: {
+    flex: 1,
+  },
+  optionDescription: {
+    color: '#64748B',
+    fontSize: 12,
+    marginTop: 2,
+  },
   optionIcon: {
     width: 40,
     height: 40,
@@ -102,16 +98,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: StyleSheet.hairlineWidth,
   },
-  optionBody: {
-    flex: 1,
-  },
   optionLabel: {
     fontWeight: '600',
     color: '#0F172A',
   },
-  optionDescription: {
-    color: '#64748B',
-    fontSize: 12,
-    marginTop: 2,
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.55)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  title: {
+    textAlign: 'center',
+    fontWeight: '700',
+    color: '#0F172A',
   },
 });

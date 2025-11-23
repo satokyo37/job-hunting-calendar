@@ -1,40 +1,36 @@
-﻿import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { format, isBefore, isSameDay, parseISO, startOfDay } from "date-fns";
-import { ja } from "date-fns/locale";
-import { Link } from "expo-router";
-import { useMemo } from "react";
-import { FlatList, Image, Pressable, ScrollView, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+﻿import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { format, isBefore, isSameDay, parseISO, startOfDay } from 'date-fns';
+import { ja } from 'date-fns/locale';
+import { Link } from 'expo-router';
+import { useMemo } from 'react';
+import { FlatList, Image, Pressable, ScrollView, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { PageHeader } from "@/components/PageHeader";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
-import { Palette } from "@/constants/Palette";
+import { PageHeader } from '@/components/PageHeader';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
+import { Palette } from '@/constants/Palette';
 import {
   ACTIVE_SELECTION_STATUSES,
   PROGRESS_STATUS_ITEMS,
   ProgressStatusValue,
-} from "@/constants/progressStatus";
-import { useAppStore } from "@/store/useAppStore";
-import { homeStyles as styles } from "@/styles/homeStyles";
-import type { CompanySchedule, CompanyTaskItem } from "@/types/companyItems";
+} from '@/constants/progressStatus';
+import { useAppStore } from '@/store/useAppStore';
+import { homeStyles as styles } from '@/styles/homeStyles';
+import type { CompanySchedule, CompanyTaskItem } from '@/types/companyItems';
 
-const {
-  textMuted: TEXT_MUTED,
-  primary: PRIMARY,
-  success: SUCCESS,
-} = Palette;
+const { textMuted: TEXT_MUTED, primary: PRIMARY, success: SUCCESS } = Palette;
 
-const APP_LOGO = require("@/assets/images/schetto.png");
+const APP_LOGO = require('@/assets/images/schetto.png');
 
 type TodayTaskItem = CompanyTaskItem & {
-  kind: "task";
+  kind: 'task';
   dueDate: string;
   sortTime: number;
 };
 
 type TodayScheduleItem = CompanySchedule & {
-  kind: "schedule";
+  kind: 'schedule';
   sortTime: number;
 };
 
@@ -85,7 +81,7 @@ export default function HomeScreen() {
           companyId: company.id,
           companyName: company.name,
           iso: company.confirmedDate,
-          scheduleType: "confirmed" as const,
+          scheduleType: 'confirmed' as const,
           title: company.nextAction?.trim() || undefined,
         },
       ];
@@ -95,13 +91,13 @@ export default function HomeScreen() {
   const todayItems: TodayItem[] = useMemo(() => {
     const schedules: TodayScheduleItem[] = scheduleItems.map((item) => ({
       ...item,
-      kind: "schedule" as const,
+      kind: 'schedule' as const,
       sortTime: new Date(item.iso).getTime(),
     }));
 
     const tasks: TodayTaskItem[] = taskItems.map((task) => ({
       ...task,
-      kind: "task" as const,
+      kind: 'task' as const,
       dueDate: task.dueDate!,
       sortTime: new Date(task.dueDate!).getTime(),
     }));
@@ -113,9 +109,7 @@ export default function HomeScreen() {
   const scheduleCount = scheduleItems.length;
 
   const progressSummary = useMemo(() => {
-    const counts = PROGRESS_STATUS_ITEMS.reduce<
-      Record<ProgressStatusValue, number>
-    >(
+    const counts = PROGRESS_STATUS_ITEMS.reduce<Record<ProgressStatusValue, number>>(
       (acc, item) => {
         acc[item.value] = 0;
         return acc;
@@ -124,8 +118,7 @@ export default function HomeScreen() {
     );
 
     companies.forEach((company) => {
-      counts[company.progressStatus] =
-        (counts[company.progressStatus] ?? 0) + 1;
+      counts[company.progressStatus] = (counts[company.progressStatus] ?? 0) + 1;
     });
 
     const items = PROGRESS_STATUS_ITEMS.map((item) => ({
@@ -148,16 +141,10 @@ export default function HomeScreen() {
   const isEmpty = todayItems.length === 0;
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top']}>
       <View style={styles.container}>
         <PageHeader
-          iconElement={
-            <Image
-              source={APP_LOGO}
-              style={styles.appHeroIcon}
-              resizeMode="contain"
-            />
-          }
+          iconElement={<Image source={APP_LOGO} style={styles.appHeroIcon} resizeMode="contain" />}
           title="Schetto"
           titleStyle={styles.pageHeaderTitle}
           style={styles.appHero}
@@ -188,8 +175,7 @@ export default function HomeScreen() {
                 style={[
                   styles.statusCard,
                   { borderColor: item.border },
-                  index === progressSummary.items.length - 1 &&
-                    styles.statusCardLast,
+                  index === progressSummary.items.length - 1 && styles.statusCardLast,
                 ]}
               >
                 <View style={styles.statusCardHeader}>
@@ -202,25 +188,23 @@ export default function HomeScreen() {
                       },
                     ]}
                   >
-                    <MaterialIcons
-                      name={item.icon as any}
-                      size={16}
-                      color={item.accent}
-                    />
+                    <MaterialIcons name={item.icon as any} size={16} color={item.accent} />
                   </View>
                   <View style={styles.statusCardTexts}>
-                    <ThemedText style={styles.statusCardLabel}>
-                      {item.value}
-                    </ThemedText>
-                    <ThemedText style={styles.statusCardCaption}>
-                      {item.description}
-                    </ThemedText>
+                    <ThemedText style={styles.statusCardLabel}>{item.value}</ThemedText>
+                    <View style={styles.statusCardCaptionContainer}>
+                      <ThemedText
+                        style={styles.statusCardCaption}
+                        numberOfLines={2}
+                        ellipsizeMode="tail"
+                      >
+                        {item.description}
+                      </ThemedText>
+                    </View>
                   </View>
                 </View>
                 <View style={styles.statusCardCountRow}>
-                  <ThemedText style={styles.statusCardCount}>
-                    {item.count}
-                  </ThemedText>
+                  <ThemedText style={styles.statusCardCount}>{item.count}</ThemedText>
                   <ThemedText style={styles.statusCardCountUnit}>社</ThemedText>
                 </View>
               </View>
@@ -239,13 +223,10 @@ export default function HomeScreen() {
 
         <FlatList
           style={styles.list}
-          contentContainerStyle={[
-            styles.listContent,
-            isEmpty && styles.listEmptyContent,
-          ]}
+          contentContainerStyle={[styles.listContent, isEmpty && styles.listEmptyContent]}
           data={todayItems}
           keyExtractor={(item) =>
-            item.kind === "task"
+            item.kind === 'task'
               ? `task-${item.id}`
               : `schedule-${item.companyId}-${item.iso}-${item.scheduleType}`
           }
@@ -257,102 +238,82 @@ export default function HomeScreen() {
                 color={PRIMARY}
                 style={{ marginBottom: 8, opacity: 0.7 }}
               />
-              <ThemedText style={styles.emptyText}>
-                今日の予定・タスクはありません
-              </ThemedText>
+              <ThemedText style={styles.emptyText}>今日の予定・タスクはありません</ThemedText>
               <View style={styles.emptyButtonStack}>
                 <Link href="/(tabs)/tasks" asChild>
                   <Pressable style={styles.emptyButton}>
                     <MaterialIcons name="list" size={16} color="#FFFFFF" />
-                    <ThemedText style={styles.emptyButtonLabel}>
-                      タスク一覧を開く
-                    </ThemedText>
+                    <ThemedText style={styles.emptyButtonLabel}>タスク一覧を開く</ThemedText>
                   </Pressable>
                 </Link>
                 <Link href="/(tabs)/calendar" asChild>
                   <Pressable style={styles.emptyButton}>
-                    <MaterialIcons
-                      name="event-note"
-                      size={16}
-                      color="#FFFFFF"
-                    />
-                    <ThemedText style={styles.emptyButtonLabel}>
-                      カレンダーを見る
-                    </ThemedText>
+                    <MaterialIcons name="event-note" size={16} color="#FFFFFF" />
+                    <ThemedText style={styles.emptyButtonLabel}>カレンダーを見る</ThemedText>
                   </Pressable>
                 </Link>
               </View>
             </ThemedView>
           }
           renderItem={({ item }) =>
-            item.kind === "task" ? (
+            item.kind === 'task' ? (
               <View style={styles.taskRow}>
                 <Pressable
                   onPress={() => toggleTaskDone(item.companyId, item.id)}
-                  style={[styles.check, item.isDone && styles.checkDone]}
+                  style={styles.check}
                 >
                   <MaterialIcons
-                    name={
-                      item.isDone ? "check-circle" : "radio-button-unchecked"
-                    }
+                    name={item.isDone ? 'check-circle' : 'radio-button-unchecked'}
                     size={20}
                     color={item.isDone ? SUCCESS : PRIMARY}
                   />
                 </Pressable>
 
                 <View style={styles.taskBody}>
-                  <ThemedText
-                    style={[styles.taskTitle, item.isDone && styles.done]}
-                  >
-                    {item.title}
-                  </ThemedText>
-                  <Link href={`/(tabs)/companies/${item.companyId}`} asChild>
-                    <Pressable>
-                      <ThemedText style={styles.companyLink}>
-                        {item.companyName}
-                      </ThemedText>
-                    </Pressable>
-                  </Link>
-
-                  {item.dueDate ? (
-                    <ThemedText style={styles.due}>
-                      {format(
-                        parseISO(item.dueDate),
-                        "yyyy'年'MM'月'dd'日'(EEE) HH:mm",
-                        { locale: ja },
-                      )}
+                  <View style={styles.taskTopRow}>
+                    <ThemedText
+                      style={[styles.taskTitle, item.isDone && styles.done]}
+                      numberOfLines={1}
+                    >
+                      {item.title}
                     </ThemedText>
-                  ) : null}
-                </View>
 
-                <Pressable
-                  onPress={() => removeTask(item.companyId, item.id)}
-                  style={styles.deleteBtn}
-                >
-                  <MaterialIcons
-                    name="delete-outline"
-                    size={20}
-                    color={TEXT_MUTED}
-                  />
-                </Pressable>
+                    {item.dueDate ? (
+                      <ThemedText style={styles.due}>
+                        {format(parseISO(item.dueDate), 'M/d(EEE) HH:mm', {
+                          locale: ja,
+                        })}
+                      </ThemedText>
+                    ) : null}
+                  </View>
+
+                  <View style={styles.taskBottomRow}>
+                    <Link href={`/(tabs)/companies/${item.companyId}`} asChild>
+                      <Pressable>
+                        <ThemedText style={styles.companyLink}>{item.companyName}</ThemedText>
+                      </Pressable>
+                    </Link>
+
+                    <Pressable
+                      onPress={() => removeTask(item.companyId, item.id)}
+                      style={styles.deleteBtn}
+                    >
+                      <MaterialIcons name="delete-outline" size={18} color={TEXT_MUTED} />
+                    </Pressable>
+                  </View>
+                </View>
               </View>
             ) : (
               <View style={[styles.taskRow, styles.scheduleRow]}>
                 <View style={styles.scheduleIconBadge}>
                   <MaterialIcons
-                    name={
-                      item.scheduleType === "confirmed"
-                        ? "event-available"
-                        : "event-note"
-                    }
+                    name={item.scheduleType === 'confirmed' ? 'event-available' : 'event-note'}
                     size={18}
                     color={PRIMARY}
                   />
                 </View>
                 <View style={styles.taskBody}>
-                  <ThemedText style={styles.taskTitle}>
-                    {item.companyName}
-                  </ThemedText>
+                  <ThemedText style={styles.taskTitle}>{item.companyName}</ThemedText>
                   {item.title ? (
                     <ThemedText style={styles.scheduleTitle} numberOfLines={1}>
                       {item.title}
@@ -361,9 +322,7 @@ export default function HomeScreen() {
 
                   <View style={styles.scheduleMetaRow}>
                     <ThemedText style={styles.scheduleLabel}>
-                      {item.scheduleType === "confirmed"
-                        ? "確定日程"
-                        : "候補日"}
+                      {item.scheduleType === 'confirmed' ? '確定日程' : '候補日'}
                     </ThemedText>
                     <ThemedText style={styles.due}>
                       {format(parseISO(item.iso), "HH:mm '開始'", {
@@ -375,11 +334,7 @@ export default function HomeScreen() {
 
                 <Link href={`/(tabs)/companies/${item.companyId}`} asChild>
                   <Pressable style={styles.scheduleLink}>
-                    <MaterialIcons
-                      name="chevron-right"
-                      size={20}
-                      color={TEXT_MUTED}
-                    />
+                    <MaterialIcons name="chevron-right" size={20} color={TEXT_MUTED} />
                   </Pressable>
                 </Link>
               </View>

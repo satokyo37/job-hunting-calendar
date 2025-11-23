@@ -1,6 +1,5 @@
-import { StyleSheet } from "react-native";
-
-import { Palette } from "@/constants/Palette";
+import { Palette } from '@/constants/Palette';
+import { StyleSheet } from 'react-native';
 
 const {
   backgroundAlt: BACKGROUND,
@@ -15,300 +14,287 @@ const {
 } = Palette;
 
 export const calendarStyles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
+  calendarGrid: {
     backgroundColor: BACKGROUND,
-  },
-  screen: {
+    borderRadius: 16,
     flex: 1,
-    backgroundColor: BACKGROUND,
+    marginTop: 8,
   },
   container: {
     flex: 1,
-    paddingHorizontal: 16,
+    paddingBottom: 8,
+    paddingHorizontal: 8,
     paddingTop: 12,
-    paddingBottom: 16,
-    gap: 12,
-  },
-  monthSwitcher: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 12,
-  },
-  monthButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: BORDER,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: SURFACE,
-  },
-  monthLabel: {
-    color: TEXT_PRIMARY,
-    fontSize: 22,
-    fontWeight: "700",
-  },
-  weekHeader: {
-    flexDirection: "row",
-    paddingHorizontal: 4,
-  },
-  weekDay: {
-    flex: 1,
-    textAlign: "center",
-    color: TEXT_MUTED,
-    fontWeight: "600",
-  },
-  calendarGrid: {
-    marginTop: 12,
-    borderRadius: 20,
-    overflow: "hidden",
-    backgroundColor: SURFACE,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: BORDER,
-  },
-  weekRow: {
-    flexDirection: "row",
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "rgba(100, 116, 139, 0.18)",
-  },
-  lastWeekRow: {
-    borderBottomWidth: 0,
   },
   dayCell: {
     flex: 1,
-    paddingHorizontal: 8,
-    paddingVertical: 8,
-    gap: 4,
-    minHeight: 80,
-    borderRightWidth: StyleSheet.hairlineWidth,
-    borderColor: "rgba(100, 116, 139, 0.12)",
-    backgroundColor: SURFACE,
+    marginHorizontal: 1,
+    marginVertical: 1,
   },
-  lastColumnCell: {
-    borderRightWidth: 0,
-  },
-  outsideCell: {
-    backgroundColor: SURFACE_SUBTLE,
-  },
-  selectedCell: {
-    borderColor: PRIMARY,
-    borderWidth: 2,
-    borderLeftWidth: 2,
-    borderRightWidth: 2,
-    borderTopWidth: 2,
-    borderBottomWidth: 2,
-  },
-  todayOutline: {
-    shadowColor: "#2563EB33",
-    shadowOpacity: 0.8,
-    shadowRadius: 12,
+  dayEventList: {
+    gap: 1,
+    marginTop: 1,
   },
   dayHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  dayNumber: {
-    color: TEXT_PRIMARY,
-    fontWeight: "700",
-  },
-  outsideDayNumber: {
-    color: TEXT_MUTED,
-  },
-  todayDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: PRIMARY,
-  },
-  dayEvents: {
-    marginTop: 6,
+    alignItems: 'center',
+    flexDirection: 'row',
     gap: 4,
+    justifyContent: 'center',
   },
-  eventChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-  },
-  eventIndicator: {
-    width: 3,
-    borderRadius: 999,
-    alignSelf: "stretch",
-  },
-  eventChipText: {
-    fontSize: 11,
-    fontWeight: "600",
-    flexShrink: 1,
-  },
-  confirmedChip: {
-    backgroundColor: "rgba(22, 163, 74, 0.12)",
-  },
-  confirmedChipText: {
-    color: SUCCESS,
-  },
-  confirmedIndicator: {
-    backgroundColor: SUCCESS,
-  },
-  candidateChip: {
-    backgroundColor: "rgba(249, 115, 22, 0.12)",
-  },
-  candidateChipText: {
-    color: WARNING,
-  },
-  candidateIndicator: {
-    backgroundColor: WARNING,
-  },
-  moreChip: {
-    borderRadius: 999,
-    backgroundColor: SURFACE_SUBTLE,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    alignSelf: "flex-start",
-  },
-  moreChipText: {
-    color: TEXT_MUTED,
-    fontSize: 12,
-  },
-  daySummaryRow: {
-    marginTop: 4,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  summaryDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  summaryDotConfirmed: {
-    backgroundColor: SUCCESS,
-  },
-  summaryDotCandidate: {
-    backgroundColor: WARNING,
-  },
-  daySummaryText: {
-    flex: 1,
-    fontSize: 10,
-    color: TEXT_PRIMARY,
-  },
-  daySummaryMore: {
-    fontSize: 10,
-    color: TEXT_MUTED,
-    marginLeft: 2,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(15, 23, 42, 0.4)",
-    justifyContent: "center",
-    padding: 24,
-  },
-  modalShell: {
-    width: "100%",
-  },
-  modalCard: {
+  dayInner: {
     backgroundColor: SURFACE,
-    borderRadius: 24,
+    borderColor: 'rgba(148, 163, 184, 0.35)',
+    borderRadius: 10,
     borderWidth: StyleSheet.hairlineWidth,
-    borderColor: BORDER,
-    padding: 24,
-    gap: 18,
-  },
-  modalTitle: {
-    textAlign: "center",
-    color: TEXT_PRIMARY,
-    fontWeight: "700",
-  },
-  modalSubtitle: {
-    textAlign: "center",
-    color: TEXT_MUTED,
-  },
-  modalCaption: {
-    textAlign: "center",
-    color: TEXT_MUTED,
-  },
-  dayModalList: {
-    gap: 12,
-  },
-  emptyDayMessage: {
-    color: TEXT_MUTED,
-    textAlign: "center",
-  },
-  dayModalItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 16,
-    backgroundColor: SURFACE_SUBTLE,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: BORDER,
-  },
-  dayModalMeta: {
     flex: 1,
-    gap: 8,
+    justifyContent: 'flex-start',
+    overflow: 'hidden',
+    paddingBottom: 3,
+    paddingHorizontal: 4,
+    paddingTop: 2,
   },
-  dayModalInfo: {
-    flex: 1,
-    gap: 2,
+  dayInnerSelected: {
+    backgroundColor: SURFACE,
+    borderColor: BORDER,
+    borderWidth: 2,
   },
-  dayModalTime: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  dayModalTimeText: {
-    color: TEXT_PRIMARY,
-    fontWeight: "600",
-  },
-  dayModalTitle: {
-    color: TEXT_PRIMARY,
-    fontWeight: "600",
+  dayInnerToday: {
+    backgroundColor: 'rgba(37, 99, 235, 0.04)',
   },
   dayModalCompany: {
     color: TEXT_MUTED,
     fontSize: 12,
   },
-  primaryButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    backgroundColor: PRIMARY,
-    paddingVertical: 14,
+  dayModalInfo: {
+    flex: 1,
+    gap: 2,
+  },
+  dayModalItem: {
+    alignItems: 'center',
+    backgroundColor: SURFACE_SUBTLE,
+    borderColor: BORDER,
     borderRadius: 16,
+    borderWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    gap: 12,
+    justifyContent: 'space-between',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
   },
-  primaryButtonLabel: {
-    color: "#FFFFFF",
-    fontWeight: "700",
+  dayModalList: {
+    gap: 10,
+    maxHeight: 260,
+    paddingBottom: 4,
   },
-  modalSection: {
-    gap: 6,
+  dayModalMeta: {
+    alignItems: 'center',
+    flex: 1,
+    flexDirection: 'row',
+    gap: 8,
+  },
+  dayModalTime: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 4,
+  },
+  dayModalTimeText: {
+    color: TEXT_MUTED,
+    fontSize: 12,
+  },
+  dayModalTitle: {
+    color: TEXT_PRIMARY,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  dayNumber: {
+    color: TEXT_PRIMARY,
+    fontSize: 12,
+    fontWeight: '700',
+    lineHeight: 20,
+  },
+  daySummaryMore: {
+    color: TEXT_MUTED,
+    fontSize: 9,
+    marginLeft: 2,
+  },
+  daySummaryRow: {
+    alignItems: 'center',
+    borderRadius: 8,
+    flexDirection: 'row',
+    gap: 3,
+    marginTop: 1,
+    minHeight: 14,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+  },
+  daySummaryRowCandidate: {
+    backgroundColor: 'rgba(245, 158, 11, 0.08)',
+  },
+  daySummaryRowConfirmed: {
+    backgroundColor: 'rgba(22, 163, 74, 0.08)',
+  },
+  daySummaryText: {
+    flex: 1,
+    fontSize: 9,
+  },
+  daySummaryTextCandidate: {
+    color: WARNING,
+    fontWeight: '600',
+  },
+  daySummaryTextConfirmed: {
+    color: SUCCESS,
+    fontWeight: '600',
+  },
+  emptyDayMessage: {
+    color: TEXT_MUTED,
+    paddingVertical: 12,
+    textAlign: 'center',
+  },
+  modalCaption: {
+    color: TEXT_MUTED,
+    fontSize: 12,
+    marginBottom: 8,
+    marginTop: 4,
+  },
+  modalCard: {
+    backgroundColor: SURFACE,
+    borderColor: BORDER,
+    borderRadius: 24,
+    borderWidth: StyleSheet.hairlineWidth,
+    elevation: 8,
+    gap: 16,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.18,
+    shadowRadius: 24,
   },
   modalLabel: {
     color: TEXT_MUTED,
     fontSize: 12,
   },
+  modalOverlay: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(15, 23, 42, 0.45)',
+    flex: 1,
+    justifyContent: 'center',
+    padding: 24,
+  },
+  modalSection: {
+    gap: 4,
+    marginTop: 4,
+  },
+  modalShell: {
+    maxWidth: 420,
+    width: '100%',
+  },
+  modalSubtitle: {
+    color: TEXT_MUTED,
+    fontSize: 13,
+  },
+  modalTitle: {
+    color: TEXT_PRIMARY,
+    fontSize: 18,
+    fontWeight: '700',
+    textAlign: 'left',
+  },
   modalValue: {
     color: TEXT_PRIMARY,
-    fontWeight: "600",
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  monthButton: {
+    alignItems: 'center',
+    backgroundColor: SURFACE,
+    borderColor: BORDER,
+    borderRadius: 20,
+    borderWidth: StyleSheet.hairlineWidth,
+    height: 40,
+    justifyContent: 'center',
+    width: 40,
+  },
+  monthLabel: {
+    color: TEXT_PRIMARY,
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  monthSwitcher: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: 12,
+    justifyContent: 'center',
+  },
+  outsideCell: {
+    opacity: 0.55,
+  },
+  outsideDayNumber: {
+    color: TEXT_MUTED,
+  },
+  primaryButton: {
+    alignItems: 'center',
+    backgroundColor: PRIMARY,
+    borderRadius: 999,
+    flexDirection: 'row',
+    gap: 8,
+    justifyContent: 'center',
+    marginTop: 8,
+    paddingVertical: 12,
+  },
+  primaryButtonLabel: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+  },
+  safeArea: {
+    backgroundColor: BACKGROUND,
+    flex: 1,
+  },
+  screen: {
+    backgroundColor: BACKGROUND,
+    flex: 1,
   },
   statusTag: {
-    flexDirection: "row",
-    alignItems: "center",
+    alignItems: 'center',
+    borderRadius: 999,
+    flexDirection: 'row',
     gap: 6,
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 999,
   },
   statusTagLabel: {
-    fontWeight: "600",
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  todayDayNumber: {
+    color: PRIMARY,
+  },
+  todayPill: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(37, 99, 235, 0.10)',
+    borderRadius: 9,
+    height: 20,
+    justifyContent: 'center',
+    paddingHorizontal: 8,
+  },
+  todayPillText: {
+    color: PRIMARY,
+    fontSize: 12,
+    fontWeight: '700',
+    lineHeight: 20,
+  },
+  weekDay: {
+    color: TEXT_MUTED,
+    flex: 1,
+    fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  weekHeader: {
+    flexDirection: 'row',
+    marginBottom: 0,
+    paddingHorizontal: 0,
+  },
+  weekRow: {
+    flex: 1,
+    flexDirection: 'row',
   },
 });

@@ -1,25 +1,21 @@
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { format, parseISO } from "date-fns";
-import { ja } from "date-fns/locale";
-import { Link } from "expo-router";
-import { useMemo, useState } from "react";
-import { Alert, Pressable, SectionList, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { format, parseISO } from 'date-fns';
+import { ja } from 'date-fns/locale';
+import { Link } from 'expo-router';
+import { useMemo, useState } from 'react';
+import { Alert, Pressable, SectionList, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { PageHeader } from "@/components/PageHeader";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
-import { Palette } from "@/constants/Palette";
-import { useAppStore } from "@/store/useAppStore";
-import { tasksStyles as styles } from "@/styles/tasksStyles";
-import type { CompanyTaskItem } from "@/types/companyItems";
-import TaskEditModal from "@/app/features/tasks/components/TaskEditModal";
+import { PageHeader } from '@/components/PageHeader';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
+import { Palette } from '@/constants/Palette';
+import { useAppStore } from '@/store/useAppStore';
+import { tasksStyles as styles } from '@/styles/tasksStyles';
+import type { CompanyTaskItem } from '@/types/companyItems';
+import TaskEditModal from '@/app/features/tasks/components/TaskEditModal';
 
-const {
-  textMuted: TEXT_MUTED,
-  primary: PRIMARY,
-  success: SUCCESS,
-} = Palette;
+const { textMuted: TEXT_MUTED, primary: PRIMARY, success: SUCCESS } = Palette;
 
 type TaskSection = {
   key: string;
@@ -43,12 +39,8 @@ export default function TasksTabScreen() {
     );
 
     const sortPending = (a: CompanyTaskItem, b: CompanyTaskItem) => {
-      const ad = a.dueDate
-        ? new Date(a.dueDate).getTime()
-        : Number.MAX_SAFE_INTEGER;
-      const bd = b.dueDate
-        ? new Date(b.dueDate).getTime()
-        : Number.MAX_SAFE_INTEGER;
+      const ad = a.dueDate ? new Date(a.dueDate).getTime() : Number.MAX_SAFE_INTEGER;
+      const bd = b.dueDate ? new Date(b.dueDate).getTime() : Number.MAX_SAFE_INTEGER;
       return ad - bd;
     };
 
@@ -70,16 +62,16 @@ export default function TasksTabScreen() {
 
     if (pendingTasks.length) {
       data.push({
-        key: "pending",
-        title: "進行中のタスク",
+        key: 'pending',
+        title: '進行中のタスク',
         data: pendingTasks,
       });
     }
 
     if (completedTasks.length) {
       data.push({
-        key: "completed",
-        title: "完了済み",
+        key: 'completed',
+        title: '完了済み',
         data: completedTasks,
       });
     }
@@ -92,7 +84,7 @@ export default function TasksTabScreen() {
   const isEmpty = totalCount === 0;
 
   const [editingTask, setEditingTask] = useState<CompanyTaskItem | null>(null);
-  const [editingTitle, setEditingTitle] = useState("");
+  const [editingTitle, setEditingTitle] = useState('');
   const [editingDueDate, setEditingDueDate] = useState<string | null>(null);
   const [duePickerVisible, setDuePickerVisible] = useState(false);
 
@@ -104,7 +96,7 @@ export default function TasksTabScreen() {
 
   const closeEditModal = () => {
     setEditingTask(null);
-    setEditingTitle("");
+    setEditingTitle('');
     setEditingDueDate(null);
     setDuePickerVisible(false);
   };
@@ -113,7 +105,7 @@ export default function TasksTabScreen() {
     if (!editingTask) return;
     const nextTitle = editingTitle.trim();
     if (!nextTitle) {
-      Alert.alert("タスク名を入力してください");
+      Alert.alert('タスク名を入力してください');
       return;
     }
     updateTask(editingTask.companyId, editingTask.id, {
@@ -126,13 +118,13 @@ export default function TasksTabScreen() {
   const handleRemoveTask = (task: CompanyTaskItem) => {
     if (!task.isDone) {
       Alert.alert(
-        "未完了のタスクを削除しますか？",
-        "完了していないタスクです。削除すると元に戻せません。",
+        '未完了のタスクを削除しますか？',
+        '完了していないタスクです。削除すると元に戻せません。',
         [
-          { text: "キャンセル", style: "cancel" },
+          { text: 'キャンセル', style: 'cancel' },
           {
-            text: "削除",
-            style: "destructive",
+            text: '削除',
+            style: 'destructive',
             onPress: () => removeTask(task.companyId, task.id),
           },
         ],
@@ -147,7 +139,7 @@ export default function TasksTabScreen() {
       ? format(parseISO(editingDueDate), "yyyy'年'MM'月'dd'日'(EEE) HH:mm", {
           locale: ja,
         })
-      : "期限未設定";
+      : '期限未設定';
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -168,25 +160,16 @@ export default function TasksTabScreen() {
           keyExtractor={(item) => item.id}
           stickySectionHeadersEnabled={false}
           style={styles.list}
-          contentContainerStyle={[
-            styles.listContent,
-            isEmpty && styles.emptyContent,
-          ]}
-          SectionSeparatorComponent={() => (
-            <View style={styles.sectionSeparator} />
-          )}
+          contentContainerStyle={[styles.listContent, isEmpty && styles.emptyContent]}
+          SectionSeparatorComponent={() => <View style={styles.sectionSeparator} />}
           renderSectionHeader={({ section }) => (
             <View style={styles.sectionHeader}>
-              <ThemedText style={styles.sectionTitle}>
-                {section.title}
-              </ThemedText>
+              <ThemedText style={styles.sectionTitle}>{section.title}</ThemedText>
             </View>
           )}
           ListEmptyComponent={
             <ThemedView style={styles.empty}>
-              <ThemedText style={styles.emptyText}>
-                登録されたタスクはありません
-              </ThemedText>
+              <ThemedText style={styles.emptyText}>登録されたタスクはありません</ThemedText>
               <ThemedText style={styles.emptyHint}>
                 各企業詳細ページの「タスク」セクションから追加できます
               </ThemedText>
@@ -199,35 +182,27 @@ export default function TasksTabScreen() {
                 style={[styles.check, item.isDone && styles.checkDone]}
               >
                 <MaterialIcons
-                  name={item.isDone ? "check-circle" : "radio-button-unchecked"}
+                  name={item.isDone ? 'check-circle' : 'radio-button-unchecked'}
                   size={20}
                   color={item.isDone ? SUCCESS : PRIMARY}
                 />
               </Pressable>
 
               <View style={styles.taskBody}>
-                <ThemedText
-                  style={[styles.taskTitle, item.isDone && styles.done]}
-                >
+                <ThemedText style={[styles.taskTitle, item.isDone && styles.done]}>
                   {item.title}
                 </ThemedText>
                 <View style={styles.metaRow}>
                   <Link href={`/(tabs)/companies/${item.companyId}`} asChild>
                     <Pressable>
-                      <ThemedText style={styles.companyLink}>
-                        {item.companyName}
-                      </ThemedText>
+                      <ThemedText style={styles.companyLink}>{item.companyName}</ThemedText>
                     </Pressable>
                   </Link>
                   {item.dueDate ? (
                     <ThemedText style={styles.due}>
-                      {format(
-                        parseISO(item.dueDate),
-                        "yyyy'年'MM'月'dd'日'(EEE) HH:mm",
-                        {
-                          locale: ja,
-                        },
-                      )}
+                      {format(parseISO(item.dueDate), "yyyy'年'MM'月'dd'日'(EEE) HH:mm", {
+                        locale: ja,
+                      })}
                     </ThemedText>
                   ) : (
                     <ThemedText style={styles.dueMuted}>期限未設定</ThemedText>
@@ -236,21 +211,11 @@ export default function TasksTabScreen() {
               </View>
 
               <View style={styles.rowActions}>
-                <Pressable
-                  onPress={() => openEditModal(item)}
-                  style={styles.iconButton}
-                >
+                <Pressable onPress={() => openEditModal(item)} style={styles.iconButton}>
                   <MaterialIcons name="edit" size={20} color={PRIMARY} />
                 </Pressable>
-                <Pressable
-                  onPress={() => handleRemoveTask(item)}
-                  style={styles.iconButton}
-                >
-                  <MaterialIcons
-                    name="delete-outline"
-                    size={20}
-                    color={TEXT_MUTED}
-                  />
+                <Pressable onPress={() => handleRemoveTask(item)} style={styles.iconButton}>
+                  <MaterialIcons name="delete-outline" size={20} color={TEXT_MUTED} />
                 </Pressable>
               </View>
             </View>

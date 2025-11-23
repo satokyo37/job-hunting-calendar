@@ -49,19 +49,19 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     fontFamily: FONT_SEMIBOLD,
   },
-  title: {
-    fontSize: 32,
-    lineHeight: 32,
-    fontFamily: FONT_BOLD,
-  },
-  subtitle: {
-    fontSize: 20,
-    fontFamily: FONT_BOLD,
-  },
   link: {
     lineHeight: 30,
     fontSize: 16,
     color: '#0a7ea4',
     fontFamily: FONT_REGULAR,
+  },
+  subtitle: {
+    fontSize: 20,
+    fontFamily: FONT_BOLD,
+  },
+  title: {
+    fontSize: 32,
+    lineHeight: 32,
+    fontFamily: FONT_BOLD,
   },
 });

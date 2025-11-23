@@ -6,12 +6,15 @@
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
 
-type ThemeColorName = 'text' | 'background' | 'tint' | 'icon' | 'tabIconDefault' | 'tabIconSelected';
+type ThemeColorName =
+  | 'text'
+  | 'background'
+  | 'tint'
+  | 'icon'
+  | 'tabIconDefault'
+  | 'tabIconSelected';
 
-export function useThemeColor(
-  props: { light?: string; dark?: string },
-  colorName: ThemeColorName
-) {
+export function useThemeColor(props: { light?: string; dark?: string }, colorName: ThemeColorName) {
   const theme = useColorScheme() ?? 'light';
   const colorFromProps = props[theme];
 

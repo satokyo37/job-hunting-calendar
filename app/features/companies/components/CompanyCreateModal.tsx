@@ -1,21 +1,16 @@
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { format, parseISO } from "date-fns";
-import { ja } from "date-fns/locale";
-import { Modal, Pressable, ScrollView, TextInput, View } from "react-native";
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { format, parseISO } from 'date-fns';
+import { ja } from 'date-fns/locale';
+import { Modal, Pressable, ScrollView, TextInput, View } from 'react-native';
 
-import { ScheduleChip } from "@/components/ScheduleChip";
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
-import { Palette } from "@/constants/Palette";
-import { PROGRESS_STATUS_ITEMS } from "@/constants/progressStatus";
-import { companiesStyles as styles } from "@/styles/companiesStyles";
+import { ScheduleChip } from '@/components/ScheduleChip';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
+import { Palette } from '@/constants/Palette';
+import { PROGRESS_STATUS_ITEMS } from '@/constants/progressStatus';
+import { companiesStyles as styles } from '@/styles/companiesStyles';
 
-const {
-  primary: PRIMARY,
-  success: SUCCESS,
-  danger: DANGER,
-  textMuted: TEXT_MUTED,
-} = Palette;
+const { primary: PRIMARY, success: SUCCESS, danger: DANGER, textMuted: TEXT_MUTED } = Palette;
 
 type ProgressMeta = (typeof PROGRESS_STATUS_ITEMS)[number];
 
@@ -54,8 +49,7 @@ type CompanyCreateModalProps = {
   onSave: () => void;
 };
 
-const formatTaskDueLabel = (iso: string) =>
-  format(parseISO(iso), "M月d日 HH:mm", { locale: ja });
+const formatTaskDueLabel = (iso: string) => format(parseISO(iso), 'M月d日 HH:mm', { locale: ja });
 
 export default function CompanyCreateModal({
   visible,
@@ -114,9 +108,7 @@ export default function CompanyCreateModal({
                 </View>
                 <View style={styles.inputBlock}>
                   <View style={styles.labelRow}>
-                    <ThemedText style={styles.fieldLabel}>
-                      進捗ステータス
-                    </ThemedText>
+                    <ThemedText style={styles.fieldLabel}>進捗ステータス</ThemedText>
                     <ThemedText style={styles.requiredTag}>必須</ThemedText>
                   </View>
                   <Pressable
@@ -150,15 +142,9 @@ export default function CompanyCreateModal({
                         </View>
                       </View>
                     ) : (
-                      <ThemedText style={styles.selectPlaceholder}>
-                        選択してください
-                      </ThemedText>
+                      <ThemedText style={styles.selectPlaceholder}>選択してください</ThemedText>
                     )}
-                    <MaterialIcons
-                      name="expand-more"
-                      size={22}
-                      color={TEXT_MUTED}
-                    />
+                    <MaterialIcons name="expand-more" size={22} color={TEXT_MUTED} />
                   </Pressable>
                 </View>
                 <View style={styles.inputBlock}>
@@ -177,9 +163,7 @@ export default function CompanyCreateModal({
               <ThemedText style={styles.formHeading}>日程調整</ThemedText>
               <View style={[styles.formSection, styles.scheduleSection]}>
                 <View style={styles.inputBlock}>
-                  <ThemedText style={styles.fieldLabel}>
-                    予定タイトル
-                  </ThemedText>
+                  <ThemedText style={styles.fieldLabel}>予定タイトル</ThemedText>
                   <TextInput
                     style={[styles.input, styles.scheduleTitleInput]}
                     value={formNextAction}
@@ -199,9 +183,7 @@ export default function CompanyCreateModal({
                     onPress={onAddCandidatePress}
                   >
                     <MaterialIcons name="event" size={16} color={PRIMARY} />
-                    <ThemedText style={styles.secondaryButtonLabel}>
-                      候補日を追加
-                    </ThemedText>
+                    <ThemedText style={styles.secondaryButtonLabel}>候補日を追加</ThemedText>
                   </Pressable>
                 </View>
 
@@ -209,9 +191,7 @@ export default function CompanyCreateModal({
                   <View style={styles.scheduleSummaryCard}>
                     {formConfirmedDate ? (
                       <View style={styles.confirmedBlock}>
-                        <ThemedText style={styles.formCaption}>
-                          確定済みの予定
-                        </ThemedText>
+                        <ThemedText style={styles.formCaption}>確定済みの予定</ThemedText>
                         <ScheduleChip
                           iso={formConfirmedDate}
                           status="confirmed"
@@ -219,11 +199,11 @@ export default function CompanyCreateModal({
                           actionsAlign="right"
                           actions={[
                             {
-                              key: "clear",
-                              label: "削除",
-                              icon: "close",
+                              key: 'clear',
+                              label: '削除',
+                              icon: 'close',
                               color: DANGER,
-                              backgroundColor: "rgba(248, 113, 113, 0.18)",
+                              backgroundColor: 'rgba(248, 113, 113, 0.18)',
                               onPress: onClearConfirmed,
                             },
                           ]}
@@ -238,9 +218,7 @@ export default function CompanyCreateModal({
                           formConfirmedDate && styles.scheduleSummaryDivider,
                         ]}
                       >
-                        <ThemedText style={styles.formCaption}>
-                          候補日
-                        </ThemedText>
+                        <ThemedText style={styles.formCaption}>候補日</ThemedText>
                         <View style={styles.chipColumn}>
                           {formCandidates.map((iso) => (
                             <ScheduleChip
@@ -250,19 +228,19 @@ export default function CompanyCreateModal({
                               title={formNextAction.trim() || undefined}
                               actions={[
                                 {
-                                  key: "promote",
-                                  label: "確定",
-                                  icon: "event-available",
+                                  key: 'promote',
+                                  label: '確定',
+                                  icon: 'event-available',
                                   color: SUCCESS,
-                                  backgroundColor: "rgba(34, 197, 94, 0.18)",
+                                  backgroundColor: 'rgba(34, 197, 94, 0.18)',
                                   onPress: () => onPromoteCandidate(iso),
                                 },
                                 {
-                                  key: "remove",
-                                  label: "削除",
-                                  icon: "close",
+                                  key: 'remove',
+                                  label: '削除',
+                                  icon: 'close',
                                   color: DANGER,
-                                  backgroundColor: "rgba(248, 113, 113, 0.18)",
+                                  backgroundColor: 'rgba(248, 113, 113, 0.18)',
                                   onPress: () => onRemoveCandidate(iso),
                                 },
                               ]}
@@ -298,18 +276,9 @@ export default function CompanyCreateModal({
                         status="task"
                         title={formTaskDraft.trim() || undefined}
                       />
-                      <Pressable
-                        style={styles.taskDueClearButton}
-                        onPress={onClearTaskDue}
-                      >
-                        <MaterialIcons
-                          name="close"
-                          size={12}
-                          color={TEXT_MUTED}
-                        />
-                        <ThemedText style={styles.taskDueClearLabel}>
-                          締切をクリア
-                        </ThemedText>
+                      <Pressable style={styles.taskDueClearButton} onPress={onClearTaskDue}>
+                        <MaterialIcons name="close" size={12} color={TEXT_MUTED} />
+                        <ThemedText style={styles.taskDueClearLabel}>締切をクリア</ThemedText>
                       </Pressable>
                     </View>
                   ) : null}
@@ -320,7 +289,7 @@ export default function CompanyCreateModal({
                     >
                       <MaterialIcons name="event" size={16} color={PRIMARY} />
                       <ThemedText style={styles.secondaryButtonLabel}>
-                        {formTaskDue ? "締切を変更" : "締切を設定"}
+                        {formTaskDue ? '締切を変更' : '締切を設定'}
                       </ThemedText>
                     </Pressable>
                     <Pressable
@@ -333,23 +302,16 @@ export default function CompanyCreateModal({
                       disabled={!canAddTask}
                     >
                       <MaterialIcons name="add" size={16} color={PRIMARY} />
-                      <ThemedText style={styles.secondaryButtonLabel}>
-                        追加
-                      </ThemedText>
+                      <ThemedText style={styles.secondaryButtonLabel}>追加</ThemedText>
                     </Pressable>
                   </View>
                 </View>
                 {formTasks.length > 0 ? (
                   <View style={styles.taskListPreview}>
                     {formTasks.map((task, index) => (
-                      <View
-                        key={`${task.title}-${index}`}
-                        style={styles.taskPill}
-                      >
+                      <View key={`${task.title}-${index}`} style={styles.taskPill}>
                         <View style={styles.taskPillText}>
-                          <ThemedText style={styles.taskPillLabel}>
-                            {task.title}
-                          </ThemedText>
+                          <ThemedText style={styles.taskPillLabel}>{task.title}</ThemedText>
                           {task.dueDate ? (
                             <ThemedText style={styles.taskPillDue}>
                               {formatTaskDueLabel(task.dueDate)}
@@ -360,11 +322,7 @@ export default function CompanyCreateModal({
                           onPress={() => onRemoveTask(index)}
                           style={styles.taskPillRemove}
                         >
-                          <MaterialIcons
-                            name="close"
-                            size={14}
-                            color={TEXT_MUTED}
-                          />
+                          <MaterialIcons name="close" size={14} color={TEXT_MUTED} />
                         </Pressable>
                       </View>
                     ))}
@@ -376,9 +334,7 @@ export default function CompanyCreateModal({
 
           <View style={styles.modalActions}>
             <Pressable style={styles.secondaryButton} onPress={onCancel}>
-              <ThemedText style={styles.secondaryButtonLabel}>
-                キャンセル
-              </ThemedText>
+              <ThemedText style={styles.secondaryButtonLabel}>キャンセル</ThemedText>
             </Pressable>
             <Pressable style={styles.primaryButton} onPress={onSave}>
               <ThemedText style={styles.primaryButtonLabel}>保存</ThemedText>

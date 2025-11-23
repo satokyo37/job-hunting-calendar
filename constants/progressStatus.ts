@@ -89,7 +89,7 @@ export const PROGRESS_STATUS_BY_VALUE = PROGRESS_STATUS_ITEMS.reduce(
     acc[item.value] = item;
     return acc;
   },
-  {} as Record<ProgressStatusValue, ProgressStatusVisual>
+  {} as Record<ProgressStatusValue, ProgressStatusVisual>,
 );
 
 export const ACTIVE_SELECTION_STATUSES: ProgressStatusValue[] = ['書類選考中', '面接中'];

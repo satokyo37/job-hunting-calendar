@@ -72,7 +72,7 @@ type TextLikeComponent = {
 
 const appendFont = (
   existing: StyleProp<TextStyle> | undefined,
-  addition: TextStyle
+  addition: TextStyle,
 ): StyleProp<TextStyle> => {
   if (Array.isArray(existing)) {
     return [...existing, addition];

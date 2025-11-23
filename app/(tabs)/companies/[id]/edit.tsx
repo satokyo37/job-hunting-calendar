@@ -3,7 +3,16 @@ import { format, parseISO } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { Stack, useFocusEffect, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, BackHandler, Modal, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import {
+  Alert,
+  BackHandler,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ProgressStatusPickerModal } from '@/components/ProgressStatusPickerModal';
@@ -54,7 +63,7 @@ export default function CompanyEditScreen() {
 
   const company = useMemo(
     () => companies.find((candidate) => candidate.id === companyId) ?? null,
-    [companies, companyId]
+    [companies, companyId],
   );
 
   const [pickerVisible, setPickerVisible] = useState(false);
@@ -71,7 +80,7 @@ export default function CompanyEditScreen() {
 
   const selectedProgressMeta = useMemo(
     () => PROGRESS_STATUS_ITEMS.find((item) => item.value === draftProgress),
-    [draftProgress]
+    [draftProgress],
   );
 
   const syncDrafts = useCallback(() => {
@@ -82,7 +91,7 @@ export default function CompanyEditScreen() {
     setDraftProgress(
       isProgressStatusValue(company.progressStatus)
         ? company.progressStatus
-        : DEFAULT_PROGRESS_STATUS
+        : DEFAULT_PROGRESS_STATUS,
     );
     setDraftRemarks(company.remarks ?? '');
     setDraftNextAction(company.nextAction ?? '');
@@ -103,7 +112,9 @@ export default function CompanyEditScreen() {
     const remarksChanged = (draftRemarks.trim() || '') !== (company.remarks ?? '');
     const nextActionChanged = (draftNextAction.trim() || '') !== (company.nextAction ?? '');
     const taskComposerChanged = taskTitle.trim().length > 0 || Boolean(taskDueDate);
-    return nameChanged || progressChanged || remarksChanged || nextActionChanged || taskComposerChanged;
+    return (
+      nameChanged || progressChanged || remarksChanged || nextActionChanged || taskComposerChanged
+    );
   }, [company, draftName, draftNextAction, draftProgress, draftRemarks, taskDueDate, taskTitle]);
 
   if (!companyId || !company) {
@@ -138,7 +149,7 @@ export default function CompanyEditScreen() {
       addCandidateDate(companyId, iso);
       handlePickerClose();
     },
-    [addCandidateDate, companyId, handlePickerClose, pickerMode]
+    [addCandidateDate, companyId, handlePickerClose, pickerMode],
   );
 
   const pickerInitialValue = useMemo(() => {
@@ -176,7 +187,7 @@ export default function CompanyEditScreen() {
       if (!companyId) return;
       toggleTaskDone(companyId, taskId);
     },
-    [companyId, toggleTaskDone]
+    [companyId, toggleTaskDone],
   );
 
   const handleTaskRemove = useCallback(
@@ -184,7 +195,7 @@ export default function CompanyEditScreen() {
       if (!companyId) return;
       removeTaskFromCompany(companyId, taskId);
     },
-    [companyId, removeTaskFromCompany]
+    [companyId, removeTaskFromCompany],
   );
 
   const handleSave = useCallback(() => {
@@ -201,15 +212,7 @@ export default function CompanyEditScreen() {
       nextAction: draftNextAction.trim() || undefined,
     });
     router.back();
-  }, [
-    companyId,
-    draftName,
-    draftNextAction,
-    draftProgress,
-    draftRemarks,
-    router,
-    updateCompany,
-  ]);
+  }, [companyId, draftName, draftNextAction, draftProgress, draftRemarks, router, updateCompany]);
 
   const handleCancel = useCallback(() => {
     if (!hasUnsavedDraft) {
@@ -268,7 +271,7 @@ export default function CompanyEditScreen() {
       pickerVisible,
       handlePickerClose,
       statusPickerVisible,
-    ])
+    ]),
   );
 
   useEffect(() => {
@@ -317,7 +320,9 @@ export default function CompanyEditScreen() {
                   {task.title}
                 </ThemedText>
                 {task.dueDate ? (
-                  <ThemedText style={styles.taskDue}>期限: {formatTaskDueLabel(task.dueDate)}</ThemedText>
+                  <ThemedText style={styles.taskDue}>
+                    期限: {formatTaskDueLabel(task.dueDate)}
+                  </ThemedText>
                 ) : null}
               </View>
               <Pressable style={styles.taskDelete} onPress={() => handleTaskRemove(task.id)}>
@@ -348,7 +353,10 @@ export default function CompanyEditScreen() {
                 <ThemedText style={styles.fieldLabel}>進捗ステータス</ThemedText>
                 <ThemedText style={styles.requiredTag}>必須</ThemedText>
               </View>
-              <Pressable style={[styles.input, styles.selectInput]} onPress={() => setStatusPickerVisible(true)}>
+              <Pressable
+                style={[styles.input, styles.selectInput]}
+                onPress={() => setStatusPickerVisible(true)}
+              >
                 {selectedProgressMeta ? (
                   <View style={styles.selectValueRow}>
                     <MaterialIcons
@@ -357,7 +365,9 @@ export default function CompanyEditScreen() {
                       color={selectedProgressMeta.accent}
                     />
                     <View style={styles.selectTexts}>
-                      <ThemedText style={styles.selectValue}>{selectedProgressMeta.value}</ThemedText>
+                      <ThemedText style={styles.selectValue}>
+                        {selectedProgressMeta.value}
+                      </ThemedText>
                       <ThemedText style={styles.selectDescription}>
                         {selectedProgressMeta.description}
                       </ThemedText>
@@ -394,7 +404,10 @@ export default function CompanyEditScreen() {
               />
             </View>
             <View style={styles.scheduleActions}>
-              <Pressable style={styles.secondaryButton} onPress={() => handlePickerOpen('candidate')}>
+              <Pressable
+                style={styles.secondaryButton}
+                onPress={() => handlePickerOpen('candidate')}
+              >
                 <MaterialIcons name="event" size={16} color={PRIMARY} />
                 <ThemedText style={styles.secondaryButtonLabel}>候補日を追加</ThemedText>
               </Pressable>
@@ -478,7 +491,9 @@ export default function CompanyEditScreen() {
             {taskDueDate ? (
               <View style={styles.taskDueBadge}>
                 <MaterialIcons name="schedule" size={14} color={PRIMARY} />
-                <ThemedText style={styles.taskDueLabel}>{formatTaskDueLabel(taskDueDate)}</ThemedText>
+                <ThemedText style={styles.taskDueLabel}>
+                  {formatTaskDueLabel(taskDueDate)}
+                </ThemedText>
                 <Pressable onPress={handleTaskDueClear} style={styles.taskDueRemove}>
                   <MaterialIcons name="close" size={12} color={TEXT_MUTED} />
                 </Pressable>
@@ -504,7 +519,9 @@ export default function CompanyEditScreen() {
                 onPress={handleTaskAdd}
               >
                 <MaterialIcons name="add" size={16} color={canAddTask ? '#FFFFFF' : TEXT_MUTED} />
-                <ThemedText style={[styles.taskAddLabel, !canAddTask && styles.taskAddDisabledLabel]}>
+                <ThemedText
+                  style={[styles.taskAddLabel, !canAddTask && styles.taskAddDisabledLabel]}
+                >
                   追加
                 </ThemedText>
               </Pressable>
@@ -521,15 +538,9 @@ export default function CompanyEditScreen() {
       <Stack.Screen
         options={{
           title: '編集',
-          headerLeft: () => (
-            <Pressable onPress={handleCancel} style={{ paddingHorizontal: 8, paddingVertical: 6 }} hitSlop={8}>
-              <MaterialIcons name="arrow-back" size={24} color={TEXT_MUTED} />
-            </Pressable>
-          ),
           headerRight: () => (
-            <Pressable onPress={handleSave} style={styles.headerButtonFilled} hitSlop={8}>
-              <MaterialIcons name="check" size={18} color="#FFFFFF" />
-              <ThemedText style={styles.headerButtonFilledLabel}>保存</ThemedText>
+            <Pressable onPress={handleSave} style={styles.headerButtonGhost} hitSlop={8}>
+              <ThemedText style={styles.headerButtonGhostLabel}>保存</ThemedText>
             </Pressable>
           ),
         }}
@@ -558,7 +569,11 @@ export default function CompanyEditScreen() {
             <View style={styles.discardModalActions}>
               <Pressable
                 onPress={handleDiscardDialogClose}
-                style={({ pressed }) => [styles.discardModalButton, styles.discardModalSecondary, pressed && { opacity: 0.7 }]}
+                style={({ pressed }) => [
+                  styles.discardModalButton,
+                  styles.discardModalSecondary,
+                  pressed && { opacity: 0.7 },
+                ]}
               >
                 <ThemedText style={styles.discardModalSecondaryLabel} numberOfLines={1}>
                   続ける
@@ -566,7 +581,11 @@ export default function CompanyEditScreen() {
               </Pressable>
               <Pressable
                 onPress={handleDiscardConfirm}
-                style={({ pressed }) => [styles.discardModalButton, styles.discardModalDanger, pressed && { opacity: 0.7 }]}
+                style={({ pressed }) => [
+                  styles.discardModalButton,
+                  styles.discardModalDanger,
+                  pressed && { opacity: 0.7 },
+                ]}
               >
                 <ThemedText style={styles.discardModalDangerLabel} numberOfLines={1}>
                   破棄する
@@ -594,21 +613,8 @@ export default function CompanyEditScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: BACKGROUND,
-  },
-  scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 24,
-    gap: 20,
-    paddingBottom: 120,
-  },
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
+  candidateBlock: {
+    gap: 10,
   },
   centered: {
     borderRadius: 20,
@@ -617,29 +623,116 @@ const styles = StyleSheet.create({
     backgroundColor: SURFACE,
     padding: 24,
   },
-  headerButtonFilled: {
-    flexDirection: 'row',
+  chipColumn: {
+    gap: 10,
+  },
+  confirmedBlock: {
+    gap: 10,
+  },
+  container: {
+    flex: 1,
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 16,
-    paddingVertical: 6,
+    justifyContent: 'center',
+    padding: 24,
+  },
+  discardModalActions: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+  },
+  discardModalBackdrop: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  discardModalBody: {
+    gap: 12,
+  },
+  discardModalButton: {
+    flex: 1,
+    minWidth: 120,
     borderRadius: 999,
-    backgroundColor: PRIMARY,
+    paddingVertical: 12,
+    paddingHorizontal: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: StyleSheet.hairlineWidth,
   },
-  headerButtonFilledLabel: { color: '#FFFFFF', fontWeight: '700' },
-  headerButtonGhost: {
+  discardModalCard: {
+    width: '100%',
+    maxWidth: 360,
+    borderRadius: 20,
+    padding: 24,
+    backgroundColor: SURFACE,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: BORDER,
+    gap: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.18,
+    shadowRadius: 24,
+    elevation: 8,
+  },
+  discardModalDanger: {
+    borderColor: DANGER,
+    backgroundColor: 'rgba(239, 68, 68, 0.06)',
+  },
+  discardModalDangerLabel: {
+    color: DANGER,
+    fontWeight: '700',
+    textAlign: 'center',
+    minWidth: 60,
+  },
+  discardModalHeading: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
+    gap: 12,
   },
-  headerButtonGhostLabel: { color: TEXT_MUTED, fontWeight: '600' },
+  discardModalIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(239, 68, 68, 0.12)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  discardModalMessage: {
+    color: TEXT_MUTED,
+    lineHeight: 20,
+  },
+  discardModalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    backgroundColor: 'rgba(15, 23, 42, 0.5)',
+  },
+  discardModalSecondary: {
+    borderColor: BORDER,
+    backgroundColor: SURFACE_SUBTLE,
+  },
+  discardModalSecondaryLabel: {
+    color: TEXT_MUTED,
+    fontWeight: '600',
+    textAlign: 'center',
+    minWidth: 60,
+  },
+  discardModalTitle: {
+    color: TEXT_PRIMARY,
+    fontSize: 18,
+    fontWeight: '700',
+    flex: 1,
+  },
+  fieldLabel: {
+    color: TEXT_PRIMARY,
+    fontWeight: '600',
+  },
+  formCaption: {
+    color: TEXT_MUTED,
+    fontSize: 12,
+    fontWeight: '600',
+  },
   formCard: {
     gap: 24,
-  },
-  sectionGroup: {
-    gap: 16,
   },
   formHeading: {
     color: TEXT_PRIMARY,
@@ -654,8 +747,29 @@ const styles = StyleSheet.create({
     borderColor: BORDER,
     padding: 20,
   },
-  scheduleSection: {
-    gap: 20,
+  headerButtonFilled: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: PRIMARY,
+  },
+  headerButtonFilledLabel: { color: '#FFFFFF', fontWeight: '700' },
+  headerButtonGhost: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  headerButtonGhostLabel: { color: PRIMARY, fontWeight: '600' },
+  input: {
+    borderWidth: 1.5,
+    borderColor: 'rgba(37, 99, 235, 0.35)',
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    color: TEXT_PRIMARY,
+    fontWeight: '500',
   },
   inputBlock: {
     width: '100%',
@@ -666,55 +780,42 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
   },
-  fieldLabel: {
-    color: TEXT_PRIMARY,
-    fontWeight: '600',
+  multilineInput: {
+    minHeight: 72,
+    textAlignVertical: 'top',
+  },
+  placeholder: {
+    color: TEXT_MUTED,
   },
   requiredTag: {
     color: DANGER,
     fontSize: 12,
     fontWeight: '600',
   },
-  input: {
-    borderWidth: 1.5,
-    borderColor: 'rgba(37, 99, 235, 0.35)',
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    color: TEXT_PRIMARY,
-    fontWeight: '500',
-  },
-  selectInput: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  selectValueRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  selectTexts: {
-    gap: 4,
-  },
-  selectValue: {
-    color: TEXT_PRIMARY,
-    fontWeight: '700',
-  },
-  selectDescription: {
-    color: TEXT_MUTED,
-    fontSize: 12,
-  },
-  selectPlaceholder: {
-    color: TEXT_MUTED,
-  },
-  multilineInput: {
-    minHeight: 72,
-    textAlignVertical: 'top',
+  safeArea: {
+    flex: 1,
+    backgroundColor: BACKGROUND,
   },
   scheduleActions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
+  },
+  scheduleSection: {
+    gap: 20,
+  },
+  scheduleSummaryCard: {
+    gap: 16,
+  },
+  scheduleSummaryDivider: {
+    paddingTop: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: BORDER,
+  },
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    gap: 20,
+    paddingBottom: 120,
   },
   secondaryButton: {
     flexDirection: 'row',
@@ -735,37 +836,70 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 12,
   },
-  scheduleSummaryCard: {
+  sectionGroup: {
     gap: 16,
   },
-  confirmedBlock: {
-    gap: 10,
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  candidateBlock: {
-    gap: 10,
+  sectionTitle: {
+    color: TEXT_PRIMARY,
+    fontWeight: '600',
+    fontSize: 18,
+    letterSpacing: 0.2,
   },
-  scheduleSummaryDivider: {
-    paddingTop: 12,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: BORDER,
-  },
-  formCaption: {
+  selectDescription: {
     color: TEXT_MUTED,
     fontSize: 12,
-    fontWeight: '600',
   },
-  chipColumn: {
+  selectInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  selectPlaceholder: {
+    color: TEXT_MUTED,
+  },
+  selectTexts: {
+    gap: 4,
+  },
+  selectValue: {
+    color: TEXT_PRIMARY,
+    fontWeight: '700',
+  },
+  selectValueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  taskActionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 10,
   },
-  taskSection: {
-    gap: 16,
+  taskAddButton: {
+    flex: 1,
   },
+  taskAddButtonActive: {
+    backgroundColor: PRIMARY,
+    borderColor: PRIMARY,
+  },
+  taskAddDisabledLabel: {
+    color: TEXT_MUTED,
+  },
+  taskAddLabel: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 12,
+  },
+  taskBody: { flex: 1, gap: 4 },
   taskComposer: {
     gap: 8,
   },
-  taskInput: {
-    fontSize: 14,
-  },
+  taskDelete: { padding: 4 },
+  taskDue: { color: TEXT_MUTED, fontSize: 12 },
   taskDueBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -777,30 +911,13 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     alignSelf: 'flex-start',
   },
-  taskDueLabel: { color: TEXT_MUTED, fontSize: 12 },
-  taskDueRemove: { padding: 2 },
-  taskActionsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
   taskDueButton: {
     flex: 1,
   },
-  taskAddButton: {
-    flex: 1,
-  },
-  taskAddButtonActive: {
-    backgroundColor: PRIMARY,
-    borderColor: PRIMARY,
-  },
-  taskAddLabel: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-    fontSize: 12,
-  },
-  taskAddDisabledLabel: {
-    color: TEXT_MUTED,
+  taskDueLabel: { color: TEXT_MUTED, fontSize: 12 },
+  taskDueRemove: { padding: 2 },
+  taskInput: {
+    fontSize: 14,
   },
   taskList: {
     gap: 12,
@@ -816,111 +933,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
-  taskToggle: { width: 28, alignItems: 'center' },
-  taskBody: { flex: 1, gap: 4 },
+  taskSection: {
+    gap: 16,
+  },
   taskTitle: { color: TEXT_PRIMARY, fontWeight: '600' },
   taskTitleDone: { opacity: 0.5, textDecorationLine: 'line-through' },
-  taskDue: { color: TEXT_MUTED, fontSize: 12 },
-  taskDelete: { padding: 4 },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  sectionTitle: {
-    color: TEXT_PRIMARY,
-    fontWeight: '600',
-    fontSize: 18,
-    letterSpacing: 0.2,
-  },
-  placeholder: {
-    color: TEXT_MUTED,
-  },
-  discardModalOverlay: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    backgroundColor: 'rgba(15, 23, 42, 0.5)',
-  },
-  discardModalBackdrop: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  discardModalCard: {
-    width: '100%',
-    maxWidth: 360,
-    borderRadius: 20,
-    padding: 24,
-    backgroundColor: SURFACE,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: BORDER,
-    gap: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.18,
-    shadowRadius: 24,
-    elevation: 8,
-  },
-  discardModalIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(239, 68, 68, 0.12)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: 0,
-  },
-  discardModalBody: {
-    gap: 12,
-  },
-  discardModalHeading: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  discardModalTitle: {
-    color: TEXT_PRIMARY,
-    fontSize: 18,
-    fontWeight: '700',
-    flex: 1,
-  },
-  discardModalMessage: {
-    color: TEXT_MUTED,
-    lineHeight: 20,
-  },
-  discardModalActions: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 12,
-  },
-  discardModalButton: {
-    flex: 1,
-    minWidth: 120,
-    borderRadius: 999,
-    paddingVertical: 12,
-    paddingHorizontal: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: StyleSheet.hairlineWidth,
-  },
-  discardModalSecondary: {
-    borderColor: BORDER,
-    backgroundColor: SURFACE_SUBTLE,
-  },
-  discardModalSecondaryLabel: {
-    color: TEXT_MUTED,
-    fontWeight: '600',
-    textAlign: 'center',
-    minWidth: 60,
-  },
-  discardModalDanger: {
-    borderColor: DANGER,
-    backgroundColor: ('rgba(239, 68, 68, 0.06)'),
-  },
-  discardModalDangerLabel: {
-    color: DANGER,
-    fontWeight: '700',
-    textAlign: 'center',
-    minWidth: 60,
-  },
+  taskToggle: { width: 28, alignItems: 'center' },
 });

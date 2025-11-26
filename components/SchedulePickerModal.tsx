@@ -218,7 +218,7 @@ export function SchedulePickerModal({
                     <View style={styles.pickerShell}>
                       <Picker
                         selectedValue={selectedHour}
-                        onValueChange={(value) => handleHourSelect(value)}
+                        onValueChange={(value: number) => handleHourSelect(value)}
                         style={styles.picker}
                         itemStyle={styles.pickerItem}
                         dropdownIconColor="#0F172A"
@@ -234,7 +234,7 @@ export function SchedulePickerModal({
                     <View style={styles.pickerShell}>
                       <Picker
                         selectedValue={selectedMinute}
-                        onValueChange={(value) => handleMinuteSelect(value)}
+                        onValueChange={(value: number) => handleMinuteSelect(value)}
                         style={styles.picker}
                         itemStyle={styles.pickerItem}
                         dropdownIconColor="#0F172A"
@@ -315,7 +315,7 @@ export function SchedulePickerModal({
 
 const styles = StyleSheet.create({
   actionButton: {
-    paddingHorizontal: 18,
+    paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 14,
     borderWidth: StyleSheet.hairlineWidth,
@@ -330,14 +330,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'flex-end',
     gap: 12,
-    marginTop: 'auto',
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(148, 163, 184, 0.24)',
   },
   calendar: {
     gap: 8,
     width: 320,
     maxWidth: '100%',
     alignSelf: 'center',
-    minHeight: 380,
+    paddingHorizontal: 4,
+    paddingVertical: 8,
   },
   calendarGrid: {
     flexDirection: 'row',
@@ -348,14 +352,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    marginBottom: 4,
   },
   calendarMonthLabel: {
     fontFamily: NOTO_SANS_JP.semibold,
     color: '#0F172A',
-    fontSize: 16,
+    fontSize: 17,
   },
   calendarNavButton: {
-    padding: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 12,
+    backgroundColor: '#EEF2FF',
   },
   calendarNavLabel: {
     fontFamily: NOTO_SANS_JP.bold,
@@ -364,14 +372,15 @@ const styles = StyleSheet.create({
   },
   card: {
     width: 360,
-    maxWidth: '100%',
+    maxWidth: '94%',
     alignSelf: 'center',
     borderRadius: 24,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: 'rgba(148, 163, 184, 0.3)',
-    padding: 24,
-    gap: 18,
-    height: 620,
+    padding: 20,
+    gap: 16,
+    maxHeight: '90%',
+    flexShrink: 1,
   },
   dayCell: {
     width: '14.2857%',
@@ -379,7 +388,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 12,
-    marginBottom: 4,
+    marginBottom: 6,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: 'transparent',
   },
@@ -404,12 +413,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: 'rgba(15, 23, 42, 0.4)',
     justifyContent: 'center',
-    padding: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 20,
   },
   picker: {
     width: '100%',
     color: '#0F172A',
     textAlign: 'center',
+    height: 160,
   },
   pickerItem: {
     textAlign: 'center',
@@ -422,6 +433,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(148, 163, 184, 0.4)',
     overflow: 'hidden',
     backgroundColor: '#FFFFFF',
+    height: 160,
   },
   previewText: {
     color: '#64748B',
@@ -429,6 +441,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     alignSelf: 'center',
     fontFamily: NOTO_SANS_JP.semibold,
+    marginTop: 4,
   },
   primaryAction: {
     backgroundColor: '#2563EB',
@@ -447,15 +460,22 @@ const styles = StyleSheet.create({
     fontFamily: NOTO_SANS_JP.semibold,
   },
   stageSection: {
-    gap: 2,
+    gap: 12,
+    paddingHorizontal: 4,
   },
   timeDropdown: {
     flex: 1,
-    gap: 8,
+    gap: 6,
   },
   timePicker: {
     flexDirection: 'row',
-    gap: 16,
+    gap: 12,
+    backgroundColor: '#F8FAFF',
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(148, 163, 184, 0.24)',
+    padding: 12,
+    alignItems: 'center',
   },
   timeSectionLabel: {
     color: '#475569',

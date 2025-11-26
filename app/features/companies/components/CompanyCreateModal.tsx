@@ -160,10 +160,10 @@ export default function CompanyCreateModal({
             </View>
 
             <View style={styles.sectionGroup}>
-              <ThemedText style={styles.formHeading}>日程調整</ThemedText>
+              <ThemedText style={styles.formHeading}>予定</ThemedText>
               <View style={[styles.formSection, styles.scheduleSection]}>
                 <View style={styles.inputBlock}>
-                  <ThemedText style={styles.fieldLabel}>予定タイトル</ThemedText>
+                  <ThemedText style={styles.fieldLabel}>タイトル</ThemedText>
                   <TextInput
                     style={[styles.input, styles.scheduleTitleInput]}
                     value={formNextAction}
@@ -333,11 +333,11 @@ export default function CompanyCreateModal({
           </ScrollView>
 
           <View style={styles.modalActions}>
-            <Pressable style={styles.secondaryButton} onPress={onCancel}>
-              <ThemedText style={styles.secondaryButtonLabel}>キャンセル</ThemedText>
+            <Pressable style={[styles.modalButton, styles.modalButtonSecondary]} onPress={onCancel}>
+              <ThemedText style={styles.modalButtonSecondaryLabel}>キャンセル</ThemedText>
             </Pressable>
-            <Pressable style={styles.primaryButton} onPress={onSave}>
-              <ThemedText style={styles.primaryButtonLabel}>保存</ThemedText>
+            <Pressable style={[styles.modalButton, styles.modalButtonPrimary]} onPress={onSave}>
+              <ThemedText style={styles.modalButtonPrimaryLabel}>保存</ThemedText>
             </Pressable>
           </View>
         </ThemedView>

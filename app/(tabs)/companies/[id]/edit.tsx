@@ -392,10 +392,10 @@ export default function CompanyEditScreen() {
         </View>
 
         <View style={styles.sectionGroup}>
-          <ThemedText style={styles.formHeading}>スケジュール</ThemedText>
+          <ThemedText style={styles.formHeading}>予定</ThemedText>
           <View style={[styles.formSection, styles.scheduleSection]}>
             <View style={styles.inputBlock}>
-              <ThemedText style={styles.fieldLabel}>次のアクション</ThemedText>
+              <ThemedText style={styles.fieldLabel}>タイトル</ThemedText>
               <TextInput
                 style={[styles.input, styles.multilineInput]}
                 value={draftNextAction}

@@ -257,16 +257,16 @@ export default function CompaniesScreen() {
         />
         <FlatList
           style={styles.list}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[
+            styles.listContent,
+            companies.length === 0 && styles.emptyContent,
+          ]}
           data={companies}
           keyExtractor={(item) => item.id}
           ListEmptyComponent={
             <ThemedView style={styles.emptyList}>
               <MaterialIcons name="business" size={36} color={PRIMARY} />
-              <ThemedText style={styles.emptyTitle}>まだ企業が登録されていません</ThemedText>
-              <ThemedText style={styles.emptyCopy}>
-                「企業を追加」から候補日や進捗を記録しましょう
-              </ThemedText>
+              <ThemedText style={styles.emptyTitle}>まだ企業が追加されていません</ThemedText>
             </ThemedView>
           }
           ListHeaderComponent={null}

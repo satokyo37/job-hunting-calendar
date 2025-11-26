@@ -68,6 +68,9 @@ importers:
       expo-linking:
         specifier: 8.0.9
         version: 8.0.9(expo@54.0.25)(react-native@0.81.5(@babel/core@7.28.4)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+      expo-navigation-bar:
+        specifier: ~5.0.9
+        version: 5.0.9(expo@54.0.25)(react-native@0.81.5(@babel/core@7.28.4)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       expo-router:
         specifier: 6.0.15
         version: 6.0.15(e71f0f97e6a4731689004d4d130ee6df)
@@ -2368,6 +2371,13 @@ packages:
   expo-modules-core@3.0.26:
     resolution: {integrity: sha512-WWjficXz32VmQ+xDoO+c0+jwDME0n/47wONrJkRvtm32H9W8n3MXkOMGemDl95HyPKYsaYKhjFGUOVOxIF3hcQ==}
     peerDependencies:
+      react: '*'
+      react-native: '*'
+
+  expo-navigation-bar@5.0.9:
+    resolution: {integrity: sha512-xqry+MW12atuzYLtvck4fBCv0vqmo8q2Xap1ZeQRdjEm6m6Z35S6A09kRMY4NT7Y5Iaw+FI8YrUTNWSKvSXaDw==}
+    peerDependencies:
+      expo: '*'
       react: '*'
       react-native: '*'
 
@@ -7298,6 +7308,17 @@ snapshots:
       invariant: 2.2.4
       react: 19.1.0
       react-native: 0.81.5(@babel/core@7.28.4)(@types/react@19.1.17)(react@19.1.0)
+
+  expo-navigation-bar@5.0.9(expo@54.0.25)(react-native@0.81.5(@babel/core@7.28.4)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0):
+    dependencies:
+      '@react-native/normalize-colors': 0.81.5
+      debug: 4.4.3
+      expo: 54.0.25(@babel/core@7.28.4)(@expo/metro-runtime@6.1.2)(expo-router@6.0.15)(react-native-webview@13.15.0(react-native@0.81.5(@babel/core@7.28.4)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.28.4)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+      react: 19.1.0
+      react-native: 0.81.5(@babel/core@7.28.4)(@types/react@19.1.17)(react@19.1.0)
+      react-native-is-edge-to-edge: 1.2.1(react-native@0.81.5(@babel/core@7.28.4)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+    transitivePeerDependencies:
+      - supports-color
 
   expo-router@6.0.15(e71f0f97e6a4731689004d4d130ee6df):
     dependencies:

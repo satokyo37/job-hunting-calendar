@@ -168,11 +168,9 @@ export default function TasksTabScreen() {
             </View>
           )}
           ListEmptyComponent={
-            <ThemedView style={styles.empty}>
-              <ThemedText style={styles.emptyText}>登録されたタスクはありません</ThemedText>
-              <ThemedText style={styles.emptyHint}>
-                各企業詳細ページの「タスク」セクションから追加できます
-              </ThemedText>
+            <ThemedView style={styles.emptyList}>
+              <MaterialIcons name="checklist" size={36} color={PRIMARY} />
+              <ThemedText style={styles.emptyTitle}>まだタスクが登録されていません</ThemedText>
             </ThemedView>
           }
           renderItem={({ item }) => (

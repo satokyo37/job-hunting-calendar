@@ -142,206 +142,212 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top']}>
-      <View style={styles.container}>
-        <PageHeader
-          iconElement={<Image source={APP_LOGO} style={styles.appHeroIcon} resizeMode="contain" />}
-          title="Schetto"
-          titleStyle={styles.pageHeaderTitle}
-          style={styles.appHero}
-        />
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.container}>
+          <PageHeader
+            iconElement={<Image source={APP_LOGO} style={styles.appHeroIcon} resizeMode="contain" />}
+            title="Schetto"
+            titleStyle={styles.pageHeaderTitle}
+            style={styles.appHero}
+          />
 
-        <View style={styles.summarySection}>
-          <View style={styles.summaryHeader}>
-            <View>
-              <ThemedText style={styles.summaryTitle}>進捗サマリー</ThemedText>
-              <ThemedText style={styles.summarySubtitle}>
-                選考中 {progressSummary.selectionTotal} 社
-              </ThemedText>
+          <View style={styles.summarySection}>
+            <View style={styles.summaryHeader}>
+              <View>
+                <ThemedText style={styles.summaryTitle}>進捗サマリー</ThemedText>
+                <ThemedText style={styles.summarySubtitle}>
+                  選考中 {progressSummary.selectionTotal} 社
+                </ThemedText>
+              </View>
+              <View style={styles.summaryBadge}>
+                <ThemedText style={styles.summaryBadgeLabel}>
+                  合計 {progressSummary.totalCompanies} 社
+                </ThemedText>
+              </View>
             </View>
-            <View style={styles.summaryBadge}>
-              <ThemedText style={styles.summaryBadgeLabel}>
-                合計 {progressSummary.totalCompanies} 社
-              </ThemedText>
-            </View>
-          </View>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.summaryScroll}
-          >
-            {progressSummary.items.map((item, index) => (
-              <View
-                key={item.key}
-                style={[
-                  styles.statusCard,
-                  { borderColor: item.border },
-                  index === progressSummary.items.length - 1 && styles.statusCardLast,
-                ]}
-              >
-                <View style={styles.statusCardHeader}>
-                  <View
-                    style={[
-                      styles.statusIcon,
-                      {
-                        backgroundColor: item.background,
-                        borderColor: item.border,
-                      },
-                    ]}
-                  >
-                    <MaterialIcons name={item.icon as any} size={16} color={item.accent} />
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.summaryScroll}
+            >
+              {progressSummary.items.map((item, index) => (
+                <View
+                  key={item.key}
+                  style={[
+                    styles.statusCard,
+                    { borderColor: item.border },
+                    index === progressSummary.items.length - 1 && styles.statusCardLast,
+                  ]}
+                >
+                  <View style={styles.statusCardHeader}>
+                    <View
+                      style={[
+                        styles.statusIcon,
+                        {
+                          backgroundColor: item.background,
+                          borderColor: item.border,
+                        },
+                      ]}
+                    >
+                      <MaterialIcons name={item.icon as any} size={16} color={item.accent} />
+                    </View>
+                    <View style={styles.statusCardTexts}>
+                      <ThemedText style={styles.statusCardLabel}>{item.value}</ThemedText>
+                      <View style={styles.statusCardCaptionContainer}>
+                        <ThemedText
+                          style={styles.statusCardCaption}
+                          numberOfLines={2}
+                          ellipsizeMode="tail"
+                        >
+                          {item.description}
+                        </ThemedText>
+                      </View>
+                    </View>
                   </View>
-                  <View style={styles.statusCardTexts}>
-                    <ThemedText style={styles.statusCardLabel}>{item.value}</ThemedText>
-                    <View style={styles.statusCardCaptionContainer}>
+                  <View style={styles.statusCardCountRow}>
+                    <ThemedText style={styles.statusCardCount}>{item.count}</ThemedText>
+                    <ThemedText style={styles.statusCardCountUnit}>社</ThemedText>
+                  </View>
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+
+          <View style={styles.tasksHeader}>
+            <ThemedText style={styles.tasksTitle}>今日やること</ThemedText>
+            {!isEmpty && (
+              <ThemedText style={styles.tasksSubtitle}>
+                予定 {scheduleCount} 件 / タスク {pendingTaskCount} 件
+              </ThemedText>
+            )}
+          </View>
+
+          <FlatList
+            scrollEnabled={false}
+            contentContainerStyle={[styles.listContent, isEmpty && styles.listEmptyContent]}
+            data={todayItems}
+            keyExtractor={(item) =>
+              item.kind === 'task'
+                ? `task-${item.id}`
+                : `schedule-${item.companyId}-${item.iso}-${item.scheduleType}`
+            }
+            ListEmptyComponent={
+              <ThemedView style={styles.empty}>
+                <MaterialIcons
+                  name="today"
+                  size={32}
+                  color={PRIMARY}
+                  style={{ marginBottom: 8, opacity: 0.7 }}
+                />
+                <ThemedText style={styles.emptyText}>今日の予定・タスクはありません</ThemedText>
+                <View style={styles.emptyButtonStack}>
+                  <Link href="/(tabs)/tasks" asChild>
+                    <Pressable style={styles.emptyButton}>
+                      <MaterialIcons name="list" size={16} color="#FFFFFF" />
+                      <ThemedText style={styles.emptyButtonLabel}>タスク一覧を開く</ThemedText>
+                    </Pressable>
+                  </Link>
+                  <Link href="/(tabs)/calendar" asChild>
+                    <Pressable style={styles.emptyButton}>
+                      <MaterialIcons name="event-note" size={16} color="#FFFFFF" />
+                      <ThemedText style={styles.emptyButtonLabel}>カレンダーを見る</ThemedText>
+                    </Pressable>
+                  </Link>
+                </View>
+              </ThemedView>
+            }
+            renderItem={({ item }) =>
+              item.kind === 'task' ? (
+                <View style={styles.taskRow}>
+                  <Pressable
+                    onPress={() => toggleTaskDone(item.companyId, item.id)}
+                    style={styles.check}
+                  >
+                    <MaterialIcons
+                      name={item.isDone ? 'check-circle' : 'radio-button-unchecked'}
+                      size={20}
+                      color={item.isDone ? SUCCESS : PRIMARY}
+                    />
+                  </Pressable>
+
+                  <View style={styles.taskBody}>
+                    <View style={styles.taskTopRow}>
                       <ThemedText
-                        style={styles.statusCardCaption}
-                        numberOfLines={2}
-                        ellipsizeMode="tail"
+                        style={[styles.taskTitle, item.isDone && styles.done]}
+                        numberOfLines={1}
                       >
-                        {item.description}
+                        {item.title}
                       </ThemedText>
+
+                      {item.dueDate ? (
+                        <ThemedText style={styles.due}>
+                          {format(parseISO(item.dueDate), 'M/d(EEE) HH:mm', {
+                            locale: ja,
+                          })}
+                        </ThemedText>
+                      ) : null}
+                    </View>
+
+                    <View style={styles.taskBottomRow}>
+                      <Link href={`/(tabs)/companies/${item.companyId}`} asChild>
+                        <Pressable>
+                          <ThemedText style={styles.companyLink}>{item.companyName}</ThemedText>
+                        </Pressable>
+                      </Link>
+
+                      <Pressable
+                        onPress={() => removeTask(item.companyId, item.id)}
+                        style={styles.deleteBtn}
+                      >
+                        <MaterialIcons name="delete-outline" size={18} color={TEXT_MUTED} />
+                      </Pressable>
                     </View>
                   </View>
                 </View>
-                <View style={styles.statusCardCountRow}>
-                  <ThemedText style={styles.statusCardCount}>{item.count}</ThemedText>
-                  <ThemedText style={styles.statusCardCountUnit}>社</ThemedText>
-                </View>
-              </View>
-            ))}
-          </ScrollView>
-        </View>
+              ) : (
+                <View style={[styles.taskRow, styles.scheduleRow]}>
+                  <View style={styles.scheduleIconBadge}>
+                    <MaterialIcons
+                      name={item.scheduleType === 'confirmed' ? 'event-available' : 'event-note'}
+                      size={18}
+                      color={PRIMARY}
+                    />
+                  </View>
+                  <View style={styles.taskBody}>
+                    <ThemedText style={styles.taskTitle}>{item.companyName}</ThemedText>
+                    {item.title ? (
+                      <ThemedText style={styles.scheduleTitle} numberOfLines={1}>
+                        {item.title}
+                      </ThemedText>
+                    ) : null}
 
-        <View style={styles.tasksHeader}>
-          <ThemedText style={styles.tasksTitle}>今日やること</ThemedText>
-          {!isEmpty && (
-            <ThemedText style={styles.tasksSubtitle}>
-              予定 {scheduleCount} 件 / タスク {pendingTaskCount} 件
-            </ThemedText>
-          )}
-        </View>
-
-        <FlatList
-          style={styles.list}
-          contentContainerStyle={[styles.listContent, isEmpty && styles.listEmptyContent]}
-          data={todayItems}
-          keyExtractor={(item) =>
-            item.kind === 'task'
-              ? `task-${item.id}`
-              : `schedule-${item.companyId}-${item.iso}-${item.scheduleType}`
-          }
-          ListEmptyComponent={
-            <ThemedView style={styles.empty}>
-              <MaterialIcons
-                name="today"
-                size={32}
-                color={PRIMARY}
-                style={{ marginBottom: 8, opacity: 0.7 }}
-              />
-              <ThemedText style={styles.emptyText}>今日の予定・タスクはありません</ThemedText>
-              <View style={styles.emptyButtonStack}>
-                <Link href="/(tabs)/tasks" asChild>
-                  <Pressable style={styles.emptyButton}>
-                    <MaterialIcons name="list" size={16} color="#FFFFFF" />
-                    <ThemedText style={styles.emptyButtonLabel}>タスク一覧を開く</ThemedText>
-                  </Pressable>
-                </Link>
-                <Link href="/(tabs)/calendar" asChild>
-                  <Pressable style={styles.emptyButton}>
-                    <MaterialIcons name="event-note" size={16} color="#FFFFFF" />
-                    <ThemedText style={styles.emptyButtonLabel}>カレンダーを見る</ThemedText>
-                  </Pressable>
-                </Link>
-              </View>
-            </ThemedView>
-          }
-          renderItem={({ item }) =>
-            item.kind === 'task' ? (
-              <View style={styles.taskRow}>
-                <Pressable
-                  onPress={() => toggleTaskDone(item.companyId, item.id)}
-                  style={styles.check}
-                >
-                  <MaterialIcons
-                    name={item.isDone ? 'check-circle' : 'radio-button-unchecked'}
-                    size={20}
-                    color={item.isDone ? SUCCESS : PRIMARY}
-                  />
-                </Pressable>
-
-                <View style={styles.taskBody}>
-                  <View style={styles.taskTopRow}>
-                    <ThemedText
-                      style={[styles.taskTitle, item.isDone && styles.done]}
-                      numberOfLines={1}
-                    >
-                      {item.title}
-                    </ThemedText>
-
-                    {item.dueDate ? (
+                    <View style={styles.scheduleMetaRow}>
+                      <ThemedText style={styles.scheduleLabel}>
+                        {item.scheduleType === 'confirmed' ? '確定日' : '候補日'}
+                      </ThemedText>
                       <ThemedText style={styles.due}>
-                        {format(parseISO(item.dueDate), 'M/d(EEE) HH:mm', {
+                        {format(parseISO(item.iso), "HH:mm '開始'", {
                           locale: ja,
                         })}
                       </ThemedText>
-                    ) : null}
+                    </View>
                   </View>
 
-                  <View style={styles.taskBottomRow}>
-                    <Link href={`/(tabs)/companies/${item.companyId}`} asChild>
-                      <Pressable>
-                        <ThemedText style={styles.companyLink}>{item.companyName}</ThemedText>
-                      </Pressable>
-                    </Link>
-
-                    <Pressable
-                      onPress={() => removeTask(item.companyId, item.id)}
-                      style={styles.deleteBtn}
-                    >
-                      <MaterialIcons name="delete-outline" size={18} color={TEXT_MUTED} />
+                  <Link href={`/(tabs)/companies/${item.companyId}`} asChild>
+                    <Pressable style={styles.scheduleLink}>
+                      <MaterialIcons name="chevron-right" size={20} color={TEXT_MUTED} />
                     </Pressable>
-                  </View>
+                  </Link>
                 </View>
-              </View>
-            ) : (
-              <View style={[styles.taskRow, styles.scheduleRow]}>
-                <View style={styles.scheduleIconBadge}>
-                  <MaterialIcons
-                    name={item.scheduleType === 'confirmed' ? 'event-available' : 'event-note'}
-                    size={18}
-                    color={PRIMARY}
-                  />
-                </View>
-                <View style={styles.taskBody}>
-                  <ThemedText style={styles.taskTitle}>{item.companyName}</ThemedText>
-                  {item.title ? (
-                    <ThemedText style={styles.scheduleTitle} numberOfLines={1}>
-                      {item.title}
-                    </ThemedText>
-                  ) : null}
-
-                  <View style={styles.scheduleMetaRow}>
-                    <ThemedText style={styles.scheduleLabel}>
-                      {item.scheduleType === 'confirmed' ? '確定日程' : '候補日'}
-                    </ThemedText>
-                    <ThemedText style={styles.due}>
-                      {format(parseISO(item.iso), "HH:mm '開始'", {
-                        locale: ja,
-                      })}
-                    </ThemedText>
-                  </View>
-                </View>
-
-                <Link href={`/(tabs)/companies/${item.companyId}`} asChild>
-                  <Pressable style={styles.scheduleLink}>
-                    <MaterialIcons name="chevron-right" size={20} color={TEXT_MUTED} />
-                  </Pressable>
-                </Link>
-              </View>
-            )
-          }
-        />
-      </View>
+              )
+            }
+          />
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }

@@ -1,8 +1,8 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
-import { PROGRESS_STATUS_ITEMS, ProgressStatusValue } from '@/constants/progressStatus';
 import { ThemedText } from '@/components/ThemedText';
+import { PROGRESS_STATUS_ITEMS, ProgressStatusValue } from '@/constants/progressStatus';
 
 type Props = {
   visible: boolean;
@@ -18,7 +18,12 @@ export function ProgressStatusPickerModal({ visible, selected, onClose, onSelect
         <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
         <View style={styles.card}>
           <ThemedText style={styles.title}>進捗ステータスを選択</ThemedText>
-          <View style={styles.list}>
+
+          <ScrollView
+            style={styles.list}
+            contentContainerStyle={styles.listContent}
+            showsVerticalScrollIndicator={false}
+          >
             {PROGRESS_STATUS_ITEMS.map((item) => {
               const isSelected = item.value === selected;
               return (
@@ -50,7 +55,7 @@ export function ProgressStatusPickerModal({ visible, selected, onClose, onSelect
                 </Pressable>
               );
             })}
-          </View>
+          </ScrollView>
         </View>
       </View>
     </Modal>
@@ -64,9 +69,14 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#FFFFFF',
     gap: 12,
+    maxHeight: '90%',
   },
   list: {
+    marginTop: 8,
+  },
+  listContent: {
     gap: 10,
+    paddingBottom: 4,
   },
   option: {
     flexDirection: 'row',
@@ -107,7 +117,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(15, 23, 42, 0.55)',
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
   },
   title: {
     textAlign: 'center',

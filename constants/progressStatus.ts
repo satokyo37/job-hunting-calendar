@@ -1,6 +1,5 @@
 export const PROGRESS_STATUS_VALUES = [
   '興味あり',
-  'エントリー済み',
   '書類選考中',
   '面接中',
   '内定',
@@ -11,7 +10,6 @@ export type ProgressStatusValue = (typeof PROGRESS_STATUS_VALUES)[number];
 
 export type ProgressStatusKey =
   | 'interested'
-  | 'applied'
   | 'document'
   | 'interview'
   | 'offer'
@@ -36,15 +34,6 @@ export const PROGRESS_STATUS_ITEMS: readonly ProgressStatusVisual[] = [
     accent: '#7C3AED',
     background: 'rgba(124, 58, 237, 0.12)',
     border: 'rgba(124, 58, 237, 0.24)',
-  },
-  {
-    key: 'applied',
-    value: 'エントリー済み',
-    description: '応募完了・書類準備中',
-    icon: 'how-to-reg',
-    accent: '#2563EB',
-    background: 'rgba(37, 99, 235, 0.12)',
-    border: 'rgba(37, 99, 235, 0.24)',
   },
   {
     key: 'document',

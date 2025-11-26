@@ -100,15 +100,13 @@ export const companiesStyles = StyleSheet.create({
     justifyContent: 'center',
   },
   emptyCopy: { color: TEXT_MUTED, fontSize: 13, textAlign: 'center' },
+  emptyContent: { flexGrow: 1, justifyContent: 'center' },
   emptyList: {
     marginHorizontal: 0,
-    padding: 24,
-    borderRadius: 20,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: BORDER,
-    backgroundColor: SURFACE,
+    paddingVertical: 24,
     alignItems: 'center',
     gap: 8,
+    backgroundColor: BACKGROUND,
   },
   emptyTitle: { color: TEXT_PRIMARY, fontWeight: '600', fontSize: 16 },
   fieldLabel: {
@@ -230,25 +228,54 @@ export const companiesStyles = StyleSheet.create({
   modalActions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    gap: 16,
-    marginTop: 16,
-    paddingHorizontal: 20,
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 12,
+    paddingHorizontal: 16,
   },
   modalButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 14,
+    justifyContent: 'center',
+    borderRadius: 999,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+  },
+  modalButtonLabel: {
+    color: TEXT_PRIMARY,
+    fontWeight: '500',
+    fontSize: 13,
+    textAlign: 'center',
+  },
+  modalButtonPrimary: {
+    backgroundColor: PRIMARY,
+  },
+  modalButtonPrimaryLabel: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  modalButtonSecondary: {
+    backgroundColor: SURFACE_SUBTLE,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: BORDER,
-    backgroundColor: SURFACE_SUBTLE,
   },
-  modalButtonLabel: { color: TEXT_PRIMARY, fontWeight: '600' },
-  modalPrimaryButton: { backgroundColor: PRIMARY, borderColor: PRIMARY },
-  modalPrimaryLabel: { color: '#FFFFFF', fontWeight: '700' },
-  multilineInput: { minHeight: 96, textAlignVertical: 'top' },
+  modalButtonSecondaryLabel: {
+    color: TEXT_PRIMARY,
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  modalPrimaryButton: {
+    backgroundColor: PRIMARY,
+    borderColor: PRIMARY
+  },
+  modalPrimaryLabel: {
+    color: '#FFFFFF',
+  },
+  multilineInput: {
+    minHeight: 96,
+    textAlignVertical: 'top'
+  },
   noteSnippet: {
     color: TEXT_MUTED,
     fontSize: 11,

@@ -21,7 +21,12 @@ export const homeStyles = StyleSheet.create({
     width: 48,
     height: 48,
   },
-  check: { width: 28, height: 36, alignItems: 'center', justifyContent: 'center' },
+  check: {
+    width: 28,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
   companyLink: {
     color: PRIMARY,
     fontSize: 11,
@@ -31,8 +36,6 @@ export const homeStyles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 26,
   },
   deleteBtn: {
     padding: 4,
@@ -51,7 +54,7 @@ export const homeStyles = StyleSheet.create({
     borderRadius: 18,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: 'rgba(148, 163, 184, 0.25)',
-    paddingVertical: 20,
+    paddingVertical: 24,
     paddingHorizontal: 18,
     alignItems: 'center',
     gap: 8,
@@ -71,16 +74,24 @@ export const homeStyles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: PRIMARY,
   },
-  emptyButtonLabel: { color: '#FFFFFF', fontWeight: '700' },
+  emptyButtonLabel: {
+    color: '#FFFFFF',
+    fontWeight: '700'
+  },
   emptyButtonStack: {
     marginTop: 24,
     flexDirection: 'column',
     gap: 14,
     alignItems: 'center',
   },
-  emptyText: { color: TEXT_PRIMARY, fontWeight: '600' },
-  list: { flex: 1 },
-  listContent: { gap: 16, paddingBottom: 120 },
+  emptyText: {
+    color: TEXT_PRIMARY,
+    fontWeight: '600'
+  },
+  listContent: {
+    gap: 16,
+    paddingBottom: 80,
+  },
   listEmptyContent: { flexGrow: 1, justifyContent: 'center' },
   pageHeaderTitle: {
     color: TEXT_PRIMARY,
@@ -88,7 +99,10 @@ export const homeStyles = StyleSheet.create({
     lineHeight: 30,
     fontWeight: '700',
   },
-  safeArea: { flex: 1, backgroundColor: BACKGROUND },
+  safeArea: {
+    flex: 1,
+    backgroundColor: BACKGROUND
+  },
   scheduleIconBadge: {
     width: 36,
     height: 36,
@@ -97,8 +111,14 @@ export const homeStyles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'rgba(37, 99, 235, 0.12)',
   },
-  scheduleLabel: { color: TEXT_MUTED, fontSize: 12, fontWeight: '600' },
-  scheduleLink: { padding: 4 },
+  scheduleLabel: {
+    color: TEXT_MUTED,
+    fontSize: 12,
+    fontWeight: '600'
+  },
+  scheduleLink: {
+    padding: 4
+  },
   scheduleMetaRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -109,7 +129,19 @@ export const homeStyles = StyleSheet.create({
     borderColor: 'rgba(37, 99, 235, 0.28)',
     backgroundColor: 'rgba(37, 99, 235, 0.03)',
   },
-  scheduleTitle: { color: TEXT_PRIMARY, fontSize: 13, fontWeight: '600' },
+  scheduleTitle: {
+    color: TEXT_PRIMARY,
+    fontSize: 13,
+    fontWeight: '600'
+  },
+  scroll: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingTop: 26,
+    paddingBottom: 32,
+  },
   statusCard: {
     width: 160,
     borderRadius: 18,
@@ -131,7 +163,12 @@ export const homeStyles = StyleSheet.create({
     height: 28,
     justifyContent: 'flex-start',
   },
-  statusCardCount: { color: TEXT_PRIMARY, fontSize: 24, lineHeight: 26, fontWeight: '700' },
+  statusCardCount: {
+    color: TEXT_PRIMARY,
+    fontSize: 24,
+    lineHeight: 26,
+    fontWeight: '700'
+  },
   statusCardCountRow: {
     flexDirection: 'row',
     alignItems: 'flex-end',
@@ -151,9 +188,17 @@ export const homeStyles = StyleSheet.create({
     gap: 8,
     minHeight: 34,
   },
-  statusCardLabel: { color: TEXT_PRIMARY, fontWeight: '700', fontSize: 13 },
-  statusCardLast: { marginRight: 0 },
-  statusCardTexts: { flex: 1 },
+  statusCardLabel: {
+    color: TEXT_PRIMARY,
+    fontWeight: '700',
+    fontSize: 13
+  },
+  statusCardLast: {
+    marginRight: 0
+  },
+  statusCardTexts: {
+    flex: 1
+  },
   statusIcon: {
     width: 32,
     height: 32,
@@ -168,13 +213,19 @@ export const homeStyles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: 'rgba(37, 99, 235, 0.12)',
   },
-  summaryBadgeLabel: { color: PRIMARY, fontWeight: '700', fontSize: 12 },
+  summaryBadgeLabel: {
+    color: PRIMARY,
+    fontWeight: '700',
+    fontSize: 12
+  },
   summaryHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  summaryScroll: { paddingRight: 8 },
+  summaryScroll: {
+    paddingRight: 8
+  },
   summarySection: {
     marginBottom: 24,
     padding: 16,
@@ -189,8 +240,16 @@ export const homeStyles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     elevation: 2,
   },
-  summarySubtitle: { color: TEXT_MUTED, fontSize: 12, fontWeight: '600' },
-  summaryTitle: { color: TEXT_PRIMARY, fontWeight: '700', fontSize: 16 },
+  summarySubtitle: {
+    color: TEXT_MUTED,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  summaryTitle: {
+    color: TEXT_PRIMARY,
+    fontWeight: '700',
+    fontSize: 16
+  },
   taskBody: {
     flex: 1,
   },
@@ -217,8 +276,8 @@ export const homeStyles = StyleSheet.create({
     elevation: 1,
   },
   tasksHeader: {
-    marginTop: 8,
-    marginBottom: 12,
+    marginTop: 16,
+    marginBottom: 16,
     flexDirection: 'row',
     alignItems: 'baseline',
     justifyContent: 'space-between',

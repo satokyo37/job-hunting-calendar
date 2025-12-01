@@ -187,14 +187,16 @@ export default function TasksTabScreen() {
               </Pressable>
 
               <View style={styles.taskBody}>
-                <ThemedText
-                  style={[styles.taskTitle, item.isDone && styles.done]}
-                  numberOfLines={1}
-                  ellipsizeMode="tail"
-                >
-                  {item.title}
-                </ThemedText>
-                <View style={styles.metaRow}>
+                {/* 左カラム：タイトル＋会社名 */}
+                <View style={styles.taskMain}>
+                  <ThemedText
+                    style={[styles.taskTitle, item.isDone && styles.done]}
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
+                  >
+                    {item.title}
+                  </ThemedText>
+
                   <Link href={`/(tabs)/companies/${item.companyId}`} asChild>
                     <Pressable>
                       <ThemedText style={styles.companyLink} numberOfLines={1} ellipsizeMode="tail">
@@ -202,22 +204,21 @@ export default function TasksTabScreen() {
                       </ThemedText>
                     </Pressable>
                   </Link>
+                </View>
+
+                <View style={styles.taskMeta}>
                   {item.dueDate ? (
                     <ThemedText style={styles.due}>
-                      {format(parseISO(item.dueDate), 'M/d(EEE) HH:mm', {
-                        locale: ja,
-                      })}
+                      {format(parseISO(item.dueDate), 'M/d(EEE) HH:mm', { locale: ja })}
                     </ThemedText>
                   ) : (
                     <ThemedText style={styles.dueMuted}>期限未設定</ThemedText>
                   )}
-                </View>
-              </View>
 
-              <View style={styles.rowActions}>
-                <Pressable onPress={() => openEditModal(item)} style={styles.iconButton}>
-                  <MaterialIcons name="edit" size={20} color={PRIMARY} />
-                </Pressable>
+                  <Pressable onPress={() => openEditModal(item)} style={styles.iconButton}>
+                    <MaterialIcons name="edit" size={20} color={PRIMARY} />
+                  </Pressable>
+                </View>
               </View>
             </View>
           )}

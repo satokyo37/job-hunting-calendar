@@ -41,14 +41,12 @@ export const tasksStyles = StyleSheet.create({
     fontSize: 11,
     color: TEXT_MUTED,
     textAlign: 'right',
-    flexShrink: 0,
     fontFamily: NOTO_SANS_JP.medium,
   },
   dueMuted: {
     fontSize: 11,
     color: TEXT_MUTED,
     textAlign: 'right',
-    flexShrink: 0,
     fontStyle: 'italic',
     fontFamily: NOTO_SANS_JP.medium,
   },
@@ -188,11 +186,6 @@ export const tasksStyles = StyleSheet.create({
     fontWeight: '700',
     fontFamily: NOTO_SANS_JP.bold,
   },
-  rowActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginLeft: 8,
-  },
   safeArea: { flex: 1, backgroundColor: BACKGROUND },
   sectionCaption: {
     color: TEXT_MUTED,
@@ -209,6 +202,20 @@ export const tasksStyles = StyleSheet.create({
   },
   taskBody: {
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  taskMain: {
+    flexShrink: 1,
+    alignItems: 'flex-start',
+    gap: 0,
+  },
+  taskMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 8,
+    gap: 4,
   },
   taskRow: {
     flexDirection: 'row',
@@ -231,5 +238,6 @@ export const tasksStyles = StyleSheet.create({
     fontWeight: '500',
     color: '#0f172a',
     fontFamily: NOTO_SANS_JP.semibold,
+    marginBottom: 1,
   },
 });

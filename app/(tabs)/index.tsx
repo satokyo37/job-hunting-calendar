@@ -149,7 +149,9 @@ export default function HomeScreen() {
       >
         <View style={styles.container}>
           <PageHeader
-            iconElement={<Image source={APP_LOGO} style={styles.appHeroIcon} resizeMode="contain" />}
+            iconElement={
+              <Image source={APP_LOGO} style={styles.appHeroIcon} resizeMode="contain" />
+            }
             title="Schetto"
             titleStyle={styles.pageHeaderTitle}
             style={styles.appHero}
@@ -275,7 +277,7 @@ export default function HomeScreen() {
                   </Pressable>
 
                   <View style={styles.taskBody}>
-                    <View style={styles.taskTopRow}>
+                    <View style={styles.taskMain}>
                       <ThemedText
                         style={[styles.taskTitle, item.isDone && styles.done]}
                         numberOfLines={1}
@@ -283,25 +285,23 @@ export default function HomeScreen() {
                         {item.title}
                       </ThemedText>
 
-                      {item.dueDate ? (
-                        <ThemedText style={styles.due}>
-                          {format(parseISO(item.dueDate), 'M/d(EEE) HH:mm', {
-                            locale: ja,
-                          })}
-                        </ThemedText>
-                      ) : null}
-                    </View>
-
-                    <View style={styles.taskBottomRow}>
                       <Link href={`/(tabs)/companies/${item.companyId}`} asChild>
                         <Pressable>
                           <ThemedText style={styles.companyLink}>{item.companyName}</ThemedText>
                         </Pressable>
                       </Link>
+                    </View>
+
+                    <View style={styles.taskMeta}>
+                      {item.dueDate ? (
+                        <ThemedText style={styles.due}>
+                          {format(parseISO(item.dueDate), 'M/d(EEE) HH:mm', { locale: ja })}
+                        </ThemedText>
+                      ) : null}
 
                       <Pressable
                         onPress={() => removeTask(item.companyId, item.id)}
-                        style={styles.deleteBtn}
+                        style={styles.deleteBtnInline}
                       >
                         <MaterialIcons name="delete-outline" size={18} color={TEXT_MUTED} />
                       </Pressable>
@@ -317,31 +317,32 @@ export default function HomeScreen() {
                       color={PRIMARY}
                     />
                   </View>
-                  <View style={styles.taskBody}>
-                    <ThemedText style={styles.taskTitle}>{item.companyName}</ThemedText>
-                    {item.title ? (
-                      <ThemedText style={styles.scheduleTitle} numberOfLines={1}>
-                        {item.title}
-                      </ThemedText>
-                    ) : null}
 
-                    <View style={styles.scheduleMetaRow}>
-                      <ThemedText style={styles.scheduleLabel}>
-                        {item.scheduleType === 'confirmed' ? '確定日' : '候補日'}
+                  <View style={styles.taskBody}>
+                    <View style={styles.taskMain}>
+                      <ThemedText style={styles.taskTitle} numberOfLines={1}>
+                        {item.title || '未設定の予定'}
                       </ThemedText>
+
+                      <Link href={`/(tabs)/companies/${item.companyId}`} asChild>
+                        <Pressable>
+                          <ThemedText style={styles.companyLink}>{item.companyName}</ThemedText>
+                        </Pressable>
+                      </Link>
+                    </View>
+
+                    <View style={styles.taskMeta}>
                       <ThemedText style={styles.due}>
-                        {format(parseISO(item.iso), "HH:mm '開始'", {
-                          locale: ja,
-                        })}
+                        {format(parseISO(item.iso), "M/d(EEE) HH:mm'", { locale: ja })}
                       </ThemedText>
+
+                      <Link href={`/(tabs)/companies/${item.companyId}`} asChild>
+                        <Pressable style={styles.scheduleLink}>
+                          <MaterialIcons name="chevron-right" size={20} color={TEXT_MUTED} />
+                        </Pressable>
+                      </Link>
                     </View>
                   </View>
-
-                  <Link href={`/(tabs)/companies/${item.companyId}`} asChild>
-                    <Pressable style={styles.scheduleLink}>
-                      <MaterialIcons name="chevron-right" size={20} color={TEXT_MUTED} />
-                    </Pressable>
-                  </Link>
                 </View>
               )
             }

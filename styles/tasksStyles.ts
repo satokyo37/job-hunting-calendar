@@ -1,6 +1,7 @@
 import { StyleSheet } from 'react-native';
 
 import { Palette } from '@/constants/Palette';
+import { NOTO_SANS_JP } from '@/constants/Typography';
 
 const {
   background: BACKGROUND,
@@ -12,14 +13,22 @@ const {
 } = Palette;
 
 export const tasksStyles = StyleSheet.create({
-  check: { width: 28, alignItems: 'center' },
+  check: {
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 0,
+  },
   checkDone: { opacity: 0.5 },
-  clearDueButton: { color: PRIMARY, fontWeight: '600' },
+  clearDueButton: { color: PRIMARY, fontWeight: '600', fontFamily: NOTO_SANS_JP.semibold },
   companyLink: {
     color: PRIMARY,
-    fontSize: 12,
-    fontWeight: '600',
-    maxWidth: '45%',
+    fontSize: 11,
+    fontWeight: '500',
+    flex: 1,
+    marginRight: 8,
+    fontFamily: NOTO_SANS_JP.semibold,
   },
   container: {
     flex: 1,
@@ -28,8 +37,21 @@ export const tasksStyles = StyleSheet.create({
   },
   deleteBtn: { padding: 4 },
   done: { opacity: 0.5, textDecorationLine: 'line-through' },
-  due: { color: TEXT_MUTED, fontSize: 12 },
-  dueMuted: { color: TEXT_MUTED, fontSize: 12, fontStyle: 'italic' },
+  due: {
+    fontSize: 11,
+    color: TEXT_MUTED,
+    textAlign: 'right',
+    flexShrink: 0,
+    fontFamily: NOTO_SANS_JP.medium,
+  },
+  dueMuted: {
+    fontSize: 11,
+    color: TEXT_MUTED,
+    textAlign: 'right',
+    flexShrink: 0,
+    fontStyle: 'italic',
+    fontFamily: NOTO_SANS_JP.medium,
+  },
   duePickerButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -39,7 +61,12 @@ export const tasksStyles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: 'rgba(37, 99, 235, 0.12)',
   },
-  duePickerLabel: { color: PRIMARY, fontWeight: '600', fontSize: 12 },
+  duePickerLabel: {
+    color: PRIMARY,
+    fontWeight: '600',
+    fontSize: 12,
+    fontFamily: NOTO_SANS_JP.semibold,
+  },
   emptyContent: { flexGrow: 1, justifyContent: 'center' },
   emptyList: {
     marginHorizontal: 0,
@@ -48,15 +75,23 @@ export const tasksStyles = StyleSheet.create({
     gap: 8,
     backgroundColor: BACKGROUND,
   },
-  emptyTitle: { color: TEXT_PRIMARY, fontWeight: '600', fontSize: 16 },
-  iconButton: { padding: 4 },
+  emptyTitle: {
+    color: TEXT_PRIMARY,
+    fontWeight: '600',
+    fontSize: 16,
+    fontFamily: NOTO_SANS_JP.semibold,
+  },
+  iconButton: {
+    padding: 6,
+  },
   list: { flex: 1 },
   listContent: { gap: 12, paddingBottom: 120 },
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 10,
+    marginTop: 2,
+    gap: 8,
   },
   modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10 },
   modalButton: {
@@ -90,6 +125,7 @@ export const tasksStyles = StyleSheet.create({
     fontWeight: '600',
     flex: 1,
     marginRight: 12,
+    fontFamily: NOTO_SANS_JP.semibold,
   },
   modalField: { gap: 8 },
   modalFieldHeader: {
@@ -104,8 +140,14 @@ export const tasksStyles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     color: TEXT_PRIMARY,
+    fontFamily: NOTO_SANS_JP.medium,
   },
-  modalLabel: { color: TEXT_PRIMARY, fontWeight: '600', fontSize: 13 },
+  modalLabel: {
+    color: TEXT_PRIMARY,
+    fontWeight: '600',
+    fontSize: 13,
+    fontFamily: NOTO_SANS_JP.semibold,
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(15, 23, 42, 0.5)',
@@ -115,44 +157,79 @@ export const tasksStyles = StyleSheet.create({
   modalPrimary: {
     backgroundColor: PRIMARY,
   },
-  modalPrimaryLabel: { color: '#FFFFFF', fontWeight: '700' },
+  modalPrimaryLabel: { color: '#FFFFFF', fontWeight: '700', fontFamily: NOTO_SANS_JP.bold },
   modalSecondary: {
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: BORDER,
     backgroundColor: 'transparent',
   },
-  modalSecondaryLabel: { color: TEXT_MUTED, fontWeight: '600' },
+  modalSecondaryLabel: {
+    color: TEXT_MUTED,
+    fontWeight: '600',
+    fontFamily: NOTO_SANS_JP.semibold,
+  },
   modalTitle: {
     color: TEXT_PRIMARY,
     fontSize: 18,
     fontWeight: '700',
     textAlign: 'center',
+    fontFamily: NOTO_SANS_JP.bold,
   },
   pageHeader: { marginBottom: 12, paddingVertical: 0 },
-  pageHeaderSubtitle: { color: TEXT_MUTED, fontSize: 13 },
+  pageHeaderSubtitle: {
+    color: TEXT_MUTED,
+    fontSize: 13,
+    fontFamily: NOTO_SANS_JP.medium,
+  },
   pageHeaderTitle: {
     color: TEXT_PRIMARY,
     fontSize: 24,
     lineHeight: 30,
     fontWeight: '700',
+    fontFamily: NOTO_SANS_JP.bold,
   },
-  rowActions: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  rowActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 8,
+  },
   safeArea: { flex: 1, backgroundColor: BACKGROUND },
-  sectionCaption: { color: TEXT_MUTED, fontSize: 12 },
+  sectionCaption: {
+    color: TEXT_MUTED,
+    fontSize: 12,
+    fontFamily: NOTO_SANS_JP.medium,
+  },
   sectionHeader: { gap: 2, marginBottom: 8 },
   sectionSeparator: { height: 16 },
-  sectionTitle: { color: TEXT_PRIMARY, fontSize: 16, fontWeight: '700' },
-  taskBody: { flex: 1, gap: 4 },
+  sectionTitle: {
+    color: TEXT_PRIMARY,
+    fontSize: 16,
+    fontWeight: '700',
+    fontFamily: NOTO_SANS_JP.bold,
+  },
+  taskBody: {
+    flex: 1,
+  },
   taskRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
     backgroundColor: SURFACE,
-    borderRadius: 14,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: BORDER,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(148, 163, 184, 0.35)',
     paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingVertical: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
   },
-  taskTitle: { color: TEXT_PRIMARY, fontWeight: '600' },
+  taskTitle: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#0f172a',
+    fontFamily: NOTO_SANS_JP.semibold,
+  },
 });

@@ -1,5 +1,6 @@
 import { Picker } from '@react-native-picker/picker';
 import {
+  addDays,
   addMonths,
   eachDayOfInterval,
   endOfMonth,
@@ -12,7 +13,7 @@ import {
 } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { useEffect, useMemo, useState } from 'react';
-import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 
 import { ScheduleChip } from '@/components/ScheduleChip';
 import { ThemedText } from '@/components/ThemedText';
@@ -47,6 +48,10 @@ export function SchedulePickerModal({
   onCancel,
   onConfirm,
 }: SchedulePickerModalProps) {
+  const { width: windowWidth } = useWindowDimensions();
+  const cardWidth = Math.min(520, Math.max(320, windowWidth - 32));
+  const isCompact = cardWidth < 400;
+
   const baseDate = useMemo(() => {
     if (!initialValue) {
       return new Date();
@@ -68,9 +73,14 @@ export function SchedulePickerModal({
   }, [baseDate, visible]);
 
   const calendarDays = useMemo(() => {
-    const start = startOfWeek(startOfMonth(calendarMonth), { locale: ja });
-    const end = endOfWeek(endOfMonth(calendarMonth), { locale: ja });
-    return eachDayOfInterval({ start, end });
+    const start = startOfWeek(startOfMonth(calendarMonth), { weekStartsOn: 0 });
+    const end = endOfWeek(endOfMonth(calendarMonth), { weekStartsOn: 0 });
+    const days = eachDayOfInterval({ start, end });
+    const needed = 42 - days.length;
+    if (needed > 0) {
+      return eachDayOfInterval({ start, end: addDays(end, needed) });
+    }
+    return days;
   }, [calendarMonth]);
 
   const today = useMemo(() => new Date(), []);
@@ -130,7 +140,7 @@ export function SchedulePickerModal({
     <Modal visible transparent animationType="fade">
       <Pressable style={styles.overlay} onPress={onCancel}>
         <Pressable style={styles.shell} onPress={(event) => event.stopPropagation()}>
-          <ThemedView style={styles.card}>
+          <ThemedView style={[styles.card, { width: cardWidth }]}>
             <ThemedText type="title" style={styles.title}>
               日時を選択
             </ThemedText>
@@ -201,17 +211,20 @@ export function SchedulePickerModal({
                       );
                     })}
                   </View>
-                </View>
 
-                <ThemedText style={styles.previewText}>
-                  選択: {formatDateLabel(workingDate)}
-                </ThemedText>
+                  <View style={styles.previewInside}>
+                    <ThemedText style={styles.previewText}>
+                      選択: {formatDateLabel(workingDate)}
+                    </ThemedText>
+                  </View>
+                </View>
               </View>
             ) : null}
 
             {stage === 'time' ? (
               <View style={styles.stageSection}>
                 <ThemedText style={styles.stageLabel}>次に時間を選びましょう</ThemedText>
+
                 <View style={styles.timePicker}>
                   <View style={styles.timeDropdown}>
                     <ThemedText style={styles.timeSectionLabel}>{HOUR_LABEL}</ThemedText>
@@ -229,6 +242,7 @@ export function SchedulePickerModal({
                       </Picker>
                     </View>
                   </View>
+
                   <View style={styles.timeDropdown}>
                     <ThemedText style={styles.timeSectionLabel}>{MINUTE_LABEL}</ThemedText>
                     <View style={styles.pickerShell}>
@@ -243,13 +257,14 @@ export function SchedulePickerModal({
                           <Picker.Item
                             key={`minute-${minute}`}
                             label={`${minute} 分`}
-                            value={minute.toString()}
+                            value={minute}
                           />
                         ))}
                       </Picker>
                     </View>
                   </View>
                 </View>
+
                 <ThemedText style={styles.previewText}>
                   選択: {formatTimeLabel(workingDate)}
                 </ThemedText>
@@ -263,14 +278,21 @@ export function SchedulePickerModal({
               </View>
             ) : null}
 
-            <View style={styles.actions}>
+            <View style={[styles.actions, isCompact && styles.actionsCompact]}>
               {stage === 'date' ? (
                 <>
-                  <Pressable style={styles.actionButton} onPress={onCancel}>
+                  <Pressable
+                    style={[styles.actionButton, isCompact && styles.actionButtonCompact]}
+                    onPress={onCancel}
+                  >
                     <ThemedText style={styles.actionLabel}>キャンセル</ThemedText>
                   </Pressable>
                   <Pressable
-                    style={[styles.actionButton, styles.primaryAction]}
+                    style={[
+                      styles.actionButton,
+                      styles.primaryAction,
+                      isCompact && styles.actionButtonCompact,
+                    ]}
                     onPress={handleDateStageNext}
                   >
                     <ThemedText style={styles.primaryLabel}>次へ</ThemedText>
@@ -280,11 +302,18 @@ export function SchedulePickerModal({
 
               {stage === 'time' ? (
                 <>
-                  <Pressable style={styles.actionButton} onPress={() => setStage('date')}>
+                  <Pressable
+                    style={[styles.actionButton, isCompact && styles.actionButtonCompact]}
+                    onPress={() => setStage('date')}
+                  >
                     <ThemedText style={styles.actionLabel}>戻る</ThemedText>
                   </Pressable>
                   <Pressable
-                    style={[styles.actionButton, styles.primaryAction]}
+                    style={[
+                      styles.actionButton,
+                      styles.primaryAction,
+                      isCompact && styles.actionButtonCompact,
+                    ]}
                     onPress={handleTimeStageNext}
                   >
                     <ThemedText style={styles.primaryLabel}>次へ</ThemedText>
@@ -294,11 +323,18 @@ export function SchedulePickerModal({
 
               {stage === 'confirm' ? (
                 <>
-                  <Pressable style={styles.actionButton} onPress={() => setStage('time')}>
+                  <Pressable
+                    style={[styles.actionButton, isCompact && styles.actionButtonCompact]}
+                    onPress={() => setStage('time')}
+                  >
                     <ThemedText style={styles.actionLabel}>戻る</ThemedText>
                   </Pressable>
                   <Pressable
-                    style={[styles.actionButton, styles.primaryAction]}
+                    style={[
+                      styles.actionButton,
+                      styles.primaryAction,
+                      isCompact && styles.actionButtonCompact,
+                    ]}
                     onPress={handleConfirm}
                   >
                     <ThemedText style={styles.primaryLabel}>決定</ThemedText>
@@ -315,33 +351,38 @@ export function SchedulePickerModal({
 
 const styles = StyleSheet.create({
   actionButton: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 18,
     paddingVertical: 10,
     borderRadius: 14,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: 'rgba(148, 163, 184, 0.4)',
     backgroundColor: '#F8FAFF',
+    alignItems: 'center',
+  },
+  actionButtonCompact: {
+    minWidth: 0,
   },
   actionLabel: {
-    color: '#1E293B',
+    textAlign: 'center',
     fontFamily: NOTO_SANS_JP.semibold,
+    color: '#1E293B',
   },
   actions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
     gap: 12,
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(148, 163, 184, 0.24)',
+    marginTop: 24,
+  },
+  actionsCompact: {
+    justifyContent: 'flex-end',
   },
   calendar: {
     gap: 8,
-    width: 320,
-    maxWidth: '100%',
+    width: '100%',
+    maxWidth: 360,
     alignSelf: 'center',
     paddingHorizontal: 4,
-    paddingVertical: 8,
+    paddingVertical: 4,
   },
   calendarGrid: {
     flexDirection: 'row',
@@ -371,16 +412,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   card: {
-    width: 360,
-    maxWidth: '94%',
+    maxWidth: '100%',
     alignSelf: 'center',
     borderRadius: 24,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: 'rgba(148, 163, 184, 0.3)',
     padding: 20,
     gap: 16,
-    maxHeight: '90%',
-    flexShrink: 1,
   },
   dayCell: {
     width: '14.2857%',
@@ -388,7 +426,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 12,
-    marginBottom: 6,
+    marginBottom: 4,
     borderWidth: StyleSheet.hairlineWidth,
     borderColor: 'transparent',
   },
@@ -420,12 +458,13 @@ const styles = StyleSheet.create({
     width: '100%',
     color: '#0F172A',
     textAlign: 'center',
-    height: 160,
+    height: 52,
   },
   pickerItem: {
     textAlign: 'center',
     textAlignVertical: 'center',
     fontFamily: NOTO_SANS_JP.semibold,
+    fontSize: 15,
   },
   pickerShell: {
     borderRadius: 14,
@@ -433,21 +472,25 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(148, 163, 184, 0.4)',
     overflow: 'hidden',
     backgroundColor: '#FFFFFF',
-    height: 160,
+    height: 52,
+    justifyContent: 'center',
+  },
+  previewInside: {
+    alignItems: 'center',
+    marginTop: -56,
   },
   previewText: {
     color: '#64748B',
     fontSize: 13,
     textAlign: 'center',
-    alignSelf: 'center',
     fontFamily: NOTO_SANS_JP.semibold,
-    marginTop: 4,
   },
   primaryAction: {
     backgroundColor: '#2563EB',
     borderColor: '#2563EB',
   },
   primaryLabel: {
+    textAlign: 'center',
     color: '#FFFFFF',
     fontFamily: NOTO_SANS_JP.bold,
   },
@@ -464,17 +507,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   timeDropdown: {
-    flex: 1,
-    gap: 6,
+    width: '70%',
+    maxWidth: 280,
+    gap: 4,
   },
   timePicker: {
-    flexDirection: 'row',
+    width: '100%',
     gap: 12,
-    backgroundColor: '#F8FAFF',
-    borderRadius: 14,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: 'rgba(148, 163, 184, 0.24)',
-    padding: 12,
+    marginTop: 8,
     alignItems: 'center',
   },
   timeSectionLabel: {

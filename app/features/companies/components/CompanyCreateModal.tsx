@@ -191,7 +191,7 @@ export default function CompanyCreateModal({
                   <View style={styles.scheduleSummaryCard}>
                     {formConfirmedDate ? (
                       <View style={styles.confirmedBlock}>
-                        <ThemedText style={styles.formCaption}>確定済みの予定</ThemedText>
+                        <ThemedText style={styles.formCaption}>確定日</ThemedText>
                         <ScheduleChip
                           iso={formConfirmedDate}
                           status="confirmed"

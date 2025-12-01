@@ -6,6 +6,7 @@ import { useMemo, useState } from 'react';
 import { Alert, Pressable, SectionList, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import TaskEditModal from '@/app/features/tasks/components/TaskEditModal';
 import { PageHeader } from '@/components/PageHeader';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -13,7 +14,6 @@ import { Palette } from '@/constants/Palette';
 import { useAppStore } from '@/store/useAppStore';
 import { tasksStyles as styles } from '@/styles/tasksStyles';
 import type { CompanyTaskItem } from '@/types/companyItems';
-import TaskEditModal from '@/app/features/tasks/components/TaskEditModal';
 
 const { textMuted: TEXT_MUTED, primary: PRIMARY, success: SUCCESS } = Palette;
 
@@ -187,18 +187,24 @@ export default function TasksTabScreen() {
               </Pressable>
 
               <View style={styles.taskBody}>
-                <ThemedText style={[styles.taskTitle, item.isDone && styles.done]}>
+                <ThemedText
+                  style={[styles.taskTitle, item.isDone && styles.done]}
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                >
                   {item.title}
                 </ThemedText>
                 <View style={styles.metaRow}>
                   <Link href={`/(tabs)/companies/${item.companyId}`} asChild>
                     <Pressable>
-                      <ThemedText style={styles.companyLink}>{item.companyName}</ThemedText>
+                      <ThemedText style={styles.companyLink} numberOfLines={1} ellipsizeMode="tail">
+                        {item.companyName}
+                      </ThemedText>
                     </Pressable>
                   </Link>
                   {item.dueDate ? (
                     <ThemedText style={styles.due}>
-                      {format(parseISO(item.dueDate), "yyyy'年'MM'月'dd'日'(EEE) HH:mm", {
+                      {format(parseISO(item.dueDate), 'M/d(EEE) HH:mm', {
                         locale: ja,
                       })}
                     </ThemedText>
@@ -211,9 +217,6 @@ export default function TasksTabScreen() {
               <View style={styles.rowActions}>
                 <Pressable onPress={() => openEditModal(item)} style={styles.iconButton}>
                   <MaterialIcons name="edit" size={20} color={PRIMARY} />
-                </Pressable>
-                <Pressable onPress={() => handleRemoveTask(item)} style={styles.iconButton}>
-                  <MaterialIcons name="delete-outline" size={20} color={TEXT_MUTED} />
                 </Pressable>
               </View>
             </View>

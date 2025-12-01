@@ -22,23 +22,25 @@ export const homeStyles = StyleSheet.create({
     height: 48,
   },
   check: {
-    width: 28,
-    height: 36,
+    width: 32,
+    height: 32,
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
   },
   companyLink: {
     color: PRIMARY,
     fontSize: 11,
     fontWeight: '500',
     flexShrink: 1,
-    marginRight: 8,
+    marginRight: 0,
+    marginTop: 0,
   },
   container: {
     flex: 1,
   },
-  deleteBtn: {
+  deleteBtnInline: {
     padding: 4,
+    marginLeft: 4,
   },
   done: {
     opacity: 0.5,
@@ -76,7 +78,7 @@ export const homeStyles = StyleSheet.create({
   },
   emptyButtonLabel: {
     color: '#FFFFFF',
-    fontWeight: '700'
+    fontWeight: '700',
   },
   emptyButtonStack: {
     marginTop: 24,
@@ -86,7 +88,7 @@ export const homeStyles = StyleSheet.create({
   },
   emptyText: {
     color: TEXT_PRIMARY,
-    fontWeight: '600'
+    fontWeight: '600',
   },
   listContent: {
     gap: 16,
@@ -101,12 +103,12 @@ export const homeStyles = StyleSheet.create({
   },
   safeArea: {
     flex: 1,
-    backgroundColor: BACKGROUND
+    backgroundColor: BACKGROUND,
   },
   scheduleIconBadge: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(37, 99, 235, 0.12)',
@@ -114,10 +116,11 @@ export const homeStyles = StyleSheet.create({
   scheduleLabel: {
     color: TEXT_MUTED,
     fontSize: 12,
-    fontWeight: '600'
+    fontWeight: '600',
   },
   scheduleLink: {
-    padding: 4
+    padding: 4,
+    marginLeft: 2,
   },
   scheduleMetaRow: {
     flexDirection: 'row',
@@ -125,14 +128,12 @@ export const homeStyles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   scheduleRow: {
-    alignItems: 'center',
     borderColor: 'rgba(37, 99, 235, 0.28)',
-    backgroundColor: 'rgba(37, 99, 235, 0.03)',
   },
   scheduleTitle: {
     color: TEXT_PRIMARY,
     fontSize: 13,
-    fontWeight: '600'
+    fontWeight: '600',
   },
   scroll: {
     flex: 1,
@@ -167,7 +168,7 @@ export const homeStyles = StyleSheet.create({
     color: TEXT_PRIMARY,
     fontSize: 24,
     lineHeight: 26,
-    fontWeight: '700'
+    fontWeight: '700',
   },
   statusCardCountRow: {
     flexDirection: 'row',
@@ -191,13 +192,13 @@ export const homeStyles = StyleSheet.create({
   statusCardLabel: {
     color: TEXT_PRIMARY,
     fontWeight: '700',
-    fontSize: 13
+    fontSize: 13,
   },
   statusCardLast: {
-    marginRight: 0
+    marginRight: 0,
   },
   statusCardTexts: {
-    flex: 1
+    flex: 1,
   },
   statusIcon: {
     width: 32,
@@ -216,7 +217,7 @@ export const homeStyles = StyleSheet.create({
   summaryBadgeLabel: {
     color: PRIMARY,
     fontWeight: '700',
-    fontSize: 12
+    fontSize: 12,
   },
   summaryHeader: {
     flexDirection: 'row',
@@ -224,7 +225,7 @@ export const homeStyles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   summaryScroll: {
-    paddingRight: 8
+    paddingRight: 8,
   },
   summarySection: {
     marginBottom: 24,
@@ -248,10 +249,13 @@ export const homeStyles = StyleSheet.create({
   summaryTitle: {
     color: TEXT_PRIMARY,
     fontWeight: '700',
-    fontSize: 16
+    fontSize: 16,
   },
   taskBody: {
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   taskBottomRow: {
     flexDirection: 'row',
@@ -268,7 +272,7 @@ export const homeStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(148, 163, 184, 0.4)',
     paddingHorizontal: 14,
-    paddingVertical: 9,
+    paddingVertical: 7,
     shadowColor: '#000',
     shadowOpacity: 0.04,
     shadowRadius: 6,
@@ -281,6 +285,16 @@ export const homeStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'baseline',
     justifyContent: 'space-between',
+  },
+  taskMain: {
+    flexShrink: 1,
+    alignItems: 'flex-start',
+    gap: 0,
+  },
+  taskMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 8,
   },
   tasksSubtitle: {
     color: TEXT_MUTED,
@@ -296,10 +310,5 @@ export const homeStyles = StyleSheet.create({
     color: TEXT_PRIMARY,
     fontWeight: '500',
     fontSize: 13,
-  },
-  taskTopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
   },
 });

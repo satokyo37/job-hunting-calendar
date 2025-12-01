@@ -415,7 +415,7 @@ export default function CompanyEditScreen() {
             <View style={styles.scheduleSummaryCard}>
               {company.confirmedDate ? (
                 <View style={styles.confirmedBlock}>
-                  <ThemedText style={styles.formCaption}>確定した予定</ThemedText>
+                  <ThemedText style={styles.formCaption}>確定日</ThemedText>
                   <ScheduleChip
                     iso={company.confirmedDate}
                     status="confirmed"

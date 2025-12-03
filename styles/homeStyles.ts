@@ -39,8 +39,12 @@ export const homeStyles = StyleSheet.create({
     flex: 1,
   },
   deleteBtnInline: {
-    padding: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     marginLeft: 4,
+    borderRadius: 12,
+    backgroundColor: '#ef4444',
+    marginRight: 2,
   },
   done: {
     opacity: 0.5,
@@ -119,8 +123,13 @@ export const homeStyles = StyleSheet.create({
     fontWeight: '600',
   },
   scheduleLink: {
-    padding: 4,
-    marginLeft: 2,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    marginLeft: 0,
+    borderRadius: 12,
+    minWidth: 34,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   scheduleMetaRow: {
     flexDirection: 'row',
@@ -128,7 +137,7 @@ export const homeStyles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   scheduleRow: {
-    borderColor: 'rgba(37, 99, 235, 0.28)',
+    borderColor: 'rgba(37, 99, 184, 0.28)',
   },
   scheduleTitle: {
     color: TEXT_PRIMARY,
@@ -294,7 +303,10 @@ export const homeStyles = StyleSheet.create({
   taskMeta: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 8,
+    marginLeft: 10,
+    gap: 10,
+    width: 140,
+    justifyContent: 'flex-end',
   },
   tasksSubtitle: {
     color: TEXT_MUTED,
@@ -309,6 +321,7 @@ export const homeStyles = StyleSheet.create({
   taskTitle: {
     color: TEXT_PRIMARY,
     fontWeight: '500',
-    fontSize: 13,
+    fontSize: 16,
+    transform: [{ translateY: 4 }],
   },
 });

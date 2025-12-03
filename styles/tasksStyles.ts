@@ -13,42 +13,11 @@ const {
 } = Palette;
 
 export const tasksStyles = StyleSheet.create({
-  check: {
-    width: 32,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 0,
-  },
-  checkDone: { opacity: 0.5 },
   clearDueButton: { color: PRIMARY, fontWeight: '600', fontFamily: NOTO_SANS_JP.semibold },
-  companyLink: {
-    color: PRIMARY,
-    fontSize: 11,
-    fontWeight: '500',
-    flex: 1,
-    marginRight: 8,
-    fontFamily: NOTO_SANS_JP.semibold,
-  },
   container: {
     flex: 1,
     paddingHorizontal: 16,
     paddingTop: 20,
-  },
-  deleteBtn: { padding: 4 },
-  done: { opacity: 0.5, textDecorationLine: 'line-through' },
-  due: {
-    fontSize: 11,
-    color: TEXT_MUTED,
-    textAlign: 'right',
-    fontFamily: NOTO_SANS_JP.medium,
-  },
-  dueMuted: {
-    fontSize: 11,
-    color: TEXT_MUTED,
-    textAlign: 'right',
-    fontStyle: 'italic',
-    fontFamily: NOTO_SANS_JP.medium,
   },
   duePickerButton: {
     flexDirection: 'row',
@@ -79,17 +48,10 @@ export const tasksStyles = StyleSheet.create({
     fontSize: 16,
     fontFamily: NOTO_SANS_JP.semibold,
   },
-  iconButton: {
-    padding: 6,
-  },
   list: { flex: 1 },
-  listContent: { gap: 12, paddingBottom: 120 },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 2,
-    gap: 8,
+  listContent: {
+    gap: 16,
+    paddingBottom: 80,
   },
   modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10 },
   modalButton: {
@@ -193,29 +155,14 @@ export const tasksStyles = StyleSheet.create({
     fontFamily: NOTO_SANS_JP.medium,
   },
   sectionHeader: { gap: 2, marginBottom: 8 },
-  sectionSeparator: { height: 16 },
+  sectionSeparator: {
+    height: 12,
+  },
   sectionTitle: {
     color: TEXT_PRIMARY,
     fontSize: 16,
     fontWeight: '700',
     fontFamily: NOTO_SANS_JP.bold,
-  },
-  taskBody: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  taskMain: {
-    flexShrink: 1,
-    alignItems: 'flex-start',
-    gap: 0,
-  },
-  taskMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginLeft: 8,
-    gap: 4,
   },
   taskRow: {
     flexDirection: 'row',
@@ -224,20 +171,29 @@ export const tasksStyles = StyleSheet.create({
     backgroundColor: SURFACE,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(148, 163, 184, 0.35)',
+    borderColor: 'rgba(148, 163, 184, 0.4)',
     paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingVertical: 7,
     shadowColor: '#000',
     shadowOpacity: 0.04,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },
     elevation: 1,
   },
+  taskContent: {
+    flex: 1,
+    flexDirection: 'column',
+  },
+  taskMain: {
+    flexShrink: 1,
+    alignItems: 'flex-start',
+    gap: 0,
+  },
   taskTitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '500',
-    color: '#0f172a',
+    color: TEXT_PRIMARY,
     fontFamily: NOTO_SANS_JP.semibold,
-    marginBottom: 1,
+    transform: [{ translateY: 4 }],
   },
 });

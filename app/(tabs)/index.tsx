@@ -1,14 +1,15 @@
 ﻿import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { format, isBefore, isSameDay, parseISO, startOfDay } from 'date-fns';
-import { ja } from 'date-fns/locale';
-import { Link } from 'expo-router';
+import { isBefore, isSameDay, parseISO, startOfDay } from 'date-fns';
 import { useMemo } from 'react';
 import { FlatList, Image, Pressable, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Link } from 'expo-router';
 
 import { PageHeader } from '@/components/PageHeader';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { ScheduleListItem } from '@/components/ScheduleListItem';
+import { TaskListItem } from '@/components/TaskListItem';
 import { Palette } from '@/constants/Palette';
 import {
   ACTIVE_SELECTION_STATUSES,
@@ -19,7 +20,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { homeStyles as styles } from '@/styles/homeStyles';
 import type { CompanySchedule, CompanyTaskItem } from '@/types/companyItems';
 
-const { textMuted: TEXT_MUTED, primary: PRIMARY, success: SUCCESS } = Palette;
+const { primary: PRIMARY } = Palette;
 
 const APP_LOGO = require('@/assets/images/schetto.png');
 
@@ -264,86 +265,27 @@ export default function HomeScreen() {
             }
             renderItem={({ item }) =>
               item.kind === 'task' ? (
-                <View style={styles.taskRow}>
-                  <Pressable
-                    onPress={() => toggleTaskDone(item.companyId, item.id)}
-                    style={styles.check}
-                  >
-                    <MaterialIcons
-                      name={item.isDone ? 'check-circle' : 'radio-button-unchecked'}
-                      size={20}
-                      color={item.isDone ? SUCCESS : PRIMARY}
-                    />
-                  </Pressable>
-
-                  <View style={styles.taskBody}>
-                    <View style={styles.taskMain}>
-                      <ThemedText
-                        style={[styles.taskTitle, item.isDone && styles.done]}
-                        numberOfLines={1}
-                      >
-                        {item.title}
-                      </ThemedText>
-
-                      <Link href={`/(tabs)/companies/${item.companyId}`} asChild>
-                        <Pressable>
-                          <ThemedText style={styles.companyLink}>{item.companyName}</ThemedText>
-                        </Pressable>
-                      </Link>
-                    </View>
-
-                    <View style={styles.taskMeta}>
-                      {item.dueDate ? (
-                        <ThemedText style={styles.due}>
-                          {format(parseISO(item.dueDate), 'M/d(EEE) HH:mm', { locale: ja })}
-                        </ThemedText>
-                      ) : null}
-
-                      <Pressable
-                        onPress={() => removeTask(item.companyId, item.id)}
-                        style={styles.deleteBtnInline}
-                      >
-                        <MaterialIcons name="delete-outline" size={18} color={TEXT_MUTED} />
-                      </Pressable>
-                    </View>
-                  </View>
-                </View>
+                <TaskListItem
+                  task={item}
+                  onToggle={() => toggleTaskDone(item.companyId, item.id)}
+                  onDelete={() => removeTask(item.companyId, item.id)}
+                  showEditForPending={false}
+                  showDeleteForDone
+                  showDeleteAlways
+                  companyHref={{
+                    pathname: '/(tabs)/companies/[id]',
+                    params: { id: item.companyId },
+                  }}
+                  hideEmptyDue
+                />
               ) : (
-                <View style={[styles.taskRow, styles.scheduleRow]}>
-                  <View style={styles.scheduleIconBadge}>
-                    <MaterialIcons
-                      name={item.scheduleType === 'confirmed' ? 'event-available' : 'event-note'}
-                      size={18}
-                      color={PRIMARY}
-                    />
-                  </View>
-
-                  <View style={styles.taskBody}>
-                    <View style={styles.taskMain}>
-                      <ThemedText style={styles.taskTitle} numberOfLines={1}>
-                        {item.title || '未設定の予定'}
-                      </ThemedText>
-
-                      <Link href={`/(tabs)/companies/${item.companyId}`} asChild>
-                        <Pressable>
-                          <ThemedText style={styles.companyLink}>{item.companyName}</ThemedText>
-                        </Pressable>
-                      </Link>
-                    </View>
-
-                    <View style={styles.taskMeta}>
-                      <ThemedText style={styles.due}>
-                        {format(parseISO(item.iso), "M/d(EEE) HH:mm'", { locale: ja })}
-                      </ThemedText>
-
-                      <Link href={`/(tabs)/companies/${item.companyId}`} asChild>
-                        <Pressable style={styles.scheduleLink}>
-                          <MaterialIcons name="chevron-right" size={20} color={TEXT_MUTED} />
-                        </Pressable>
-                      </Link>
-                    </View>
-                  </View>
-                </View>
+                <ScheduleListItem
+                  schedule={item}
+                  companyHref={{
+                    pathname: '/(tabs)/companies/[id]',
+                    params: { id: item.companyId },
+                  }}
+                />
               )
             }
           />

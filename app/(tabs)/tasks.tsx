@@ -1,13 +1,13 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { format, parseISO } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import { Link } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Alert, Pressable, SectionList, View } from 'react-native';
+import { Alert, SectionList, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import TaskEditModal from '@/app/features/tasks/components/TaskEditModal';
 import { PageHeader } from '@/components/PageHeader';
+import { TaskListItem } from '@/components/TaskListItem';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { Palette } from '@/constants/Palette';
@@ -15,7 +15,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { tasksStyles as styles } from '@/styles/tasksStyles';
 import type { CompanyTaskItem } from '@/types/companyItems';
 
-const { textMuted: TEXT_MUTED, primary: PRIMARY, success: SUCCESS } = Palette;
+const { primary: PRIMARY } = Palette;
 
 type TaskSection = {
   key: string;
@@ -174,53 +174,20 @@ export default function TasksTabScreen() {
             </ThemedView>
           }
           renderItem={({ item }) => (
-            <View style={styles.taskRow}>
-              <Pressable
-                onPress={() => toggleTaskDone(item.companyId, item.id)}
-                style={[styles.check, item.isDone && styles.checkDone]}
-              >
-                <MaterialIcons
-                  name={item.isDone ? 'check-circle' : 'radio-button-unchecked'}
-                  size={20}
-                  color={item.isDone ? SUCCESS : PRIMARY}
-                />
-              </Pressable>
-
-              <View style={styles.taskBody}>
-                {/* 左カラム：タイトル＋会社名 */}
-                <View style={styles.taskMain}>
-                  <ThemedText
-                    style={[styles.taskTitle, item.isDone && styles.done]}
-                    numberOfLines={1}
-                    ellipsizeMode="tail"
-                  >
-                    {item.title}
-                  </ThemedText>
-
-                  <Link href={`/(tabs)/companies/${item.companyId}`} asChild>
-                    <Pressable>
-                      <ThemedText style={styles.companyLink} numberOfLines={1} ellipsizeMode="tail">
-                        {item.companyName}
-                      </ThemedText>
-                    </Pressable>
-                  </Link>
-                </View>
-
-                <View style={styles.taskMeta}>
-                  {item.dueDate ? (
-                    <ThemedText style={styles.due}>
-                      {format(parseISO(item.dueDate), 'M/d(EEE) HH:mm', { locale: ja })}
-                    </ThemedText>
-                  ) : (
-                    <ThemedText style={styles.dueMuted}>期限未設定</ThemedText>
-                  )}
-
-                  <Pressable onPress={() => openEditModal(item)} style={styles.iconButton}>
-                    <MaterialIcons name="edit" size={20} color={PRIMARY} />
-                  </Pressable>
-                </View>
-              </View>
-            </View>
+            <TaskListItem
+              task={item}
+              onToggle={() => toggleTaskDone(item.companyId, item.id)}
+              onEdit={() => openEditModal(item)}
+              onDelete={() => handleRemoveTask(item)}
+              showEditForPending
+              showDeleteForDone
+              showDeleteAlways={false}
+              companyHref={{
+                pathname: '/(tabs)/companies/[id]',
+                params: { id: item.companyId },
+              }}
+              hideEmptyDue={true}
+            />
           )}
         />
       </View>

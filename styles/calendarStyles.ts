@@ -20,6 +20,14 @@ export const calendarStyles = StyleSheet.create({
     flex: 1,
     marginTop: 8,
   },
+  swipeContainer: {
+    flex: 1,
+    marginTop: 0,
+    overflow: 'hidden',
+  },
+  pagerRow: {
+    flexDirection: 'row',
+  },
   container: {
     flex: 1,
     paddingBottom: 8,

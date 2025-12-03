@@ -15,7 +15,15 @@ import {
 } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Modal, Pressable, ScrollView, View } from 'react-native';
+import {
+  Animated,
+  Modal,
+  PanResponder,
+  Pressable,
+  ScrollView,
+  View,
+  useWindowDimensions,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/ThemedText';
@@ -94,8 +102,82 @@ export default function CalendarScreen() {
   const [focusedMonth, setFocusedMonth] = useState(startOfMonth(parseISO(initialSelected)));
   const [activeDayKey, setActiveDayKey] = useState<string | null>(null);
   const [activeEvent, setActiveEvent] = useState<CalendarEvent | null>(null);
+  const [gridWidth, setGridWidth] = useState<number | null>(null);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   const previousDayKeyCount = useRef(dayKeys.length);
+  const shiftMonth = useCallback((delta: number) => {
+    setFocusedMonth((prev) => addMonths(prev, delta));
+  }, []);
+
+  const { width: screenWidth } = useWindowDimensions();
+  const pageWidth = gridWidth ?? screenWidth;
+  const baseOffset = -pageWidth;
+  const translateX = useRef(new Animated.Value(baseOffset)).current;
+
+  useEffect(() => {
+    translateX.setValue(-pageWidth);
+  }, [pageWidth, translateX]);
+
+  const animateTo = useCallback(
+    (toValue: number, onEnd?: () => void) => {
+      setIsAnimating(true);
+      Animated.timing(translateX, {
+        toValue,
+        duration: 220,
+        useNativeDriver: false,
+      }).start(({ finished }) => {
+        if (finished) {
+          onEnd?.();
+        }
+        setIsAnimating(false);
+      });
+    },
+    [translateX],
+  );
+
+  const panResponder = useMemo(
+    () =>
+      PanResponder.create({
+        onMoveShouldSetPanResponder: (_, gestureState) => {
+          if (isAnimating) return false;
+          const { dx, dy } = gestureState;
+          return Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 12;
+        },
+        onPanResponderMove: (_, gestureState) => {
+          if (isAnimating) return;
+          translateX.setValue(baseOffset + gestureState.dx);
+        },
+        onPanResponderRelease: (_, gestureState) => {
+          if (isAnimating) return;
+          const { dx, vx } = gestureState;
+          const distanceThreshold = 40;
+          const velocityThreshold = 0.35;
+
+          const goNext = dx <= -distanceThreshold || vx <= -velocityThreshold;
+          const goPrev = dx >= distanceThreshold || vx >= velocityThreshold;
+
+          if (goNext) {
+            animateTo(baseOffset - pageWidth, () => {
+              setFocusedMonth((prev) => addMonths(prev, 1));
+              setActiveDayKey(null);
+              setActiveEvent(null);
+              translateX.setValue(baseOffset);
+            });
+          } else if (goPrev) {
+            animateTo(baseOffset + pageWidth, () => {
+              setFocusedMonth((prev) => addMonths(prev, -1));
+              setActiveDayKey(null);
+              setActiveEvent(null);
+              translateX.setValue(baseOffset);
+            });
+          } else {
+            animateTo(baseOffset);
+          }
+        },
+      }),
+    [animateTo, baseOffset, isAnimating, pageWidth, translateX],
+  );
 
   useEffect(() => {
     if (dayKeys.length === 0) {
@@ -113,31 +195,38 @@ export default function CalendarScreen() {
     setFocusedMonth(startOfMonth(parseISO(selectedDate)));
   }, [selectedDate]);
 
-  const calendarDays = useMemo(() => {
-    const monthStart = startOfMonth(focusedMonth);
-
+  const buildCalendarWeeks = useCallback((month: Date) => {
+    const monthStart = startOfMonth(month);
     const start = startOfWeek(monthStart, { weekStartsOn: 0 });
-    const end = endOfWeek(endOfMonth(focusedMonth), { weekStartsOn: 0 });
+    const end = endOfWeek(endOfMonth(month), { weekStartsOn: 0 });
 
     const currentSpan = differenceInCalendarDays(end, start) + 1;
     const needed = 42 - currentSpan;
 
-    if (needed > 0) {
-      return eachDayOfInterval({
-        start: start,
-        end: addDays(end, needed),
-      });
-    }
+    const days =
+      needed > 0
+        ? eachDayOfInterval({ start, end: addDays(end, needed) })
+        : eachDayOfInterval({ start, end });
 
-    return eachDayOfInterval({ start, end });
-  }, [focusedMonth]);
-  const calendarWeeks = useMemo(() => {
     const weeks: Date[][] = [];
-    for (let index = 0; index < calendarDays.length; index += 7) {
-      weeks.push(calendarDays.slice(index, index + 7));
+    for (let index = 0; index < days.length; index += 7) {
+      weeks.push(days.slice(index, index + 7));
     }
     return weeks;
-  }, [calendarDays]);
+  }, []);
+
+  const calendarWeeks = useMemo(
+    () => buildCalendarWeeks(focusedMonth),
+    [buildCalendarWeeks, focusedMonth],
+  );
+  const prevCalendarWeeks = useMemo(
+    () => buildCalendarWeeks(addMonths(focusedMonth, -1)),
+    [buildCalendarWeeks, focusedMonth],
+  );
+  const nextCalendarWeeks = useMemo(
+    () => buildCalendarWeeks(addMonths(focusedMonth, 1)),
+    [buildCalendarWeeks, focusedMonth],
+  );
 
   const handleSelectDay = useCallback((key: string, hasEvents: boolean) => {
     setSelectedDate(key);
@@ -163,7 +252,7 @@ export default function CalendarScreen() {
           <View style={styles.monthSwitcher}>
             <Pressable
               style={styles.monthButton}
-              onPress={() => setFocusedMonth((prev) => addMonths(prev, -1))}
+              onPress={() => shiftMonth(-1)}
             >
               <MaterialIcons name="chevron-left" size={22} color={PRIMARY} />
             </Pressable>
@@ -172,7 +261,7 @@ export default function CalendarScreen() {
             </ThemedText>
             <Pressable
               style={styles.monthButton}
-              onPress={() => setFocusedMonth((prev) => addMonths(prev, 1))}
+              onPress={() => shiftMonth(1)}
             >
               <MaterialIcons name="chevron-right" size={22} color={PRIMARY} />
             </Pressable>
@@ -186,90 +275,111 @@ export default function CalendarScreen() {
             ))}
           </View>
 
-          <View style={styles.calendarGrid}>
-            {calendarWeeks.map((week, weekIndex) => (
-              <View key={`${week[0].toISOString()}-${weekIndex}`} style={[styles.weekRow]}>
-                {week.map((day) => {
-                  const key = toDateKey(day);
-                  const dayEvents = eventsByDay[key] ?? [];
-                  const isCurrentMonth = isSameMonth(day, focusedMonth);
-                  const isSelected = key === selectedDate;
-                  const today = isToday(day);
+          <View
+            style={[styles.calendarGrid, styles.swipeContainer]}
+            {...panResponder.panHandlers}
+            onLayout={(event) => setGridWidth(event.nativeEvent.layout.width)}
+          >
+            <Animated.View
+              style={[
+                styles.pagerRow,
+                { width: pageWidth * 3, transform: [{ translateX }] },
+              ]}
+            >
+              {[{ weeks: prevCalendarWeeks, month: addMonths(focusedMonth, -1) },
+                { weeks: calendarWeeks, month: focusedMonth },
+                { weeks: nextCalendarWeeks, month: addMonths(focusedMonth, 1) }].map(
+                ({ weeks, month }, pageIndex) => (
+                  <View key={pageIndex} style={{ width: pageWidth, flex: 1 }}>
+                    <View style={{ flex: 1 }}>
+                      {weeks.map((week, weekIndex) => (
+                        <View key={`${week[0].toISOString()}-${weekIndex}`} style={[styles.weekRow]}>
+                          {week.map((day) => {
+                            const key = toDateKey(day);
+                            const dayEvents = eventsByDay[key] ?? [];
+                            const isCurrentMonth = isSameMonth(day, month);
+                            const isSelected = key === selectedDate;
+                            const today = isToday(day);
 
-                  const sortedDayEvents = [...dayEvents].sort(
-                    (a, b) => new Date(a.iso).getTime() - new Date(b.iso).getTime(),
-                  );
+                            const sortedDayEvents = [...dayEvents].sort(
+                              (a, b) => new Date(a.iso).getTime() - new Date(b.iso).getTime(),
+                            );
 
-                  const MAX_VISIBLE_EVENTS_PER_DAY = 2;
-                  const visibleEvents = sortedDayEvents.slice(0, MAX_VISIBLE_EVENTS_PER_DAY);
-                  const remainingCount = dayEvents.length - visibleEvents.length;
+                            const MAX_VISIBLE_EVENTS_PER_DAY = 2;
+                            const visibleEvents = sortedDayEvents.slice(0, MAX_VISIBLE_EVENTS_PER_DAY);
+                            const remainingCount = dayEvents.length - visibleEvents.length;
 
-                  return (
-                    <Pressable
-                      key={key}
-                      style={[styles.dayCell, !isCurrentMonth && styles.outsideCell]}
-                      onPress={() => handleSelectDay(key, dayEvents.length > 0)}
-                    >
-                      <View style={[styles.dayInner, isSelected && styles.dayInnerSelected]}>
-                        <View style={styles.dayHeader}>
-                          {today ? (
-                            <View style={styles.todayPill}>
-                              <ThemedText style={styles.todayPillText}>
-                                {format(day, 'd')}
-                              </ThemedText>
-                            </View>
-                          ) : (
-                            <ThemedText
-                              style={[styles.dayNumber, !isCurrentMonth && styles.outsideDayNumber]}
-                            >
-                              {format(day, 'd')}
-                            </ThemedText>
-                          )}
-                        </View>
+                            return (
+                              <Pressable
+                                key={key}
+                                style={[styles.dayCell, !isCurrentMonth && styles.outsideCell]}
+                                onPress={() => handleSelectDay(key, dayEvents.length > 0)}
+                              >
+                                <View style={[styles.dayInner, isSelected && styles.dayInnerSelected]}>
+                                  <View style={styles.dayHeader}>
+                                    {today ? (
+                                      <View style={styles.todayPill}>
+                                        <ThemedText style={styles.todayPillText}>
+                                          {format(day, 'd')}
+                                        </ThemedText>
+                                      </View>
+                                    ) : (
+                                      <ThemedText
+                                        style={[styles.dayNumber, !isCurrentMonth && styles.outsideDayNumber]}
+                                      >
+                                        {format(day, 'd')}
+                                      </ThemedText>
+                                    )}
+                                  </View>
 
-                        {visibleEvents.length > 0 && (
-                          <View style={styles.dayEventList}>
-                            {visibleEvents.map((event, index) => {
-                              const isConfirmed = event.scheduleType === 'confirmed';
-                              return (
-                                <View
-                                  key={`${event.companyId}-${event.iso}-${event.scheduleType}-${index}`}
-                                  style={[
-                                    styles.daySummaryRow,
-                                    isConfirmed
-                                      ? styles.daySummaryRowConfirmed
-                                      : styles.daySummaryRowCandidate,
-                                  ]}
-                                >
-                                  <ThemedText
-                                    style={[
-                                      styles.daySummaryText,
-                                      isConfirmed
-                                        ? styles.daySummaryTextConfirmed
-                                        : styles.daySummaryTextCandidate,
-                                    ]}
-                                    numberOfLines={1}
-                                    ellipsizeMode="clip"
-                                  >
-                                    {event.title?.trim() || event.companyName}
-                                  </ThemedText>
+                                  {visibleEvents.length > 0 && (
+                                    <View style={styles.dayEventList}>
+                                      {visibleEvents.map((event, index) => {
+                                        const isConfirmed = event.scheduleType === 'confirmed';
+                                        return (
+                                          <View
+                                            key={`${event.companyId}-${event.iso}-${event.scheduleType}-${index}`}
+                                            style={[
+                                              styles.daySummaryRow,
+                                              isConfirmed
+                                                ? styles.daySummaryRowConfirmed
+                                                : styles.daySummaryRowCandidate,
+                                            ]}
+                                          >
+                                            <ThemedText
+                                              style={[
+                                                styles.daySummaryText,
+                                                isConfirmed
+                                                  ? styles.daySummaryTextConfirmed
+                                                  : styles.daySummaryTextCandidate,
+                                              ]}
+                                              numberOfLines={1}
+                                              ellipsizeMode="clip"
+                                            >
+                                              {event.title?.trim() || event.companyName}
+                                            </ThemedText>
+                                          </View>
+                                        );
+                                      })}
+
+                                      {remainingCount > 0 && (
+                                        <ThemedText style={styles.daySummaryMore}>
+                                          +{remainingCount}
+                                        </ThemedText>
+                                      )}
+                                    </View>
+                                  )}
                                 </View>
-                              );
-                            })}
-
-                            {remainingCount > 0 && (
-                              <ThemedText style={styles.daySummaryMore}>
-                                +{remainingCount}
-                              </ThemedText>
-                            )}
-                          </View>
-                        )}
-                      </View>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            ))}
+                              </Pressable>
+                            );
+                          })}
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                ),
+              )}
+            </Animated.View>
           </View>
         </View>
       </ThemedView>

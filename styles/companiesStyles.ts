@@ -26,6 +26,7 @@ export const companiesStyles = StyleSheet.create({
     shadowOffset: { width: 0, height: 12 },
     shadowRadius: 24,
     elevation: 4,
+    marginHorizontal: 2,
   },
   cardCandidateLabel: {
     color: PRIMARY,
@@ -35,12 +36,12 @@ export const companiesStyles = StyleSheet.create({
   cardCandidateRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginTop: 8,
-    backgroundColor: 'rgba(37, 99, 235, 0.08)',
-    borderRadius: 16,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
+    gap: 6,
+    marginTop: 4,
+    backgroundColor: 'rgba(37, 99, 235, 0.06)',
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -50,7 +51,7 @@ export const companiesStyles = StyleSheet.create({
   },
   cardMetaRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     gap: 16,
   },
@@ -63,15 +64,16 @@ export const companiesStyles = StyleSheet.create({
     backgroundColor: SURFACE,
     borderWidth: 1,
     borderColor: 'rgba(148, 163, 184, 0.24)',
-    padding: 20,
-    gap: 16,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    gap: 8,
     overflow: 'hidden',
   },
   chipColumn: { gap: 12 },
   companyName: {
     flexShrink: 1,
     color: TEXT_PRIMARY,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
   },
   confirmedBlock: {
@@ -202,8 +204,8 @@ export const companiesStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     borderRadius: 999,
     backgroundColor: 'rgba(37, 99, 235, 0.1)',
   },
@@ -267,20 +269,20 @@ export const companiesStyles = StyleSheet.create({
   },
   modalPrimaryButton: {
     backgroundColor: PRIMARY,
-    borderColor: PRIMARY
+    borderColor: PRIMARY,
   },
   modalPrimaryLabel: {
     color: '#FFFFFF',
   },
   multilineInput: {
     minHeight: 96,
-    textAlignVertical: 'top'
+    textAlignVertical: 'top',
   },
   noteSnippet: {
     color: TEXT_MUTED,
     fontSize: 11,
     lineHeight: 16,
-    marginTop: 12,
+    marginTop: 4,
   },
   pageHeader: {
     marginHorizontal: -16,
@@ -321,6 +323,15 @@ export const companiesStyles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: BACKGROUND,
+  },
+  section: {
+    gap: 6,
+  },
+  sectionLabel: {
+    color: TEXT_MUTED,
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 0.4,
   },
   scheduleActions: {
     flexDirection: 'row',
@@ -408,12 +419,46 @@ export const companiesStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     borderRadius: 999,
     backgroundColor: 'rgba(37, 99, 235, 0.12)',
   },
-  statusBadgeLabel: { color: PRIMARY, fontWeight: '700', fontSize: 13 },
+  statusBadgeLabel: {
+    color: PRIMARY,
+    fontWeight: '700',
+    fontSize: 12,
+  },
+  summaryRow: {
+    marginTop: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  summaryText: {
+    flex: 1,
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  tagPill: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 999,
+    backgroundColor: SURFACE_SUBTLE,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: BORDER,
+  },
+  tagPillLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: TEXT_MUTED,
+  },
+  tagRow: {
+    marginTop: 8,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
   taskActionsRow: {
     marginTop: 8,
     flexDirection: 'row',

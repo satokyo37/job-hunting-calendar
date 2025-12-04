@@ -26,6 +26,7 @@ export const calendarStyles = StyleSheet.create({
     overflow: 'hidden',
   },
   pagerRow: {
+    flex: 1,
     flexDirection: 'row',
   },
   container: {
@@ -40,8 +41,8 @@ export const calendarStyles = StyleSheet.create({
     marginVertical: 1,
   },
   dayEventList: {
-    gap: 1,
-    marginTop: 1,
+    gap: 4,
+    marginTop: 4,
   },
   dayHeader: {
     alignItems: 'center',
@@ -127,13 +128,13 @@ export const calendarStyles = StyleSheet.create({
   },
   daySummaryRow: {
     alignItems: 'center',
-    borderRadius: 8,
+    borderRadius: 6,
     flexDirection: 'row',
-    gap: 3,
-    marginTop: 1,
-    minHeight: 14,
-    paddingHorizontal: 4,
-    paddingVertical: 1,
+    gap: 2,
+    marginTop: 0,
+    paddingHorizontal: 3,
+    paddingVertical: 0,
+    height: 14,
   },
   daySummaryRowCandidate: {
     backgroundColor: 'rgba(245, 158, 11, 0.08)',
@@ -143,7 +144,8 @@ export const calendarStyles = StyleSheet.create({
   },
   daySummaryText: {
     flex: 1,
-    fontSize: 9,
+    fontSize: 8,
+    lineHeight: 10,
   },
   daySummaryTextCandidate: {
     color: WARNING,

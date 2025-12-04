@@ -17,10 +17,7 @@ import { PROGRESS_STATUS_ITEMS, ProgressStatusValue } from '@/constants/progress
 import { useAppStore } from '@/store/useAppStore';
 import { companiesStyles as styles } from '@/styles/companiesStyles';
 
-const { primary: PRIMARY, success: SUCCESS } = Palette;
-
-const formatDisplayDate = (iso: string) =>
-  format(parseISO(iso), "yyyy'年'MM'月'dd'日'(EEE)HH:mm", { locale: ja });
+const { primary: PRIMARY, success: SUCCESS, textMuted: TEXT_MUTED } = Palette;
 
 type PickerMode = 'candidate' | 'task';
 
@@ -273,6 +270,34 @@ export default function CompaniesScreen() {
           renderItem={({ item }) => {
             const hasConfirmed = Boolean(item.confirmedDate);
             const candidateCount = item.candidateDates.length;
+            const hasCandidates = candidateCount > 0;
+
+            const title = item.nextAction?.trim() || '';
+
+            let scheduleLabel = '予定なし';
+            let scheduleIcon: keyof typeof MaterialIcons.glyphMap = 'event-busy';
+            let scheduleColor = TEXT_MUTED;
+
+            if (hasConfirmed) {
+              scheduleIcon = 'event-available';
+              scheduleColor = SUCCESS;
+
+              const dateLabel = format(parseISO(item.confirmedDate!), 'M月d日(E) HH:mm', {
+                locale: ja,
+              });
+
+              scheduleLabel = title ? `${title}　${dateLabel}` : `確定 ${dateLabel}`;
+            } else if (hasCandidates) {
+              scheduleIcon = 'event';
+              scheduleColor = PRIMARY;
+
+              const baseTitle = title || '候補日';
+              scheduleLabel = `${baseTitle}　候補日 ${candidateCount}件`;
+            }
+
+            const hasMemo = Boolean(item.remarks && item.remarks.trim().length > 0);
+            const taskCount = item.tasks?.length ?? 0;
+
             return (
               <Link href={`/(tabs)/companies/${item.id}`} asChild>
                 <Pressable style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}>
@@ -288,50 +313,32 @@ export default function CompaniesScreen() {
                       </View>
                     </View>
 
-                    {hasConfirmed ? (
-                      <View style={styles.cardMetaRow}>
-                        <View style={styles.metaColumn}>
-                          <ThemedText style={styles.metaLabel}>確定日時</ThemedText>
-                          <ThemedText style={styles.metaValue} numberOfLines={2}>
-                            {formatDisplayDate(item.confirmedDate!)}
-                          </ThemedText>
-                          {item.nextAction ? (
-                            <ThemedText style={styles.metaAction} numberOfLines={2}>
-                              {item.nextAction}
-                            </ThemedText>
-                          ) : null}
-                        </View>
-                        <View style={styles.metaPills}>
-                          <View style={[styles.metaPill, styles.metaPillConfirmed]}>
-                            <MaterialIcons name="event-available" size={14} color={SUCCESS} />
-                            <ThemedText style={[styles.metaPillLabel, styles.metaConfirmedLabel]}>
-                              確定あり
+                    <View style={styles.summaryRow}>
+                      <MaterialIcons name={scheduleIcon} size={16} color={scheduleColor} />
+                      <ThemedText
+                        style={[styles.summaryText, { color: scheduleColor }]}
+                        numberOfLines={1}
+                      >
+                        {scheduleLabel}
+                      </ThemedText>
+                    </View>
+
+                    {(hasMemo || taskCount > 0) && (
+                      <View style={styles.tagRow}>
+                        {hasMemo && (
+                          <View style={styles.tagPill}>
+                            <ThemedText style={styles.tagPillLabel}>メモあり</ThemedText>
+                          </View>
+                        )}
+                        {taskCount > 0 && (
+                          <View style={styles.tagPill}>
+                            <ThemedText style={styles.tagPillLabel}>
+                              タスク {taskCount}件
                             </ThemedText>
                           </View>
-                          {candidateCount > 0 ? (
-                            <View style={styles.metaPill}>
-                              <MaterialIcons name="event" size={14} color={PRIMARY} />
-                              <ThemedText style={[styles.metaPillLabel, styles.metaCandidateLabel]}>
-                                候補 {candidateCount}
-                              </ThemedText>
-                            </View>
-                          ) : null}
-                        </View>
+                        )}
                       </View>
-                    ) : candidateCount > 0 ? (
-                      <View style={styles.cardCandidateRow}>
-                        <MaterialIcons name="event" size={16} color={PRIMARY} />
-                        <ThemedText style={styles.cardCandidateLabel}>
-                          候補日 {candidateCount} 件登録があります
-                        </ThemedText>
-                      </View>
-                    ) : null}
-
-                    {item.remarks ? (
-                      <ThemedText style={styles.noteSnippet} numberOfLines={2}>
-                        {item.remarks}
-                      </ThemedText>
-                    ) : null}
+                    )}
                   </View>
                 </Pressable>
               </Link>

@@ -250,19 +250,13 @@ export default function CalendarScreen() {
       <ThemedView style={styles.screen}>
         <View style={styles.container}>
           <View style={styles.monthSwitcher}>
-            <Pressable
-              style={styles.monthButton}
-              onPress={() => shiftMonth(-1)}
-            >
+            <Pressable style={styles.monthButton} onPress={() => shiftMonth(-1)}>
               <MaterialIcons name="chevron-left" size={22} color={PRIMARY} />
             </Pressable>
             <ThemedText type="title" style={styles.monthLabel}>
               {currentMonthLabel}
             </ThemedText>
-            <Pressable
-              style={styles.monthButton}
-              onPress={() => shiftMonth(1)}
-            >
+            <Pressable style={styles.monthButton} onPress={() => shiftMonth(1)}>
               <MaterialIcons name="chevron-right" size={22} color={PRIMARY} />
             </Pressable>
           </View>
@@ -281,104 +275,109 @@ export default function CalendarScreen() {
             onLayout={(event) => setGridWidth(event.nativeEvent.layout.width)}
           >
             <Animated.View
-              style={[
-                styles.pagerRow,
-                { width: pageWidth * 3, transform: [{ translateX }] },
-              ]}
+              style={[styles.pagerRow, { width: pageWidth * 3, transform: [{ translateX }] }]}
             >
-              {[{ weeks: prevCalendarWeeks, month: addMonths(focusedMonth, -1) },
+              {[
+                { weeks: prevCalendarWeeks, month: addMonths(focusedMonth, -1) },
                 { weeks: calendarWeeks, month: focusedMonth },
-                { weeks: nextCalendarWeeks, month: addMonths(focusedMonth, 1) }].map(
-                ({ weeks, month }, pageIndex) => (
-                  <View key={pageIndex} style={{ width: pageWidth, flex: 1 }}>
-                    <View style={{ flex: 1 }}>
-                      {weeks.map((week, weekIndex) => (
-                        <View key={`${week[0].toISOString()}-${weekIndex}`} style={[styles.weekRow]}>
-                          {week.map((day) => {
-                            const key = toDateKey(day);
-                            const dayEvents = eventsByDay[key] ?? [];
-                            const isCurrentMonth = isSameMonth(day, month);
-                            const isSelected = key === selectedDate;
-                            const today = isToday(day);
+                { weeks: nextCalendarWeeks, month: addMonths(focusedMonth, 1) },
+              ].map(({ weeks, month }, pageIndex) => (
+                <View key={pageIndex} style={{ width: pageWidth, flex: 1 }}>
+                  <View style={{ flex: 1 }}>
+                    {weeks.map((week, weekIndex) => (
+                      <View key={`${week[0].toISOString()}-${weekIndex}`} style={[styles.weekRow]}>
+                        {week.map((day) => {
+                          const key = toDateKey(day);
+                          const dayEvents = eventsByDay[key] ?? [];
+                          const isCurrentMonth = isSameMonth(day, month);
+                          const isSelected = key === selectedDate;
+                          const today = isToday(day);
 
-                            const sortedDayEvents = [...dayEvents].sort(
-                              (a, b) => new Date(a.iso).getTime() - new Date(b.iso).getTime(),
-                            );
+                          const sortedDayEvents = [...dayEvents].sort(
+                            (a, b) => new Date(a.iso).getTime() - new Date(b.iso).getTime(),
+                          );
 
-                            const MAX_VISIBLE_EVENTS_PER_DAY = 2;
-                            const visibleEvents = sortedDayEvents.slice(0, MAX_VISIBLE_EVENTS_PER_DAY);
-                            const remainingCount = dayEvents.length - visibleEvents.length;
+                          const MAX_VISIBLE_EVENTS_PER_DAY = 3;
+                          const visibleEvents = sortedDayEvents.slice(
+                            0,
+                            MAX_VISIBLE_EVENTS_PER_DAY,
+                          );
+                          const remainingCount = dayEvents.length - visibleEvents.length;
 
-                            return (
-                              <Pressable
-                                key={key}
-                                style={[styles.dayCell, !isCurrentMonth && styles.outsideCell]}
-                                onPress={() => handleSelectDay(key, dayEvents.length > 0)}
+                          return (
+                            <Pressable
+                              key={key}
+                              style={[styles.dayCell, !isCurrentMonth && styles.outsideCell]}
+                              onPress={() => handleSelectDay(key, dayEvents.length > 0)}
+                            >
+                              <View
+                                style={[styles.dayInner, isSelected && styles.dayInnerSelected]}
                               >
-                                <View style={[styles.dayInner, isSelected && styles.dayInnerSelected]}>
-                                  <View style={styles.dayHeader}>
-                                    {today ? (
-                                      <View style={styles.todayPill}>
-                                        <ThemedText style={styles.todayPillText}>
-                                          {format(day, 'd')}
-                                        </ThemedText>
-                                      </View>
-                                    ) : (
-                                      <ThemedText
-                                        style={[styles.dayNumber, !isCurrentMonth && styles.outsideDayNumber]}
-                                      >
+                                <View style={styles.dayHeader}>
+                                  {today ? (
+                                    <View style={styles.todayPill}>
+                                      <ThemedText style={styles.todayPillText}>
                                         {format(day, 'd')}
+                                      </ThemedText>
+                                    </View>
+                                  ) : (
+                                    <ThemedText
+                                      style={[
+                                        styles.dayNumber,
+                                        !isCurrentMonth && styles.outsideDayNumber,
+                                      ]}
+                                    >
+                                      {format(day, 'd')}
+                                    </ThemedText>
+                                  )}
+                                </View>
+
+                                {visibleEvents.length > 0 && (
+                                  <View style={styles.dayEventList}>
+                                    {visibleEvents.map((event, index) => {
+                                      const isConfirmed = event.scheduleType === 'confirmed';
+                                      return (
+                                        <View
+                                          key={`${event.companyId}-${event.iso}-${event.scheduleType}-${index}`}
+                                          style={[
+                                            styles.daySummaryRow,
+                                            isConfirmed
+                                              ? styles.daySummaryRowConfirmed
+                                              : styles.daySummaryRowCandidate,
+                                          ]}
+                                        >
+                                          <ThemedText
+                                            style={[
+                                              styles.daySummaryText,
+                                              isConfirmed
+                                                ? styles.daySummaryTextConfirmed
+                                                : styles.daySummaryTextCandidate,
+                                            ]}
+                                            numberOfLines={1}
+                                            ellipsizeMode="clip"
+                                          >
+                                            {event.title?.trim() || event.companyName}
+                                          </ThemedText>
+                                        </View>
+                                      );
+                                    })}
+
+                                    {remainingCount > 0 && (
+                                      <ThemedText style={styles.daySummaryMore}>
+                                        +{remainingCount}
                                       </ThemedText>
                                     )}
                                   </View>
-
-                                  {visibleEvents.length > 0 && (
-                                    <View style={styles.dayEventList}>
-                                      {visibleEvents.map((event, index) => {
-                                        const isConfirmed = event.scheduleType === 'confirmed';
-                                        return (
-                                          <View
-                                            key={`${event.companyId}-${event.iso}-${event.scheduleType}-${index}`}
-                                            style={[
-                                              styles.daySummaryRow,
-                                              isConfirmed
-                                                ? styles.daySummaryRowConfirmed
-                                                : styles.daySummaryRowCandidate,
-                                            ]}
-                                          >
-                                            <ThemedText
-                                              style={[
-                                                styles.daySummaryText,
-                                                isConfirmed
-                                                  ? styles.daySummaryTextConfirmed
-                                                  : styles.daySummaryTextCandidate,
-                                              ]}
-                                              numberOfLines={1}
-                                              ellipsizeMode="clip"
-                                            >
-                                              {event.title?.trim() || event.companyName}
-                                            </ThemedText>
-                                          </View>
-                                        );
-                                      })}
-
-                                      {remainingCount > 0 && (
-                                        <ThemedText style={styles.daySummaryMore}>
-                                          +{remainingCount}
-                                        </ThemedText>
-                                      )}
-                                    </View>
-                                  )}
-                                </View>
-                              </Pressable>
-                            );
-                          })}
-                        </View>
-                      ))}
-                    </View>
+                                )}
+                              </View>
+                            </Pressable>
+                          );
+                        })}
+                      </View>
+                    ))}
                   </View>
-                ),
-              )}
+                </View>
+              ))}
             </Animated.View>
           </View>
         </View>
